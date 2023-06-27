@@ -20,13 +20,15 @@
 #define TID_T unsigned long long
 TID_T gettidv1();
 
-#else
+#elif defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__) || defined(__DragonFly__) || defined(__bsdi__)
 //regard the system as an unix-like system
 #include <sys/syscall.h>
 #include <unistd.h>
 #define TID_T pid_t
 #define gettidv1() syscall(__NR_gettid)
 
-#endif//OS-specific code
-
+#elif defined(_WIN32) || defined(_WIN64) || defined(__WIN32__) || defined(__TOS_WIN__) || defined(__WINDOWS__) || defined(_MSC_VER) 
+#include <windows.h>       // Or something like it. 
+#include <process.h>
+#include <io.h>
 #endif//HEADER_GUARD
