@@ -2,23 +2,23 @@
 #define MUTEX_H_
 
 #include <iostream>
-//#if defined(_WIN32) || defined(_MSC_VER)
-//#ifdef DEEPNETAPI_EXPORT
+// #if defined(_WIN32) || defined(_MSC_VER)
+// #ifdef DEEPNETAPI_EXPORT
 //
-//#define DEEPNETAPI __declspec(dllexport)
-//#else
-//#define DEEPNETAPI __declspec(dllimport)
-//#endif
+// #define DEEPNETAPI __declspec(dllexport)
+// #else
+// #define DEEPNETAPI __declspec(dllimport)
+// #endif
 //
-//#elif defined(__linux__) || defined(__APPLE__)
-//#ifdef DEEPNETAPI_EXPORT
-//#define DEEPNETAPI __attribute__((visibility("default")))
-//#else
-//#define DEEPNETAPI
-//#endif // DEEPNETAPI_EXPORT
-//#include <pthread.h>
+// #elif defined(__linux__) || defined(__APPLE__)
+// #ifdef DEEPNETAPI_EXPORT
+// #define DEEPNETAPI __attribute__((visibility("default")))
+// #else
+// #define DEEPNETAPI
+// #endif // DEEPNETAPI_EXPORT
+// #include <pthread.h>
 //
-//#endif
+// #endif
 
 #include "Tid.h"
 #include "src/utils/TimeUtils.h"
@@ -83,8 +83,12 @@ namespace nacos
 
 		int wait(long millis)
 		{
-			struct timeval now{};
-			struct timespec wakeup_time{};
+			struct timeval now
+			{
+			};
+			struct timespec wakeup_time
+			{
+			};
 
 			TimeUtils::getCurrentTimeInStruct(now);
 			now.tv_usec = now.tv_usec + millis * 1000;
@@ -110,15 +114,15 @@ namespace nacos
 		}
 	};
 
-//	class lock_guard
-//	{
-//		Mutex &mutex_;
-//
-//	public:
-//		explicit lock_guard(Mutex &mutex) : mutex_(mutex) { mutex_.lock(); };
-//
-//		~lock_guard() { mutex_.unlock(); };
-//	};
+	//	class lock_guard
+	//	{
+	//		Mutex &mutex_;
+	//
+	//	public:
+	//		explicit lock_guard(Mutex &mutex) : mutex_(mutex) { mutex_.lock(); };
+	//
+	//		~lock_guard() { mutex_.unlock(); };
+	//	};
 } // namespace nacos
 
 #endif

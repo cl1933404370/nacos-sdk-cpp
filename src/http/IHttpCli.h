@@ -15,109 +15,109 @@
  */
 namespace nacos
 {
-        class HttpResult
+    class HttpResult
+    {
+    public:
+        long code;
+        NacosString content;
+        std::map<NacosString, NacosString> headers;
+        CURLcode curlcode;
+
+        HttpResult(long _code, const NacosString &_content, std::map<NacosString, NacosString> &_headers)
+            : code(_code), content(_content)
         {
-        public:
-                long code;
-                NacosString content;
-                std::map<NacosString, NacosString> headers;
-                CURLcode curlcode;
+            headers.insert(_headers.begin(), _headers.end());
+        }
 
-                HttpResult(long _code, const NacosString &_content, std::map<NacosString, NacosString> &_headers)
-                    : code(_code), content(_content)
-                {
-                        headers.insert(_headers.begin(), _headers.end());
-                }
+        HttpResult(long _code, const NacosString &_content) : code(_code), content(_content) {}
 
-                HttpResult(long _code, const NacosString &_content) : code(_code), content(_content) {}
-
-                HttpResult()
-                {
-                        code = -1;
-                        content = "";
-                        headers.clear();
-                }
-
-                HttpResult operator=(HttpResult asignee)
-                {
-                        if (this != &asignee)
-                        {
-                                headers.insert(asignee.headers.begin(), asignee.headers.end());
-                                code = asignee.code;
-                                content = asignee.content;
-                                curlcode = asignee.curlcode;
-                        }
-
-                        return *this;
-                }
-        };
-
-        class IHttpCli
+        HttpResult()
         {
-        public:
-                static const int GET = 0;
-                static const int PUT = 1;
-                static const int POST = 3;
-                static const int DELETE = 4;
+            code = -1;
+            content = "";
+            headers.clear();
+        }
 
-                virtual HttpResult httpGet(
-                    const NacosString &path,
-                    std::list<NacosString> &headers,
-                    std::list<NacosString> &paramValues,
-                    const NacosString &encoding,
-                    long readTimeoutMs) NACOS_THROW(NetworkException) = 0;
+        HttpResult operator=(HttpResult asignee)
+        {
+            if (this != &asignee)
+            {
+                headers.insert(asignee.headers.begin(), asignee.headers.end());
+                code = asignee.code;
+                content = asignee.content;
+                curlcode = asignee.curlcode;
+            }
 
-                virtual HttpResult httpGet(
-                    const NacosString &path,
-                    std::list<NacosString> &headers,
-                    std::map<NacosString, NacosString> &paramValues,
-                    const NacosString &encoding,
-                    long readTimeoutMs) NACOS_THROW(NetworkException) = 0;
+            return *this;
+        }
+    };
 
-                virtual HttpResult httpDelete(
-                    const NacosString &path,
-                    std::list<NacosString> &headers,
-                    std::list<NacosString> &paramValues,
-                    const NacosString &encoding,
-                    long readTimeoutMs) NACOS_THROW(NetworkException) = 0;
+    class IHttpCli
+    {
+    public:
+        static const int GET = 0;
+        static const int PUT = 1;
+        static const int POST = 3;
+        static const int DELETE1 = 4;
 
-                virtual HttpResult httpDelete(
-                    const NacosString &path,
-                    std::list<NacosString> &headers,
-                    std::map<NacosString, NacosString> &paramValues,
-                    const NacosString &encoding,
-                    long readTimeoutMs) NACOS_THROW(NetworkException) = 0;
+        virtual HttpResult httpGet(
+            const NacosString &path,
+            std::list<NacosString> &headers,
+            std::list<NacosString> &paramValues,
+            const NacosString &encoding,
+            long readTimeoutMs) NACOS_THROW(NetworkException) = 0;
 
-                virtual HttpResult httpPost(
-                    const NacosString &path,
-                    std::list<NacosString> &headers,
-                    std::list<NacosString> &paramValues,
-                    const NacosString &encoding,
-                    long readTimeoutMs) NACOS_THROW(NetworkException) = 0;
+        virtual HttpResult httpGet(
+            const NacosString &path,
+            std::list<NacosString> &headers,
+            std::map<NacosString, NacosString> &paramValues,
+            const NacosString &encoding,
+            long readTimeoutMs) NACOS_THROW(NetworkException) = 0;
 
-                virtual HttpResult httpPost(
-                    const NacosString &path,
-                    std::list<NacosString> &headers,
-                    std::map<NacosString, NacosString> &paramValues,
-                    const NacosString &encoding,
-                    long readTimeoutMs) NACOS_THROW(NetworkException) = 0;
+        virtual HttpResult httpDelete(
+            const NacosString &path,
+            std::list<NacosString> &headers,
+            std::list<NacosString> &paramValues,
+            const NacosString &encoding,
+            long readTimeoutMs) NACOS_THROW(NetworkException) = 0;
 
-                virtual HttpResult httpPut(
-                    const NacosString &path,
-                    std::list<NacosString> &headers,
-                    std::list<NacosString> &paramValues,
-                    const NacosString &encoding,
-                    long readTimeoutMs) NACOS_THROW(NetworkException) = 0;
+        virtual HttpResult httpDelete(
+            const NacosString &path,
+            std::list<NacosString> &headers,
+            std::map<NacosString, NacosString> &paramValues,
+            const NacosString &encoding,
+            long readTimeoutMs) NACOS_THROW(NetworkException) = 0;
 
-                virtual HttpResult httpPut(
-                    const NacosString &path,
-                    std::list<NacosString> &headers,
-                    std::map<NacosString, NacosString> &paramValues,
-                    const NacosString &encoding,
-                    long readTimeoutMs) NACOS_THROW(NetworkException) = 0;
+        virtual HttpResult httpPost(
+            const NacosString &path,
+            std::list<NacosString> &headers,
+            std::list<NacosString> &paramValues,
+            const NacosString &encoding,
+            long readTimeoutMs) NACOS_THROW(NetworkException) = 0;
 
-                virtual ~IHttpCli(){};
-        };
+        virtual HttpResult httpPost(
+            const NacosString &path,
+            std::list<NacosString> &headers,
+            std::map<NacosString, NacosString> &paramValues,
+            const NacosString &encoding,
+            long readTimeoutMs) NACOS_THROW(NetworkException) = 0;
+
+        virtual HttpResult httpPut(
+            const NacosString &path,
+            std::list<NacosString> &headers,
+            std::list<NacosString> &paramValues,
+            const NacosString &encoding,
+            long readTimeoutMs) NACOS_THROW(NetworkException) = 0;
+
+        virtual HttpResult httpPut(
+            const NacosString &path,
+            std::list<NacosString> &headers,
+            std::map<NacosString, NacosString> &paramValues,
+            const NacosString &encoding,
+            long readTimeoutMs) NACOS_THROW(NetworkException) = 0;
+
+        virtual ~IHttpCli(){};
+    };
 } // namespace nacos
 
 #endif
