@@ -6,9 +6,17 @@
 #define NACOS_SDK_CPP_UDPLSNR_H_
 
 #include <sys/types.h>
+
+#if defined(__linux__) || defined(__APPLE__)
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <netinet/in.h>
+#include <unistd.h>
+#elif defined(_WIN32) || defined(_WIN64) || defined(__WIN32__) || defined(__TOS_WIN__) || defined(__WINDOWS__) || defined(_MSC_VER)
+#include <winsock2.h>
+#include <ws2tcpip.h>
+#endif
+
 #include "src/factory/ObjectConfigData.h"
 #include "src/thread/Thread.h"
 #include "Compatibility.h"

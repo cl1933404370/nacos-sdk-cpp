@@ -24,8 +24,8 @@ public:
     }
 
     static NacosString trim(const NacosString &content) {
-        int start = 0;
-        int end = content.size() - 1;
+        size_t start = 0;
+        size_t end = content.size() - 1;
 
         while (start < end && isBlank(content[start])) {
             start++;

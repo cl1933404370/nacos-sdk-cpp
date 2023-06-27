@@ -26,7 +26,7 @@ public:
                                    const NacosString &tenant);
 
     /**
-     * Accuire local cache content, returns NULLSTR when the file does not exist or an exception is thrown
+     * Acquire local cache content, returns NULLSTR when the file does not exist or an exception is thrown
      * 获取本地缓存文件内容。NULL表示没有本地文件或抛出异常。
      */
     NacosString getSnapshot(const NacosString &name, const NacosString &dataId, const NacosString &group,

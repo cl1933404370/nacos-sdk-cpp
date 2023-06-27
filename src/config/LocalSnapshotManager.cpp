@@ -1,7 +1,14 @@
 #include "LocalSnapshotManager.h"
 #include <stdio.h>
 #include <list>
+
+#if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
+#include <io.h>
+#include <process.h>
+#elif defined(__linux__) || defined(__linux) || defined(linux) || defined(__gnu_linux__)
 #include <unistd.h>
+#endif
+
 #include <sys/types.h>
 #include <errno.h>
 #include "NacosExceptions.h"

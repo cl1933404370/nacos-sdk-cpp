@@ -1,5 +1,12 @@
 #include <stdio.h>
-#include <unistd.h>
+
+#if defined(__linux__) || defined(__APPLE__)
+    #include <unistd.h>
+#elif defined(_WIN32) || defined(_WIN64) || defined(__WIN32__) || defined(__TOS_WIN__) || defined(__WINDOWS__) || defined(_MSC_VER)
+    #include <io.h>
+    #include <process.h>
+#endif
+
 #include <sys/types.h>
 #include <stdlib.h>
 #include "Logger.h"
@@ -66,7 +73,7 @@ LOG_LEVEL Logger::getLogLevel() {
 
 int Logger::debug_helper(LOG_LEVEL level, const char *format, va_list args) {
     //Since the current system debug level is greater than this message
-    //Supress it
+    //Suppress it
     if (Logger::_CUR_SYS_LOG_LEVEL > level) {
         return 0;
     }
@@ -78,7 +85,11 @@ int Logger::debug_helper(LOG_LEVEL level, const char *format, va_list args) {
     struct stat stat_buf;
     stat(_log_file.c_str(), &stat_buf);
     if (stat_buf.st_size >= _rotate_size) {
-        truncate(_log_file.c_str(), 0);
+        #if defined(__linux__) || defined(__APPLE__)
+            truncate(_log_file.c_str(), 0);
+        #elif defined(_WIN32) || defined(_WIN64) || defined(__WIN32__) || defined(__TOS_WIN__) || defined(__WINDOWS__) || defined(_MSC_VER)
+            _chsize_s(fileno(_output_file), 0);
+        #endif
         _last_rotate_time = now;
     }
 
@@ -179,6 +190,7 @@ void Logger::initializeLogSystem() {
     } catch (IOException &e) {
         //if we failed to read log settings
         //use default settings as backup
+        log_error("Failed to read log settings from %s, using default settings\n", e.what());
     }
 
     applyLogSettings(props);

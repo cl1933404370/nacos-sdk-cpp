@@ -1,32 +1,39 @@
 #ifndef __ATOMIC_INT_H_
 #define __ATOMIC_INT_H_
 
-namespace nacos{
-template<typename T>
-class AtomicInt {
-private:
-    volatile T _curval;
-public:
-    AtomicInt(T curval = 0) : _curval(curval) {};
+namespace nacos
+{
+    #include <atomic>
+    template <typename T>
+    class AtomicInt
+    {
+    private:
+        volatile std::atomic<T> _curval;
 
-    void set(T val) { _curval = val; };
+    public:
+        AtomicInt(T curval = 0) : _curval(curval){};
 
-    T inc(T incval = 1) {
-        T oldValue = getAndInc(incval);
-        return incval + oldValue;
+        void set(T val) { _curval = val; };
+
+        T inc(T incval = 1)
+        {
+            T oldValue = getAndInc(incval);
+            return oldValue + incval;
+        };
+
+        T getAndInc(T incval = 1)
+        {
+            T oldValue = _curval.fetch_add(incval);
+            return oldValue;
+        }
+
+        T dec(int decval = 1)
+        {
+            return inc(-decval);
+        };
+
+        T get() const { return _curval; };
     };
-
-    T getAndInc(T incval = 1) {
-        T oldValue = __sync_fetch_and_add(&_curval, incval);
-        return oldValue;
-    }
-
-    T dec(int decval = 1) {
-        return inc(-decval);
-    };
-
-    T get() const { return _curval; };
-};
-}//namespace nacos
+} // namespace nacos
 
 #endif

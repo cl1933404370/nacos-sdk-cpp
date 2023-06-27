@@ -102,7 +102,7 @@ public:
         selector = aSelector;
     }
 
-    int getProtectThreshold() const {
+    double getProtectThreshold() const {
         return protectThreshold;
     }
 

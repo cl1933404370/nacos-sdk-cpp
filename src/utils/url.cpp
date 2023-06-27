@@ -7,7 +7,7 @@ NacosString urlencode(const NacosString &content) {
     CURL *curl = curl_easy_init();
     char *output = NULL;
     if (curl) {
-        output = curl_easy_escape(curl, content.c_str(), content.length());
+        output = curl_easy_escape(curl, content.c_str(), static_cast<int>(content.length()));
     }
 
     if (output) {
@@ -18,13 +18,14 @@ NacosString urlencode(const NacosString &content) {
     curl_easy_cleanup(curl);
     return result;
 }
+} // namespace nacos
 
 NacosString urldecode(const NacosString &content) {
     NacosString result;
     CURL *curl = curl_easy_init();
     char *output = NULL;
     if (curl) {
-        output = curl_easy_unescape(curl, content.c_str(), content.length(), NULL);
+        output = curl_easy_unescape(curl, content.c_str(), static_cast<int>(content.length()), NULL);
     }
 
     if (output) {
@@ -35,4 +36,3 @@ NacosString urldecode(const NacosString &content) {
     curl_easy_cleanup(curl);
     return result;
 }
-}//namespace nacos
