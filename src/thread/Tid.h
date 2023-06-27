@@ -28,7 +28,20 @@ TID_T gettidv1();
 #define gettidv1() syscall(__NR_gettid)
 
 #elif defined(_WIN32) || defined(_WIN64) || defined(__WIN32__) || defined(__TOS_WIN__) || defined(__WINDOWS__) || defined(_MSC_VER) 
-#include <windows.h>       // Or something like it. 
+#include <Windows.h>       // Or something like it.
 #include <process.h>
 #include <io.h>
+#include <folly/Portability.h>
+#include <folly/portability/PThread.h>
+#include <thread>
+#include <mutex>
+#include <shared_mutex>
+#include <condition_variable>
+#include <memory>
+#include "WinSock2.h"
+#define TID_T pthread_t
+#define gettidv1() pthread_self()
+
 #endif//HEADER_GUARD
+
+#endif

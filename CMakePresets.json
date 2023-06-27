@@ -125,11 +125,10 @@
       }
     },
     {
-
       "name": "x64-debug",
       "displayName": "x64 Debug",
       "description": "Target Windows (64-bit) with the Visual Studio development environment. (Debug)",
-      "inherits": "windows-base",
+      "inherits": "conf-windows-common",
       "architecture": {
         "value": "x64",
         "strategy": "external"
@@ -140,9 +139,10 @@
         "CMAKE_C_COMPILER": "cl",
         "CMAKE_CXX_COMPILER": "cl",
         "CMAKE_BUILD_TYPE": "Debug",
+        "ENABLE_DEVELOPER_MODE": "ON",
         "CMAKE_INSTALL_PREFIX": "${sourceDir}/out/install/${presetName}",
         "CMAKE_TOOLCHAIN_FILE": {
-          "value": "D:/dev/vcpkg/scripts/buildsystems/vcpkg.cmake",
+          "value": "D:\\dev\\vcpkg/scripts/buildsystems/vcpkg.cmake",
           "type": "FILEPATH"
         }
       },
