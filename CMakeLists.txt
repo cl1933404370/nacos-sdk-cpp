@@ -1,5 +1,11 @@
 cmake_minimum_required(VERSION 3.4.1)
 
+# Enable Hot Reload for MSVC compilers if supported.
+if (POLICY CMP0141)
+  cmake_policy(SET CMP0141 NEW)
+  set(CMAKE_MSVC_DEBUG_INFORMATION_FORMAT "$<IF:$<AND:$<C_COMPILER_ID:MSVC>,$<CXX_COMPILER_ID:MSVC>>,$<$<CONFIG:Debug,RelWithDebInfo>:EditAndContinue>,$<$<CONFIG:Debug,RelWithDebInfo>:ProgramDatabase>>")
+endif()
+
 project(nacos-sdk-cpp)
 
 #add_definitions(-DNACOS_AUTH)
@@ -50,12 +56,13 @@ add_library(nacos-cli SHARED ${SRCS_DIRS})
 add_library(nacos-cli-static STATIC ${SRCS_DIRS})
 
 set(THREADS_PREFER_PTHREAD_FLAG ON)
-target_link_libraries(nacos-cli PRIVATE Threads::Threads curl z)
-target_link_libraries(nacos-cli-static PRIVATE Threads::Threads curl z)
-target_link_libraries(nacos-cli.out PRIVATE Threads::Threads curl z)
+target_link_libraries(nacos-cli PRIVATE Threads::Threads curl z Folly::folly Folly::folly_deps Folly::follybenchmark Folly::folly_test_util)
+target_link_libraries(nacos-cli-static PRIVATE Threads::Threads curl z Folly::folly Folly::folly_deps Folly::follybenchmark Folly::folly_test_util)
+target_link_libraries(nacos-cli.out PRIVATE Threads::Threads curl z Folly::folly Folly::folly_deps Folly::follybenchmark Folly::folly_test_util)
 find_package(Threads REQUIRED)
 find_package(CURL REQUIRED)
 find_package(ZLIB REQUIRED)
+find_package(folly CONFIG REQUIRED)
 
 install(TARGETS nacos-cli
 		LIBRARY DESTINATION lib)

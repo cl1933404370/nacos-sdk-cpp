@@ -34,7 +34,9 @@
       "name": "linux-debug",
       "vendor": {
         "microsoft.com/VisualStudioSettings/CMake/1.0": {
-          "hostOS": [ "Linux" ]
+          "hostOS": [
+            "Linux"
+          ]
         },
         "microsoft.com/VisualStudioRemoteSettings/CMake/1.0": {
           "sourceDir": "$env{HOME}/.vs/$ms{projectDirName}"
@@ -123,21 +125,21 @@
       }
     },
     {
-      "name": "windows-msvc-debug-developer-mode",
-      "displayName": "msvc Debug (Developer Mode)",
-      "description": "Target Windows with the msvc compiler, debug build type",
-      "generator": "Visual Studio 17 2022",
-      "inherits": "conf-windows-common",
-      "binaryDir": "${sourceDir}/out/build/${presetName}",
+
+      "name": "x64-debug",
+      "displayName": "x64 Debug",
+      "description": "Target Windows (64-bit) with the Visual Studio development environment. (Debug)",
+      "inherits": "windows-base",
       "architecture": {
         "value": "x64",
         "strategy": "external"
       },
+      "generator": "Visual Studio 17 2022",
+      "binaryDir": "${sourceDir}/out/build/${presetName}",
       "cacheVariables": {
         "CMAKE_C_COMPILER": "cl",
         "CMAKE_CXX_COMPILER": "cl",
         "CMAKE_BUILD_TYPE": "Debug",
-        //"ENABLE_DEVELOPER_MODE": "off",
         "CMAKE_INSTALL_PREFIX": "${sourceDir}/out/install/${presetName}",
         "CMAKE_TOOLCHAIN_FILE": {
           "value": "D:/dev/vcpkg/scripts/buildsystems/vcpkg.cmake",
@@ -146,7 +148,9 @@
       },
       "vendor": {
         "microsoft.com/VisualStudioSettings/CMake/1.0": {
-          "hostOS": [ "Windows" ]
+          "hostOS": [
+            "Windows"
+          ]
         }
       }
     },
@@ -174,51 +178,11 @@
       },
       "vendor": {
         "microsoft.com/VisualStudioSettings/CMake/1.0": {
-          "hostOS": [ "Windows" ]
+          "hostOS": [
+            "Windows"
+          ]
         }
       }
     }
-  ] //,
-  //"testPresets": [
-  //  {
-  //    "name": "test-common",
-  //    "description": "Test CMake settings that apply to all configurations",
-  //    "hidden": true,
-  //    "output": {
-  //      "outputOnFailure": true
-  //    },
-  //    "execution": {
-  //      "noTestsAction": "error",
-  //      "stopOnFailure": true
-  //    }
-  //  },
-  //  {
-  //    "name": "test-windows-msvc-debug-developer-mode",
-  //    "displayName": "Strict",
-  //    "description": "Enable output and stop on failure",
-  //    "inherits": "test-common",
-  //    "configurePreset": "windows-msvc-debug-developer-mode"
-  //  },
-  //  {
-  //    "name": "test-windows-msvc-release-developer-mode",
-  //    "displayName": "Strict",
-  //    "description": "Enable output and stop on failure",
-  //    "inherits": "test-common",
-  //    "configurePreset": "windows-msvc-release-developer-mode"
-  //  },
-  //  {
-  //    "name": "test-linux-gcc-debug",
-  //    "displayName": "Strict",
-  //    "description": "Enable output and stop on failure",
-  //    "inherits": "test-common",
-  //    "configurePreset": "linux-debug"
-  //  },
-  //  {
-  //    "name": "test-linux-gcc-release",
-  //    "displayName": "Strict",
-  //    "description": "Enable output and stop on failure",
-  //    "inherits": "test-common",
-  //    "configurePreset": "linux-Release"
-  //  }
-  //]
+  ]
 }
