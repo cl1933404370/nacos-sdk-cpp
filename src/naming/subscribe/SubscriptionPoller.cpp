@@ -3,7 +3,7 @@
 #include "src/utils/NamingUtils.h"
 #include "src/json/JSON.h"
 #include "HostReactor.h"
-
+#include <thread> // Add this line to include the <thread> header
 using namespace std;
 
 namespace nacos{
@@ -96,7 +96,7 @@ void *SubscriptionPoller::pollingThreadFunc(void *parm)
         }
         if (copiedList.empty()) {
             log_debug("PollingList is empty, hibernating...\n", copiedList.size());
-            sleep(thisObj->_pollingInterval / 1000);
+            std::this_thread::sleep_for(std::chrono::milliseconds(thisObj->_pollingInterval));
             continue;
         }
 
@@ -130,7 +130,9 @@ void *SubscriptionPoller::pollingThreadFunc(void *parm)
         }
 
         log_debug("Polling process finished, hibernating...\n");
-        sleep(thisObj->_pollingInterval / 1000);
+        #include <thread> // Add this line to include the <thread> header
+        #include <chrono>
+        std::this_thread::sleep_for(std::chrono::milliseconds(thisObj->_pollingInterval));
     }
     log_debug("Polling thread for NamingService exited normally.\n");
     return NULL;

@@ -76,7 +76,7 @@ target_link_libraries(nacos-cli.out PRIVATE Threads::Threads curl z Folly::folly
 find_package(Threads REQUIRED)
 find_package(CURL REQUIRED)
 find_package(ZLIB REQUIRED)
-find_package(folly CONFIG REQUIRED)
+find_package(folly REQUIRED)
 
 install(TARGETS nacos-cli
 	LIBRARY DESTINATION lib)
