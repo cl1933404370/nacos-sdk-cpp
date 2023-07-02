@@ -106,7 +106,7 @@ void nacos::Thread::kill()
 {
 #if defined(_MSC_VER) || defined(__WIN32__) || defined(WIN32)
    // pthread_kill windows
-   QueueUserAPC((PAPCFUNC)empty_signal_handler, pthread_getw32threadhandle_np(_thread), THREAD_STOP_SIGNAL)
+   QueueUserAPC((PAPCFUNC)empty_signal_handler, pthread_getw32threadhandle_np(_thread), THREAD_STOP_SIGNAL);
 #else
     pthread_kill(_thread, THREAD_STOP_SIGNAL);
 #endif

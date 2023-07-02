@@ -39,7 +39,7 @@ void BeatReactor::addBeatInfo(const NacosString &serviceName, BeatInfo &beatInfo
         newBeatTask->setInterval(_clientBeatInterval);
         _beatInfoList[beatKey] = newBeatTask;
     }
-    _delayedThreadPool->schedule(newBeatTask, TimeUtils::getCurrentTimeInMs() + _clientBeatInterval);
+    _delayedThreadPool->schedule(newBeatTask, static_cast<long>(static_cast<uint64_t>(TimeUtils::getCurrentTimeInMs()) + _clientBeatInterval));
     //TODO:MetricsMonitor.getDom2BeatSizeMonitor().set(dom2Beat.size());
 }
 

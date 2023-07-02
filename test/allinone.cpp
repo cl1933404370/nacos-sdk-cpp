@@ -136,9 +136,9 @@ bool testHMACSHA1();
 
 bool testSubscribeAlotOfServices();
 
-TestData disabledTestList[] =
-TEST_ITEM_START
-TEST_ITEM_END
+//TestData* disabledTestList = new TestData[1];
+// TEST_ITEM_START
+// TEST_ITEM_END
 
 TestData
 testList[] =

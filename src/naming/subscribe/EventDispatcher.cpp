@@ -56,7 +56,7 @@ bool EventDispatcher::removeListenerHelper(const NacosString &key, EventListener
             if (listenerList.empty()) {
                 observerMap.erase(key);
             }
-            remainingListeners = listenerList.size();
+            remainingListeners = static_cast<int>(listenerList.size());
             return true;
         }
     }

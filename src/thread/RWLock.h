@@ -1,10 +1,10 @@
 #ifndef __RWLOCK_H_
 #define __RWLOCK_H_
 
-#if defined(__linux__):
+#if defined(__linux__)
 #include <pthread.h>
 #include <unistd.h>
-#elif defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64):
+#elif defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #include <folly/Portability.h>
 #include <folly/portability/pthread.h>
 #endif
