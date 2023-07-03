@@ -1,6 +1,15 @@
-#include <unistd.h>
 #include <sys/types.h>
+
+#if defined(_MSC_VER) || defined(__WIN32__) || defined(WIN32)
+#include <windows.h>
+#include <io.h>
+#include <process.h>
+#else
+#include <unistd.h>
 #include <pwd.h>
+#endif /* _UNISTD_H */
+
+
 #include "src/utils/DirUtils.h"
 
 #if defined(__CYGWIN__) || defined(MS_WINDOWS)

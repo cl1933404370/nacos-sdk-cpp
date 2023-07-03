@@ -1,5 +1,10 @@
 #include <iostream>
+#if defined(_MSC_VER) || defined(__WIN32__) || defined(WIN32)
+#include <io.h>
+#include <process.h>
+#else
 #include <unistd.h>
+#endif
 #include "src/debug/DebugAssertion.h"
 #include "src/log/Logger.h"
 #include "src/thread/Thread.h"

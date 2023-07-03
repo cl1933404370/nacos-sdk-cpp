@@ -1,13 +1,19 @@
 #include "IOUtils.h"
 #include <sys/stat.h>
 #include <sys/types.h>
-#include <dirent.h>
 #include <string.h>
 #include <errno.h>
 #include <stdio.h>
 #include <limits.h>
 #include <list>
+#include "dirent.h"
+#if defined(_MSC_VER) || defined(__WIN32__) || defined(WIN32)
+#include <io.h>
+#include <process.h>
+#else
 #include <unistd.h>
+#endif /* _UNISTD_H */
+
 #include "src/log/Logger.h"
 
 namespace nacos{
@@ -27,11 +33,13 @@ NacosString IOUtils::readStringFromFile(const NacosString &file, const NacosStri
     if (fp == NULL) {
         throw IOException(NacosException::FILE_NOT_FOUND, "File not found:" + file);
     }
-    char buf[toRead + 1];
+    char *buf = new char[toRead + 1];
     fread(buf, toRead, 1, fp);
     buf[toRead] = '\0';
     fclose(fp);
-    return NacosString(buf);
+    NacosString result(buf);
+    delete[] buf;
+    return result;
 }
 
 void IOUtils::writeStringToFile(const NacosString &file, const NacosString &data,
@@ -45,6 +53,14 @@ void IOUtils::writeStringToFile(const NacosString &file, const NacosString &data
 //a. the file doesn't exist
 //b. the file is not a regular file
 bool IOUtils::checkNotExistOrNotFile(const NacosString &pathname) {
+    #if defined(_MSC_VER) || defined(__WIN32__) || defined(WIN32)
+        DWORD attributes = GetFileAttributes(pathname.c_str());
+        if (attributes == INVALID_FILE_ATTRIBUTES) {
+            std::cerr << "Error getting file attributes" << std::endl;
+            return false;
+        }
+        return (attributes & FILE_ATTRIBUTE_DIRECTORY) == 0;
+    #else
     struct stat thestat = {0};
     int res = stat(pathname.c_str(), &thestat);
 
@@ -67,12 +83,24 @@ bool IOUtils::checkNotExistOrNotFile(const NacosString &pathname) {
         //This IS a regular file
         return false;
     }
+    #endif
 }
 
 //Returns true if:
 //a. the file doesn't exist
 //b. the file is not a directory
 bool IOUtils::checkNotExistOrNotDir(const NacosString &pathname) {
+    #if defined(_MSC_VER) || defined(__WIN32__) || defined(WIN32)
+        DWORD attributes = GetFileAttributes(pathname.c_str());
+        if (attributes == INVALID_FILE_ATTRIBUTES) {
+            if (GetLastError() == ERROR_FILE_NOT_FOUND) {
+                return false;
+            }
+            std::cerr << "Error getting file attributes" << std::endl;
+            return false;
+        }
+        return true;
+    #else
     struct stat thestat = {0};
     int res = stat(pathname.c_str(), &thestat);
 
@@ -94,6 +122,7 @@ bool IOUtils::checkNotExistOrNotDir(const NacosString &pathname) {
         //This IS a directory
         return false;
     }
+    #endif
 }
 
 //TODO:To provide compability across different platforms
@@ -192,7 +221,24 @@ void IOUtils::recursivelyCreate(const NacosString &file) {
     }
 
     if (checkNotExistOrNotDir(file)) {
+        #if defined(_MSC_VER) || defined(__WIN32__) || defined(WIN32)
+        if (!CreateDirectory(file.c_str(), NULL)) {
+            std::cerr << "Error creating directory: " << GetLastError() << std::endl;
+        }
+        else {
+            HANDLE hDir = CreateFile(file.c_str(), GENERIC_READ | GENERIC_WRITE | GENERIC_EXECUTE,
+                FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, NULL, OPEN_EXISTING,
+                FILE_FLAG_BACKUP_SEMANTICS, NULL);
+            if (hDir == INVALID_HANDLE_VALUE) {
+                std::cerr << "Error opening directory: " << GetLastError() << std::endl;
+            }
+            else {
+                CloseHandle(hDir);
+            }
+        }
+        #else
         mkdir(file.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+        #endif
     }
 }
 

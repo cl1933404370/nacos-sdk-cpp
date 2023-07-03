@@ -15,6 +15,8 @@
 #elif defined(_WIN32) || defined(_WIN64) || defined(__WIN32__) || defined(__TOS_WIN__) || defined(__WINDOWS__) || defined(_MSC_VER)
 #include <winsock2.h>
 #include <ws2tcpip.h>
+#include <io.h>
+#include <process.h>
 #endif
 
 #include "src/factory/ObjectConfigData.h"

@@ -1,7 +1,14 @@
 #include <iostream>
 #include <stdlib.h>
 #include <stdio.h>
+#if defined(_MSC_VER) || defined(__WIN32__) || defined(WIN32)
+#include <io.h>
+#include <process.h>
+#include <thread>
+#include <chrono>
+#else
 #include <unistd.h>
+#endif
 #include "factory/NacosFactoryFactory.h"
 #include "ResourceGuard.h"
 #include "listen/Listener.h"
@@ -43,17 +50,33 @@ bool testRemoveKeyBeingWatched() {
     MyListener *theListener = new MyListener(1);
     n->addListener("RemovedWhileWatching", NULLSTR, theListener);
 
+    #if defined(_MSC_VER) || defined(__WIN32__) || defined(WIN32)
+    std::this_thread::sleep_for(std::chrono::seconds(2));
+    #else
     sleep(2);
+    #endif
     cout << "remove key" << endl;
     n->removeConfig("RemovedWhileWatching", NULLSTR);
+    #if defined(_MSC_VER) || defined(__WIN32__) || defined(WIN32)
+    std::this_thread::sleep_for(std::chrono::seconds(2));
+    #else
     sleep(2);
+    #endif
     cout << "set key" << endl;
     n->publishConfig("RemovedWhileWatching", NULLSTR, "dummyContent1");
+    #if defined(_MSC_VER) || defined(__WIN32__) || defined(WIN32)
+    std::this_thread::sleep_for(std::chrono::seconds(2));
+    #else
     sleep(2);
+    #endif
     cout << "remove key" << endl;
     n->removeConfig("RemovedWhileWatching", NULLSTR);
     cout << "Hold for 30 secs" << endl;
+    #if defined(_MSC_VER) || defined(__WIN32__) || defined(WIN32)
+    std::this_thread::sleep_for(std::chrono::seconds(30));
+    #else
     sleep(30);
+    #endif
     n->removeListener("RemovedWhileWatching", NULLSTR, theListener);
     cout << "remove listener2" << endl;
     cout << "test successful" << endl;

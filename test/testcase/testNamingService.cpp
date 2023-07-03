@@ -1,7 +1,11 @@
 #include <iostream>
 #include <stdlib.h>
+#include <unistd.h>#if defined(_MSC_VER) || defined(__WIN32__) || defined(WIN32)
+#include <io.h>
+#include <process.h>
+#else
 #include <unistd.h>
-#include "src/naming/NamingProxy.h"
+#endif#include "src/naming/NamingProxy.h"
 #include "src/naming/NacosNamingService.h"
 #include "factory/NacosFactoryFactory.h"
 #include "ResourceGuard.h"

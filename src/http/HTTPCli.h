@@ -2,7 +2,12 @@
 #define __HTTP_CLI_H_
 
 
+#if defined(_WIN32) || defined(_WIN64) || defined(_MSC_VER)
+#include <folly/portability/PThread.h>
+#else
 #include <pthread.h>
+#endif
+
 #include <curl/curl.h>
 #include "NacosString.h"
 #include "NacosExceptions.h"

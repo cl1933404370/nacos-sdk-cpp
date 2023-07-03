@@ -47,15 +47,7 @@ namespace nacos
             throw IOException(NacosException::UNABLE_TO_OPEN_FILE, errbuf);
         }
 #if defined(_MSC_VER) || defined(__WIN32__) || defined(WIN32)
-        std::lock_guard<std::mutex> lock(file_mutex);
-        std::ifstream file(file);
-        if (!std::ifstream(file))
-        {
-            return "";
-        }
-        std::stringstream buffer;
-        buffer << std::ifstream(file).rdbuf();
-        return buffer.str();
+        
 #else
         flock(fileno(fp), LOCK_SH);
         char buf[toRead + 1];

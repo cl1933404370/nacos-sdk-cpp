@@ -1,8 +1,8 @@
 #ifndef __THREAD_LOCAL_H_
 #define __THREAD_LOCAL_H_
 
-#if defined (_MSC_VER) || defined(__WIN32__) || defined(WIN32)
-#include <folly/portability/PThread.h>
+#if defined (_MSC_VER) || defined(_WIN32) || defined(WIN32)
+#include <folly/portability/PThread.h> 
 #elif defined(__linux__) || defined(__APPLE__) || defined(__unix__)
 #include <pthread.h>
 #endif
