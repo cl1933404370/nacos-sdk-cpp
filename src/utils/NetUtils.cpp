@@ -15,7 +15,26 @@
 #pragma comment(lib, "IPHLPAPI.lib")
 #pragma comment(lib, "Ws2_32.lib")
 #else
+
+#if defined(_MSC_VER) || defined(__WIN32__) || defined(WIN32)
+#include <windows.h>
+#include <winsock2.h>
+#include <ws2tcpip.h>
+#include <windows.h>
+#include <iphlpapi.h>
+#include <io.h>
+#include <process.h>
+#include <winerror.h>
+#pragma comment(lib, "IPHLPAPI.lib")
+#pragma comment(lib, "Ws2_32.lib")
+#else
 #include <unistd.h>
+#include <ifaddrs.h>
+#include <netdb.h>
+#include <sys/socket.h>
+#include <arpa/inet.h>
+#include <netinet/in.h>
+#endif
 #include <ifaddrs.h>
 #include <netdb.h>
 #include <sys/socket.h>
@@ -52,8 +71,21 @@ NacosString NetUtils::getHostIp() NACOS_THROW(NacosException){
 
     // Find the adapter with the specified name
     const char* adapterName = "Ethernet"; // Replace with the name of the adapter you want to query
+    int length1 = strlen(adapterName) + 1;
+    int size1 = MultiByteToWideChar(CP_UTF8, 0, adapterName, length1, NULL, 0);
+    if (size1 == 0) {
+        std::cerr << "Error getting size of wide character string" << std::endl;
+        throw NacosException(NacosException::UNABLE_TO_GET_HOST_IP, "Error getting size of wide character string");
+    }
+    PWCHAR wstr = new WCHAR[size1];
+    if (MultiByteToWideChar(CP_UTF8, 0, adapterName, length1, wstr, size1) == 0) {
+        std::cerr << "Error converting string to wide character string" << std::endl;
+        delete[] wstr;
+        throw NacosException(NacosException::UNABLE_TO_GET_HOST_IP, "Error converting string to wide character string");
+    }
+    
     for (adapter = addresses; adapter != NULL; adapter = adapter->Next) {
-        if (strcmp(adapter->FriendlyName, adapterName) == 0) {
+        if (wcscmp(adapter->FriendlyName, wstr) == 0) {
             break;
         }
     }
@@ -111,6 +143,7 @@ NacosString NetUtils::getHostIp() NACOS_THROW(NacosException){
     }
     //Usually the program will not run to here
     throw NacosException(NacosException::UNABLE_TO_GET_HOST_IP, "Failed to get IF address");
+#endif
 #endif
 }
 
