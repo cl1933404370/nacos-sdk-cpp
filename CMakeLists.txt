@@ -1,14 +1,26 @@
 cmake_minimum_required(VERSION 3.4.1)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_C_STANDARD 17)
-add_compile_definitions(_WIN32)
-add_compile_definitions(NOMINMAX)
-add_compile_definitions(_CRT_SECURE_NO_WARNINGS)
-add_compile_definitions(WIN32_LEAN_AND_MEAN)
-add_compile_definitions(HAVE_SNPRINTF)
-add_compile_definitions(EIGEN_FORCE_INLINING)
-add_compile_definitions(GLOG_NO_ABBREVIATED_SEVERITIES)
-add_compile_definitions(_SILENCE_ALL_CXX23_DEPRECATION_WARNINGS)
+
+#win32下添加宏定义
+if(WIN32)
+	add_definitions(-DWIN32)
+	add_definitions(-D_WIN32)
+	add_definitions(-DNOMINMAX)
+	# add_definitions(-DUNICODE)
+	# add_definitions(-D_UNICODE)
+	add_definitions(-DWIN32_LEAN_AND_MEAN)
+	add_definitions(-DHAVE_SNPRINTF)
+	add_definitions(-DEIGEN_FORCE_INLINING)
+	add_definitions(-DGLOG_NO_ABBREVIATED_SEVERITIES)
+	add_definitions(-D_SILENCE_ALL_CXX23_DEPRECATION_WARNINGS)
+	# add_definitions(-D_CRT_SECURE_NO_WARNINGS)
+	# add_definitions(-D_SCL_SECURE_NO_WARNINGS)
+	# add_definitions(-D_CRT_SECURE_NO_DEPRECATE)
+	# add_definitions(-D_CRT_NONSTDC_NO_DEPRECATE)
+	# add_definitions(-D_CRT_NONSTDC_NO_WARNINGS)
+endif()
+
 # Enable Hot Reload for MSVC compilers if supported.
 if(POLICY CMP0141)
 	cmake_policy(SET CMP0141 NEW)
@@ -76,7 +88,7 @@ target_link_libraries(nacos-cli.out PRIVATE Threads::Threads curl z Folly::folly
 find_package(Threads REQUIRED)
 find_package(CURL REQUIRED)
 find_package(ZLIB REQUIRED)
-find_package(folly CONFIG REQUIRED)
+find_package(folly REQUIRED)
 
 install(TARGETS nacos-cli
 	LIBRARY DESTINATION lib)

@@ -3,7 +3,8 @@
 #include "src/utils/NamingUtils.h"
 #include "src/json/JSON.h"
 #include "HostReactor.h"
-
+#include <thread> // Add this line to include the <thread> header
+#include <chrono>
 using namespace std;
 
 namespace nacos{
@@ -96,7 +97,7 @@ void *SubscriptionPoller::pollingThreadFunc(void *parm)
         }
         if (copiedList.empty()) {
             log_debug("PollingList is empty, hibernating...\n", copiedList.size());
-            sleep(thisObj->_pollingInterval / 1000);
+            std::this_thread::sleep_for(std::chrono::milliseconds(thisObj->_pollingInterval));
             continue;
         }
 
@@ -121,6 +122,7 @@ void *SubscriptionPoller::pollingThreadFunc(void *parm)
                 //3. if the network is down for a rather long time, manual restore is needed,
                 //and the server will be restarted, this listener thread will be restarted, too
                 //4. when the server returns a 404 error, we still need to poll the service's information, since it may become available sometime later
+                log_error("Exception while querying service list, msg=%s\n", e.what());
                 continue;
             }
 
@@ -130,7 +132,8 @@ void *SubscriptionPoller::pollingThreadFunc(void *parm)
         }
 
         log_debug("Polling process finished, hibernating...\n");
-        sleep(thisObj->_pollingInterval / 1000);
+       
+        std::this_thread::sleep_for(std::chrono::milliseconds(thisObj->_pollingInterval));
     }
     log_debug("Polling thread for NamingService exited normally.\n");
     return NULL;

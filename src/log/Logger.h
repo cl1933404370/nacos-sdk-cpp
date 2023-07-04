@@ -11,28 +11,37 @@
 
 // TODO:Line info
 #ifndef DETAILED_DEBUG_INFO
+
 #if defined(_WIN32) || defined(_WIN64) || defined(__WINDOWS__) || defined(_MSC_VER)
-#define log_print(level, format, ...) Logger::debug_print(level, format, __VA_ARGS__)
-#define log_debug(format, ...) Logger::debug_debug(format, __VA_ARGS__)
-#define log_info(format, ...) Logger::debug_info(format, __VA_ARGS__)
-#define log_warn(format, ...) Logger::debug_warn(format, __VA_ARGS__)
-#define log_error(format, ...) Logger::debug_error(format, __VA_ARGS__)
+#define log_print(level, format, ...) Logger::debug_print(level, format, ##__VA_ARGS__)
+#define log_debug(format, ...) Logger::debug_debug(format, ##__VA_ARGS__)
+#define log_info(format, ...) Logger::debug_info(format, ##__VA_ARGS__)
+#define log_warn(format, ...) Logger::debug_warn(format, ##__VA_ARGS__)
+#define log_error(format, ...) Logger::debug_error(format, ##__VA_ARGS__)
 #else
+#define STR(X) #X
 #define log_print(level, format, args...) Logger::debug_print(level, format, ##args)
 #define log_debug(format, args...) Logger::debug_debug(format, ##args)
 #define log_info(format, args...) Logger::debug_info(format, ##args)
 #define log_warn(format, args...) Logger::debug_warn(format, ##args)
 #define log_error(format, args...) Logger::debug_error(format, ##args)
 #endif
+
 #else
-#define STR(X) #X
+
 #if defined(_WIN32) || defined(_WIN64) || defined(__WINDOWS__) || defined(_MSC_VER)
-#define log_print(level, format, ...) Logger::debug_print(level, format, __VA_ARGS__)
-#define log_debug(forma, ...) Logger::debug_debug(format, __VA_ARGS__)
-#define log_info(format, ...) Logger::debug_info(format, __VA_ARGS__)
-#define log_warn(format, ...) Logger::debug_warn(format, __VA_ARGS__)
-#define log_error(format, ...) Logger::debug_error(format, __VA_ARGS__)
+#define log_print(level, format, ...) Logger::debug_print(level, format, ##__VA_ARGS__)
+#define log_debug(format, ...) Logger::debug_debug(format, ##__VA_ARGS__)
+#define log_info(format, ...) Logger::debug_info(format, ##__VA_ARGS__)
+#define log_warn(format, ...) Logger::debug_warn(format, ##__VA_ARGS__)
+#define log_error(format, ...) Logger::debug_error(format, ##__VA_ARGS__)
 #else
+#define log_print(level, format, args...) Logger::debug_print(level, format, ##args)
+#define log_debug(format, args...) Logger::debug_debug(format, ##args)
+#define log_info(format, args...) Logger::debug_info(format, ##args)
+#define log_warn(format, args...) Logger::debug_warn(format, ##args)
+#define log_error(format, args...) Logger::debug_error(format, ##args)
+#define STR(X) #X
 #define log_print(level, format, args...) Logger::debug_print(level, format, ##args)
 #define log_debug(format, args...) Logger::debug_debug(format, ##args)
 #define log_info(format, args...) Logger::debug_info(format, ##args)

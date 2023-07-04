@@ -1,7 +1,12 @@
 #include <iostream>
 #include <stdlib.h>
 #include <stdio.h>
+#if defined(_MSC_VER) || defined(__WIN32__) || defined(WIN32)
+#include <io.h>
+#include <process.h>
+#else
 #include <unistd.h>
+#endif
 #include "src/log/Logger.h"
 #include "src/debug/DebugAssertion.h"
 #include "listen/Listener.h"

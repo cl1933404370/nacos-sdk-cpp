@@ -1,9 +1,15 @@
-#include <unistd.h>
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+
+#if defined(_MSC_VER) || defined(__WIN32__) || defined(WIN32)
+#include <io.h>
+#include <process.h>
+#else
+#include <unistd.h>
+#endif
 
 #include "src/utils/RandomUtils.h"
 

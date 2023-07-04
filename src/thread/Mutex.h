@@ -114,15 +114,15 @@ namespace nacos
 		}
 	};
 
-//	class lock_guard
-//	{
-//		Mutex &mutex_;
-//
-//	public:
-//		explicit lock_guard(Mutex &mutex) : mutex_(mutex) { mutex_.lock(); };
-//
-//		~lock_guard() { mutex_.unlock(); };
-//	};
+	class LockGuard
+	{
+		Mutex &mutex_;
+
+	public:
+		explicit LockGuard(Mutex &mutex) : mutex_(mutex) { mutex_.lock(); };
+
+		~LockGuard() { mutex_.unlock(); };
+	};
 } // namespace nacos
 
 #endif
