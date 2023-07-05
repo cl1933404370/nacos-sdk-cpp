@@ -144,7 +144,6 @@ NacosString NetUtils::getHostIp() NACOS_THROW(NacosException){
     //Usually the program will not run to here
     throw NacosException(NacosException::UNABLE_TO_GET_HOST_IP, "Failed to get IF address");
 #endif
-#endif
 }
 
 NacosString NetUtils::getHostName() NACOS_THROW(NacosException)

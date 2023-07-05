@@ -51,11 +51,23 @@ bool testAddListener() {
         n->removeConfig("k4", NULLSTR);
         n->removeConfig("k2", NULLSTR);//Known issue: this key will be monitored in next cycle(LONG_PULLING_TIME)
         n->removeConfig("k", NULLSTR);//so will this
+
+        #if defined(_MSC_VER) || defined(__WIN32__) || defined(WIN32)
+        Sleep(1000);
+        #else
         sleep(1);
+        #endif
+
         n->addListener("k4", NULLSTR, thelistener);
         n->addListener("k2", NULLSTR, thelistener);
         n->addListener("k", NULLSTR, thelistener);
+
+        #if defined(_MSC_VER) || defined(__WIN32__) || defined(WIN32)
+        Sleep(1000);
+        #else
         sleep(1);
+        #endif
+
         cout << "publish k" << endl;
         bSucc = n->publishConfig("k4", NULLSTR, "hahaha");
     }

@@ -54,7 +54,13 @@ bool testGetAllInstances() {
         return false;
     }
     cout << "wait for 5 secs" << endl;
+
+    #if defined(_MSC_VER) || defined(__WIN32__) || defined(WIN32)
+    Sleep(5000);
+    #else
     sleep(5);
+    #endif
+
     list <Instance> instances = namingSvc->getAllInstances("TestNamingService1");
     cout << "getAllInstances from server:" << endl;
     for (list<Instance>::iterator it = instances.begin();
@@ -77,13 +83,25 @@ bool testGetAllInstances() {
         return false;
     }
 
+    #if defined(_MSC_VER) || defined(__WIN32__) || defined(WIN32)
+    Sleep(1000);
+    #else
     sleep(1);
+    #endif
+
+
     try {
         for (int i = 0; i < 3; i++) {
             NacosString serviceName = "TestNamingService" + NacosStringOps::valueOf(i);
 
             namingSvc->deregisterInstance(serviceName, "127.0.0.1", 2000 + i);
+
+            #if defined(_MSC_VER) || defined(__WIN32__) || defined(WIN32)
+            Sleep(1000);
+            #else
             sleep(1);
+            #endif
+            
         }
     }
     catch (NacosException &e) {

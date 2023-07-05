@@ -29,11 +29,44 @@ private:
     void ensureWrite(int fd, T data) {
         size_t bytes_written = 0;
         while (bytes_written < sizeof(T)) {
+            #if defined(_MSC_VER) || defined(__WIN32__) || defined(WIN32)
+            bytes_written += _write(fd, (char*)&data + bytes_written, sizeof(T) - bytes_written);
+            #else
             bytes_written += write(fd, (char*)&data + bytes_written, sizeof(T) - bytes_written);
+            #endif
         }
     }
 
     T preserve() {
+        #if defined(_MSC_VER) || defined(__WIN32__) || defined(WIN32)
+        T current;
+        int fd;
+        bool newFile = false;
+        if (IOUtils::checkNotExistOrNotFile(_fileName)) {
+            newFile = true;
+        }
+        fd = _open(_fileName.c_str(), _O_RDWR | _O_CREAT, _S_IREAD | _S_IWRITE);
+        if (fd <= 0) {
+            throw new NacosException(NacosException::UNABLE_TO_OPEN_FILE, _fileName);
+        }
+
+        if (newFile) {
+            ensureWrite(fd, _initSequence);
+            _lseek(fd, 0, SEEK_SET);//read from the beginning
+        }
+
+        size_t bytes_read = 0;
+        while (bytes_read < sizeof(T))
+        {
+            bytes_read += _read(fd, (char*)&current + bytes_read, sizeof(T) - bytes_read);
+        }
+
+        _lseek(fd, 0, SEEK_SET);//write from the beginning
+        ensureWrite(fd, current + _nr_to_preserve);
+        _close(fd);
+        _hwm = current + _nr_to_preserve;
+        return current;
+        #else
         T current;
         int fd;
         bool newFile = false;
@@ -62,6 +95,7 @@ private:
         close(fd);
         _hwm = current + _nr_to_preserve;
         return current;
+        #endif
     };
 public:
     SequenceProvider(const NacosString &fileName, T initSequence, T nr_to_preserve) {

@@ -1,11 +1,12 @@
 #include <iostream>
 #include <stdlib.h>
-#include <unistd.h>#if defined(_MSC_VER) || defined(__WIN32__) || defined(WIN32)
+#if defined(_MSC_VER) || defined(__WIN32__) || defined(WIN32)
 #include <io.h>
 #include <process.h>
 #else
 #include <unistd.h>
-#endif#include "src/naming/NamingProxy.h"
+#endif
+#include "src/naming/NamingProxy.h"
 #include "src/naming/NacosNamingService.h"
 #include "factory/NacosFactoryFactory.h"
 #include "ResourceGuard.h"
@@ -63,7 +64,12 @@ bool testNamingProxySmokeTest() {
             NacosString serviceName = "TestServiceName" + NacosStringOps::valueOf(i);
             theinstance.serviceName = serviceName;
             namingProxy->registerService(serviceName, ConfigConstant::DEFAULT_GROUP, theinstance);
+            
+            #if defined(_MSC_VER) || defined(__WIN32__) || defined(WIN32)
+            Sleep(1000);
+            #else
             sleep(1);
+            #endif
         }
     }
     catch (NacosException &e) {
@@ -196,7 +202,11 @@ bool testNamingServiceRegister() {
         return false;
     }
 
+    #if defined(_MSC_VER) || defined(__WIN32__) || defined(WIN32)
+    Sleep(5000);
+    #else
     sleep(5);
+    #endif
 
     try {
         for (int i = 0; i < NR_SERVICES; i++) {
@@ -262,7 +272,11 @@ bool testNamingServiceAndDeRegisterActively() {
         return false;
     }
 
+    #if defined(_MSC_VER) || defined(__WIN32__) || defined(WIN32)
+    Sleep(5000);
+    #else
     sleep(5);
+    #endif
 
     try {
         for (int i = 0; i < NR_SERVICES; i++) {
@@ -304,7 +318,12 @@ bool testNamingServiceAndDeRegisterActively() {
     }
 
     cout << "wait for 40 secs to make sure all instances are removed from nacos server" << endl;
+
+    #if defined (_MSC_VER) || defined(__WIN32__) || defined(WIN32)
+    Sleep(40000);
+    #else
     sleep(40);
+    #endif
 
     try {
         for (int i = 0; i < NR_SERVICES; i++) {

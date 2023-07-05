@@ -62,7 +62,14 @@ bool testListeningKeys() {
     cout << "Change key and hold for 15 secs" << endl;
     n->publishConfig("dqid", NULLSTR, "Hello");
     n->publishConfig("dqid", NULLSTR, "World");
+
+
+    #if defined(_MSC_VER) || defined(__WIN32__) || defined(WIN32)
+    Sleep(15000);
+    #else
     sleep(15);
+    #endif
+
     cout << "remove listener" << endl;
     n->removeListener("dqid", NULLSTR, theListener);
 
@@ -75,7 +82,13 @@ bool testListeningKeys() {
     n->publishConfig("dqid1", NULLSTR, "World-3");
     n->publishConfig("dqid2", NULLSTR, "World-3");
     n->publishConfig("dqid3", NULLSTR, "World-3");
+
+    #if defined(_MSC_VER) || defined(__WIN32__) || defined(WIN32)
+    Sleep(15000);
+    #else
     sleep(15);
+    #endif
+    
     cout << "remove listener2" << endl;
     n->publishConfig("dqid", NULLSTR, "Data change before remove");
     n->removeListener("dqid", NULLSTR, theListener2);

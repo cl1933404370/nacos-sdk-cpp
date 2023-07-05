@@ -1,38 +1,46 @@
 #include "src/utils/url.h"
 #include <curl/curl.h>
+#include "url.h"
 
-namespace nacos{
-NacosString urlencode(const NacosString &content) {
-    NacosString result;
-    CURL *curl = curl_easy_init();
-    char *output = NULL;
-    if (curl) {
-        output = curl_easy_escape(curl, content.c_str(), static_cast<int>(content.length()));
+namespace nacos
+{
+    NacosString urlencode(const NacosString &content)
+    {
+        NacosString result;
+        CURL *curl = curl_easy_init();
+        char *output = NULL;
+        if (curl)
+        {
+            output = curl_easy_escape(curl, content.c_str(), static_cast<int>(content.length()));
+        }
+
+        if (output)
+        {
+            result = output;
+            curl_free(output);
+        }
+
+        curl_easy_cleanup(curl);
+        return result;
     }
 
-    if (output) {
-        result = output;
-        curl_free(output);
-    }
+    NacosString urldecode(const NacosString &content)
+    {
+        NacosString result;
+        CURL *curl = curl_easy_init();
+        char *output = NULL;
+        if (curl)
+        {
+            output = curl_easy_unescape(curl, content.c_str(), static_cast<int>(content.length()), NULL);
+        }
 
-    curl_easy_cleanup(curl);
-    return result;
-}
+        if (output)
+        {
+            result = output;
+            curl_free(output);
+        }
+
+        curl_easy_cleanup(curl);
+        return result;
+    }
 } // namespace nacos
-
-NacosString urldecode(const NacosString &content) {
-    NacosString result;
-    CURL *curl = curl_easy_init();
-    char *output = NULL;
-    if (curl) {
-        output = curl_easy_unescape(curl, content.c_str(), static_cast<int>(content.length()), NULL);
-    }
-
-    if (output) {
-        result = output;
-        curl_free(output);
-    }
-
-    curl_easy_cleanup(curl);
-    return result;
-}

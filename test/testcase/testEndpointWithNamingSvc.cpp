@@ -59,14 +59,25 @@ bool testEndpointWithNamingProxy() {
         return false;
     }
     cout << "Keep the services for 30 secs..." << endl;
+
+    #if defined(_MSC_VER) || defined(__WIN32__) || defined(WIN32)
+    Sleep(30000);
+    #else
     sleep(30);
+    #endif
+
     cout << "Deregister the services" << endl;
     try {
         for (int i = 0; i < 5; i++) {
             NacosString serviceName = "TestNamingService" + NacosStringOps::valueOf(i);
 
             namingSvc->deregisterInstance(serviceName, "127.0.0.1", 2000 + i);
+
+            #if defined(_MSC_VER) || defined(__WIN32__) || defined(WIN32)
+            Sleep(1000);
+            #else
             sleep(1);
+            #endif
         }
     }
     catch (NacosException &e) {

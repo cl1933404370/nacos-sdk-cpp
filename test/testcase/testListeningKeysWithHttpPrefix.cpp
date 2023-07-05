@@ -60,12 +60,24 @@ bool testListeningKeysWithHttpPrefix() {
     }
 
     cout << "Hold for 20 secs" << endl;
+
+    #if defined(_MSC_VER) || defined(__WIN32__) || defined(WIN32)
+    Sleep(20000);
+    #else
     sleep(20);
+    #endif
+
     cout << "remove listener" << endl;
     n->removeListener("dqid", NULLSTR, theListener);
 
     cout << "Hold for 20 secs" << endl;
+
+    #if defined(_MSC_VER) || defined(__WIN32__) || defined(WIN32)
+    Sleep(20000);
+    #else
     sleep(20);
+    #endif
+
     cout << "remove listener2" << endl;
     n->removeListener("dqid", NULLSTR, theListener2);
     n->removeListener("dqid", NULLSTR, theListener3);

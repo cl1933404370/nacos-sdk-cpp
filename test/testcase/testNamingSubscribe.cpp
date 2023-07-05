@@ -86,7 +86,11 @@ bool testSubscribeAlotOfServices() {
         n->registerInstance("ss", "127.0.0.1", 2000+i);
     }
 
+    #if defined(_MSC_VER) || defined(__WIN32__) || defined(WIN32)
+    Sleep(20000);
+    #else
     sleep(20);
+    #endif
 
     for (int i = 0; i < 1000; i++) {
         n->deregisterInstance("ss", "127.0.0.1", 2000+i);

@@ -38,7 +38,13 @@ bool testPublishConfigWithHttpPrefix() {
             bSucc = n->publishConfig(key_s, NULLSTR, val_s);
             int retry = 0;
             while (!(ss == val_s) && retry++ < 10) {
+
+                #if defined(_MSC_VER) || defined(__WIN32__) || defined(WIN32)
+                Sleep(1000);
+                #else
                 sleep(1);
+                #endif
+                
                 try {
                     ss = n->getConfig(key_s, NULLSTR, 1000);
                 } catch (NacosException &e) { }

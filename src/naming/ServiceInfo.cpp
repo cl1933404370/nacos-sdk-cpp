@@ -1,7 +1,12 @@
 #include "naming/ServiceInfo.h"
 #include <vector>
 #include <list>
+
+#if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
+#include <windows.h>
+#else
 #include <sys/time.h>
+#endif
 #include "NacosString.h"
 #include "constant/ConfigConstant.h"
 #include "src/utils/url.h"
@@ -45,11 +50,18 @@ int ServiceInfo::ipCount() {
 
 bool ServiceInfo::expired() const{
     //TODO:extract this snippet to a common util
+    
+    #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
+    SYSTEMTIME st;
+    GetSystemTime(&st);
+    long int ms = st.wSecond * 1000 + st.wMilliseconds;
+    return ms - _lastRefTime > _cacheMillis;
+    #else
     struct timeval tp;
     gettimeofday(&tp, NULL);
     long int ms = tp.tv_sec * 1000 + tp.tv_usec / 1000;
-
     return ms - _lastRefTime > _cacheMillis;
+    #endif
 }
 
 void ServiceInfo::setHosts(std::list <Instance> &hosts) {

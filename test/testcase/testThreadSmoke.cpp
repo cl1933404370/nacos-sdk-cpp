@@ -27,7 +27,13 @@ public:
         NacosString taskName = getTaskName();
         log_info("Hello world from %s\n", taskName.c_str());
         log_info("Run for 10 secs\n");
+
+        #if defined(_MSC_VER) || defined(__WIN32__) || defined(WIN32)
+        Sleep(5000);
+        #else
         sleep(5);
+        #endif
+
         log_info("ok\n");
     };
 };
@@ -51,7 +57,13 @@ bool testThreadSmoke() {
 void *threadStopper(void *param) {
     ThreadPool *tp = (ThreadPool *) param;
     log_info("Hello from threadStopper() in another thread, stopping threadpool\n");
+
+    #if defined(_MSC_VER) || defined(__WIN32__) || defined(WIN32)
+    Sleep(10000);
+    #else
     sleep(10);
+    #endif
+    
     tp->stop();
     log_info("threadStopper():ok\n");
     return NULL;
@@ -125,7 +137,13 @@ bool testThreadPoolConcurrentWithAtomicCounter() {
 
 
     while (totalFinishedThreads.get() != 40) {
+
+        #if defined(_MSC_VER) || defined(__WIN32__) || defined(WIN32)
+        Sleep(1000);
+        #else
         sleep(1);
+        #endif
+        
     }
     tp.stop();
     cout << "If no coredump, should be successful" << endl;
