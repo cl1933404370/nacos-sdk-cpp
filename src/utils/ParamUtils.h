@@ -24,6 +24,11 @@ public:
     }
 
     static NacosString trim(const NacosString &content) {
+        if (isNull(content))
+        {
+            return NULLSTR;
+        }
+        
         size_t start = 0;
         size_t end = content.size() - 1;
 

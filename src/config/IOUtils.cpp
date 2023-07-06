@@ -91,15 +91,12 @@ bool IOUtils::checkNotExistOrNotFile(const NacosString &pathname) {
 //b. the file is not a directory
 bool IOUtils::checkNotExistOrNotDir(const NacosString &pathname) {
     #if defined(_MSC_VER) || defined(__WIN32__) || defined(WIN32)
-        DWORD attributes = GetFileAttributes(pathname.c_str());
-        if (attributes == INVALID_FILE_ATTRIBUTES) {
-            if (GetLastError() == ERROR_FILE_NOT_FOUND) {
-                return false;
-            }
-            std::cerr << "Error getting file attributes" << std::endl;
-            return false;
-        }
+    struct stat info;
+    if (stat(pathname.c_str(), &info) != 0) {
+        // Failed to get file info, assume it doesn't exist
         return true;
+    }
+    return !S_ISDIR(info.st_mode);
     #else
     struct stat thestat = {0};
     int res = stat(pathname.c_str(), &thestat);
