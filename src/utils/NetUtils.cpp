@@ -31,77 +31,45 @@ namespace nacos
     NacosString NetUtils::getHostIp() NACOS_THROW(NacosException)
     {
 #if defined(_MSC_VER) || defined(__WIN32__) || defined(WIN32)
-        ULONG family = AF_UNSPEC;
-        ULONG flags = GAA_FLAG_INCLUDE_PREFIX | GAA_FLAG_SKIP_ANYCAST | GAA_FLAG_SKIP_MULTICAST | GAA_FLAG_SKIP_DNS_SERVER;
-        ULONG size = 0;
-        PIP_ADAPTER_ADDRESSES addresses = NULL;
-        PIP_ADAPTER_ADDRESSES adapter = NULL;
-        DWORD result = 0;
-
-        result = GetAdaptersAddresses(family, flags, NULL, addresses, &size);
+        PIP_ADAPTER_ADDRESSES pAddresses = NULL;
+        ULONG family = AF_INET;
+        ULONG flags = GAA_FLAG_INCLUDE_PREFIX;
+        ULONG bufferSize = 0;
+        DWORD result = GetAdaptersAddresses(family, flags, NULL, pAddresses, &bufferSize);
         if (result == ERROR_BUFFER_OVERFLOW)
         {
-            addresses = (PIP_ADAPTER_ADDRESSES)malloc(size);
-            if (addresses == NULL)
-            {
-                std::cerr << "Error allocating memory for adapter addresses" << std::endl;
-                throw NacosException(NacosException::UNABLE_TO_GET_HOST_IP, "Error allocating memory for adapter addresses");
-            }
-            result = GetAdaptersAddresses(family, flags, NULL, addresses, &size);
+            pAddresses = (PIP_ADAPTER_ADDRESSES)malloc(bufferSize);
+            result = GetAdaptersAddresses(family, flags, NULL, pAddresses, &bufferSize);
         }
         if (result != 0L)
         {
-            std::cerr << "Error getting adapter addresses: " << result << std::endl;
-            throw NacosException(NacosException::UNABLE_TO_GET_HOST_IP, "Error getting adapter addresses");
+            throw std::runtime_error("Failed to get adapter addresses");
         }
-
-        // Find the adapter with the specified name
-        const char *adapterName = "Ethernet"; // Replace with the name of the adapter you want to query
-        int length1 = strlen(adapterName) + 1;
-        int size1 = MultiByteToWideChar(CP_UTF8, 0, adapterName, length1, NULL, 0);
-        if (size1 == 0)
+        PIP_ADAPTER_ADDRESSES adapter = pAddresses;
+        while (adapter)
         {
-            std::cerr << "Error getting size of wide character string" << std::endl;
-            throw NacosException(NacosException::UNABLE_TO_GET_HOST_IP, "Error getting size of wide character string");
-        }
-        PWCHAR wstr = new WCHAR[size1];
-        if (MultiByteToWideChar(CP_UTF8, 0, adapterName, length1, wstr, size1) == 0)
-        {
-            std::cerr << "Error converting string to wide character string" << std::endl;
-            delete[] wstr;
-            throw NacosException(NacosException::UNABLE_TO_GET_HOST_IP, "Error converting string to wide character string");
-        }
-
-        for (adapter = addresses; adapter != NULL; adapter = adapter->Next)
-        {
-            if (wcscmp(adapter->FriendlyName, wstr) == 0)
+            if (adapter->IfType == IF_TYPE_ETHERNET_CSMACD && adapter->OperStatus == IfOperStatusUp)
             {
-                break;
+                PIP_ADAPTER_UNICAST_ADDRESS address = adapter->FirstUnicastAddress;
+                while (address)
+                {
+                    sockaddr *sa = address->Address.lpSockaddr;
+                    char host[NI_MAXHOST];
+                    DWORD size = NI_MAXHOST;
+                    int result = getnameinfo(sa, sa->sa_family == AF_INET ? sizeof(sockaddr_in) : sizeof(sockaddr_in6),
+                                             host, size, NULL, 0, NI_NUMERICHOST);
+                    if (result == 0)
+                    {
+                        free(pAddresses);
+                        return std::string(host);
+                    }
+                    address = address->Next;
+                }
             }
+            adapter = adapter->Next;
         }
-        if (adapter == NULL)
-        {
-            std::cerr << "Error finding adapter: " << adapterName << std::endl;
-            throw NacosException(NacosException::UNABLE_TO_GET_HOST_IP, "Error finding adapter");
-        }
-
-        // Display the IP addresses associated with the adapter
-        for (PIP_ADAPTER_UNICAST_ADDRESS address = adapter->FirstUnicastAddress; address != NULL; address = address->Next)
-        {
-            sockaddr *sa = address->Address.lpSockaddr;
-            char host[NI_MAXHOST];
-            DWORD size = NI_MAXHOST;
-            int result = getnameinfo(sa, sa->sa_family == AF_INET ? sizeof(sockaddr_in) : sizeof(sockaddr_in6),
-                                     host, size, NULL, 0, NI_NUMERICHOST);
-            if (result != 0)
-            {
-                std::cerr << "Error getting address: " << result << std::endl;
-                continue;
-            }
-            std::cout << "IP address: " << host << std::endl;
-            free(addresses);
-            return host;
-        }
+        free(pAddresses);
+        throw std::runtime_error("Failed to get local IP address");
         return NULL;
 #else
         struct ifaddrs *ifaddr, *ifa;

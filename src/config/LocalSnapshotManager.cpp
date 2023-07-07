@@ -142,18 +142,17 @@ void LocalSnapshotManager::cleanEnvSnapshot(const NacosString &envName) {
 NacosString LocalSnapshotManager::getFailoverFile(const NacosString &serverName, const NacosString &dataId,
                                                       const NacosString &group, const NacosString &tenant) {
     NacosString Failoverfile = LOCAL_SNAPSHOT_PATH + "/" + serverName + "_nacos";
-    Failoverfile += "/data";
     if (ParamUtils::isBlank(tenant)) {
-        Failoverfile += "/config-data";
+        Failoverfile += "/snapshot";
     } else {
         Failoverfile += "/config-data-tenant/";
         Failoverfile += tenant;
     }
-    if (NacosStringOps::isNullStr(group)) {
-        Failoverfile += "/" + ConfigConstant::DEFAULT_GROUP + "/" + dataId;
-    } else {
-        Failoverfile += "/" + group + "/" + dataId;
-    }
+     if (NacosStringOps::isNullStr(group)) {
+         Failoverfile += "/" + ConfigConstant::DEFAULT_GROUP + "/" + dataId;
+     } else {
+         Failoverfile += "/" + group + "/" + dataId;
+     }
     return Failoverfile;
 };
 

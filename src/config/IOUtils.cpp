@@ -57,9 +57,9 @@ bool IOUtils::checkNotExistOrNotFile(const NacosString &pathname) {
         DWORD attributes = GetFileAttributes(pathname.c_str());
         if (attributes == INVALID_FILE_ATTRIBUTES) {
             std::cerr << "Error getting file attributes" << std::endl;
-            return false;
+            return true;
         }
-        return (attributes & FILE_ATTRIBUTE_DIRECTORY) == 0;
+        return attributes == FILE_ATTRIBUTE_DIRECTORY;
     #else
     struct stat thestat = {0};
     int res = stat(pathname.c_str(), &thestat);

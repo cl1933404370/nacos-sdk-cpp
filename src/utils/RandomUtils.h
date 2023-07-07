@@ -4,7 +4,6 @@
 #include "NacosExceptions.h"
 #include "src/thread/ThreadLocal.h"
 #include "Compatibility.h"
-
 /**
  * RandomUtils
  *
@@ -16,8 +15,10 @@
 namespace nacos{
 class RandomUtils {
 private:
+    #if defined(_MSC_VER) || defined(__WIN32__) || defined(WIN32)
+    #else
     static int fd;
-
+    #endif
     static int random_inner();
 
     static ThreadLocal<bool> initedForThisThread;
