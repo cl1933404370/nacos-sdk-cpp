@@ -8,7 +8,7 @@ namespace nacos{
 DummyTask ThreadPool::_dummyTask;
 
 void *ThreadPool::runInThread(void *param) {
-    ThreadPool *thisobj = (ThreadPool *) param;
+    auto* thisobj = static_cast<ThreadPool*>(param);
 
     log_debug("ThreadPool::runInThread()\n");
     while (!thisobj->_stop) {
@@ -31,7 +31,7 @@ void *ThreadPool::runInThread(void *param) {
         log_debug("Thread finished task:%s without problem\n", taskName.c_str());
     }
 
-    return NULL;
+    return nullptr;
 }
 
 Task *ThreadPool::take() {
@@ -47,9 +47,12 @@ Task *ThreadPool::take() {
 
         return curTask;
     }
+    if (_stop) {
+        return nullptr;
+    }
 
     return &_dummyTask;
-};
+}
 
 void ThreadPool::put(Task *t) {
     {

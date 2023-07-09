@@ -433,7 +433,7 @@ namespace nacos
                                                 _objectConfigData->_appConfigManager->getServeReqTimeout());
                     updatedcontent = res.content;
                 }
-                catch (NacosException &e)
+                catch ([[maybe_unused]] NacosException &e)
                 {
                     // Same design as SubscriptionPoller
                     log_warn("[ClientWorker]-performWatch:Encountered exception when getting config from server:%s:%s:%s\n",

@@ -93,7 +93,7 @@ namespace nacos
         // later we should sort it according to the java client and use cache
         ReadGuard _readGuard(rwLock);
         size_t max_serv_slot = serverList.size();
-        srand(time(NULL));
+        srand(static_cast<unsigned>(time(nullptr)));
         int to_skip = rand() % max_serv_slot;
         std::list<NacosServerInfo>::iterator it = serverList.begin();
         for (int skipper = 0; skipper < to_skip; skipper++)
@@ -173,9 +173,9 @@ namespace nacos
             throw NacosException(0, "failed to get nacos servers, raison: no server(s) available");
         }
         log_debug("nr_servers:%d\n", maxSvrSlot);
-        srand(time(NULL));
+        srand(static_cast<unsigned int>(time(nullptr)));
 
-        long _read_timeout = _objectConfigData->_appConfigManager->getServeReqTimeout();
+        const long _read_timeout = _objectConfigData->_appConfigManager->getServeReqTimeout();
         NacosString errmsg;
         for (size_t i = 0; i < serverList.size(); i++)
         {
@@ -309,7 +309,7 @@ namespace nacos
                     thisMgr->serverList = serverList;
                 }
             }
-            catch (NacosException &e)
+            catch ([[maybe_unused]] NacosException &e)
             {
 #if defined(_MSC_VER) || defined(__WIN32__) || defined(WIN32)
                 std::this_thread::sleep_for(std::chrono::seconds(thisMgr->refreshInterval / 1000));
@@ -377,9 +377,9 @@ namespace nacos
         }
     }
 
-    int ServerListManager::getServerCount()
+    size_t ServerListManager::getServerCount()
     {
-        int count = 0;
+        size_t count = 0;
         {
             ReadGuard _readGuard(rwLock);
             count = serverList.size();

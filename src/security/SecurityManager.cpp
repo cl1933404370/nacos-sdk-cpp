@@ -69,7 +69,7 @@ namespace nacos
                 // the method will throw if there's something wrong(e.g.: network problem)
                 doLogin(serverAddr);
             }
-            catch (NetworkException &e)
+            catch ([[maybe_unused]] NetworkException &e)
             {
                 // continue to try next node
                 continue;
@@ -127,8 +127,8 @@ namespace nacos
             return;
         }
         long granularity = 10;
-        long sleep_start_time = TimeUtils::getCurrentTimeInMs();
-        long sleep_end_time = sleep_start_time + _milliSecsToSleep;
+        int64_t sleep_start_time = TimeUtils::getCurrentTimeInMs();
+        int64_t sleep_end_time = sleep_start_time + _milliSecsToSleep;
         while (_started)
         {
             if (TimeUtils::getCurrentTimeInMs() >= sleep_end_time)

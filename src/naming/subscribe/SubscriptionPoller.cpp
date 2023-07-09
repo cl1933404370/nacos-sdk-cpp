@@ -11,7 +11,7 @@ namespace nacos{
 SubscriptionPoller::SubscriptionPoller(ObjectConfigData *objectConfigData)
 {
     _objectConfigData = objectConfigData;
-    _pollingThread = new Thread("NamingServicePoller", pollingThreadFunc, (void*)this);
+    _pollingThread = new Thread("NamingServicePoller", pollingThreadFunc, static_cast<void*>(this));
     _pollingInterval = atoi(_objectConfigData->_appConfigManager->get(PropertyKeyConst::SUBSCRIPTION_POLL_INTERVAL).c_str());
     _udpPort = atoi(_objectConfigData->_appConfigManager->get(PropertyKeyConst::UDP_RECEIVER_PORT).c_str());
     _started = false;
@@ -31,15 +31,15 @@ SubscriptionPoller::~SubscriptionPoller()
 
 bool SubscriptionPoller::addPollItem(const NacosString &serviceName, const NacosString &groupName, const NacosString &clusters)
 {
-    struct PollingData pd;
+    struct PollingData pd{};
     pd.clusters = clusters;
     pd.serviceName = serviceName;
     pd.groupName = groupName;
-    NacosString name = NamingUtils::getGroupedName(serviceName, groupName);
-    NacosString key = ServiceInfo::getKey(name, clusters);
 
     {
-        WriteGuard __writeGuard(rwLock);
+        const NacosString name = NamingUtils::getGroupedName(serviceName, groupName);
+        const NacosString key = ServiceInfo::getKey(name, clusters);
+        WriteGuard _writeGuard(rwLock);
         if (pollingList.count(key) > 0) {
             return false;
         }
@@ -50,10 +50,10 @@ bool SubscriptionPoller::addPollItem(const NacosString &serviceName, const Nacos
 
 bool SubscriptionPoller::removePollItem(const NacosString &serviceName, const NacosString &groupName, const NacosString &clusters)
 {
-    NacosString name = NamingUtils::getGroupedName(serviceName, groupName);
-    NacosString key = ServiceInfo::getKey(name, clusters);
     {
-        WriteGuard __writeGuard(rwLock);
+        const NacosString name = NamingUtils::getGroupedName(serviceName, groupName);
+        const NacosString key = ServiceInfo::getKey(name, clusters);
+        WriteGuard write_guard(rwLock);
         if (pollingList.count(key) == 0) {
             return false;
         }

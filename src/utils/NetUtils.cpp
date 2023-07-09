@@ -70,7 +70,7 @@ namespace nacos
         }
         free(pAddresses);
         throw std::runtime_error("Failed to get local IP address");
-        return NULL;
+        return "";
 #else
         struct ifaddrs *ifaddr, *ifa;
         int s;

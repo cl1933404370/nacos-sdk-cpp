@@ -75,7 +75,7 @@ public:
 
     NacosString getCurrentServerAddr();
 
-    int getServerCount();
+    size_t getServerCount();
 
     std::list <NacosServerInfo> getServerList();
 

@@ -13,16 +13,16 @@ namespace nacos {
 
 Properties ConfigParserUtils::parseConfigFile(const NacosString &file) NACOS_THROW(NacosException) {
     Properties parsedConfig;
-    NacosString confContent = IOUtils::readStringFromFile(file, NULLSTR);//TODO: add encoding support
+    const NacosString confContent = IOUtils::readStringFromFile(file, NULLSTR);//TODO: add encoding support
 
     vector <NacosString> configList;
     ParamUtils::Explode(configList, confContent, ConfigConstant::CONFIG_NEXT_LINE);
 
     int line = 0;
-    for (vector<NacosString>::iterator it = configList.begin();
-         it != configList.end(); it++) {
+    for (auto&& it : configList)
+    {
         line++;
-        NacosString trimmedLine = ParamUtils::trim(*it);
+        NacosString trimmedLine = ParamUtils::trim(it);
         if (ParamUtils::isBlank(trimmedLine)) {
             continue;
         }
@@ -32,12 +32,12 @@ Properties ConfigParserUtils::parseConfigFile(const NacosString &file) NACOS_THR
             continue;
         }
 
-        if (it->find(ConfigConstant::CONFIG_KV_SEPARATOR) == std::string::npos) {
+        if (it.find(ConfigConstant::CONFIG_KV_SEPARATOR) == std::string::npos) {
             throw MalformedConfigException(file, " no '=' found at line " + NacosStringOps::valueOf(line));
         }
 
         vector <NacosString> configKV;
-        ParamUtils::Explode(configKV, *it, ConfigConstant::CONFIG_KV_SEPARATOR);
+        ParamUtils::Explode(configKV, it, ConfigConstant::CONFIG_KV_SEPARATOR);
         //k = v
         NacosString key = ParamUtils::trim(configKV[0]);
         if (ParamUtils::isBlank(key)) {

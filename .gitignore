@@ -53,3 +53,4 @@ cmake-build-debug
 /.vs
 /out/build
 /Folder.DotSettings.user
+/out/install/x64-debug/include/nacos

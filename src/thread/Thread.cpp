@@ -60,7 +60,7 @@ void nacos::Thread::DeInit()
 
 void *nacos::Thread::threadFunc(void *param)
 {
-    Thread *currentThread = (Thread *)param;
+    const auto currentThread = static_cast<Thread*>(param);
     currentThread->_tid = gettidv1();
 
     try
@@ -105,8 +105,7 @@ void nacos::Thread::join()
 void nacos::Thread::kill()
 {
 #if defined(_MSC_VER) || defined(__WIN32__) || defined(WIN32)
-   // pthread_kill windows
-   QueueUserAPC((PAPCFUNC)empty_signal_handler, pthread_getw32threadhandle_np(_thread), THREAD_STOP_SIGNAL);
+    pthread_join(_thread, nullptr);
 #else
     pthread_kill(_thread, THREAD_STOP_SIGNAL);
 #endif

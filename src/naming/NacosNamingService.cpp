@@ -240,8 +240,8 @@ void NacosNamingService::subscribe
         EventListener *listener
 ) NACOS_THROW (NacosException)
 {
-    NacosString clusterName = ParamUtils::Implode(clusters);
-    NacosString groupedName = NamingUtils::getGroupedName(serviceName, groupName);
+    const NacosString clusterName = ParamUtils::Implode(clusters);
+    const NacosString groupedName = NamingUtils::getGroupedName(serviceName, groupName);
     if (!_objectConfigData->_eventDispatcher->addListener(groupedName, clusterName, listener)){
         return;//The listener is already listening to the service specified, no need to add to the polling list
     }
