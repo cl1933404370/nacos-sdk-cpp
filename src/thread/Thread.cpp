@@ -105,7 +105,10 @@ void nacos::Thread::join()
 void nacos::Thread::kill()
 {
 #if defined(_MSC_VER) || defined(__WIN32__) || defined(WIN32)
-    pthread_join(_thread, nullptr);
+    QueueUserAPC([](ULONG_PTR a) {}, _thread->handle, THREAD_STOP_SIGNAL);
+    QueueUserAPC([](ULONG_PTR a){}, _thread->handle, SIGTERM);
+    ExitThread(THREAD_STOP_SIGNAL);
+    //TerminateThread(_thread->handle,0);
 #else
     pthread_kill(_thread, THREAD_STOP_SIGNAL);
 #endif

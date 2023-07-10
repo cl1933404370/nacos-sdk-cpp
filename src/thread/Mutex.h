@@ -40,11 +40,16 @@ namespace nacos
 	private:
 		TID_T _holder;
 		pthread_mutex_t _mutex{};
-
+		pthread_mutexattr_t _attr{};
 	public:
-		Mutex() { pthread_mutex_init(&_mutex, nullptr); };
+		Mutex() { 
+			pthread_mutexattr_init(&_attr);
+			pthread_mutexattr_settype(&_attr, PTHREAD_MUTEX_RECURSIVE);
+			pthread_mutex_init(&_mutex, &_attr); };
 
-		~Mutex() { pthread_mutex_destroy(&_mutex); };
+		~Mutex() {
+			pthread_mutexattr_destroy(&_attr);
+			pthread_mutex_destroy(&_mutex); };
 
 		void lock()
 		{

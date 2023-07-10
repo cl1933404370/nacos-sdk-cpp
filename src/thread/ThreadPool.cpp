@@ -37,6 +37,7 @@ void *ThreadPool::runInThread(void *param) {
 Task *ThreadPool::take() {
     LockGuard _lockGuard(_lock);
     while (_taskList.empty() && !_stop) {
+        std::this_thread::yield();
         _NotEmpty.wait();
     }
 
