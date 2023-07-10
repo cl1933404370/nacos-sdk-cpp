@@ -20,6 +20,8 @@
 // #define SIGABRT         22  // abnormal termination triggered by abort call
     ///#define THREAD_STOP_SIGNAL SIGUSR1
     const DWORD THREAD_STOP_SIGNAL = 0xDEADBEEF;
+#include <processthreadsapi.h>
+
 #else
     #define THREAD_STOP_SIGNAL SIGUSR1
 #endif
