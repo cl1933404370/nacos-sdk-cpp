@@ -73,7 +73,7 @@ namespace nacos
 	class Condition
 	{
 	private:
-		Mutex &_mutex;
+		Mutex &_mutex;s
 		pthread_cond_t _cond{};
 
 	public:
