@@ -106,15 +106,13 @@ void ThreadPool::stop() {
     }
 
     _stop = true;
-    {
-        std::unique_lock<std::mutex> lock(_lock);
-        _NotEmpty.notify_all();
-        _NotFull.notify_all();
-    }
+    _NotEmpty.notify_all();
+    _NotFull.notify_all();
 
-    for (std::list<Thread *>::iterator it = _threads.begin(); it != _threads.end(); it++) {
-        (*it)->join();
-        delete *it;
+    for (auto&& _thread : _threads)
+    {
+        _thread->join();
+        delete _thread;
     }
 
     _threads.clear();

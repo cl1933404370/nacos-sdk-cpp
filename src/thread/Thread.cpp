@@ -99,7 +99,7 @@ void nacos::Thread::join()
         return;
     }
 
-    pthread_join(_thread, NULL);
+    pthread_join(_thread, nullptr);
 }
 
 void nacos::Thread::kill()
