@@ -1,5 +1,8 @@
 #include <algorithm>
 #include "src/thread/DelayedThreadPool.h"
+
+#include <thread>
+
 #include "NacosExceptions.h"
 
 namespace nacos {
@@ -19,17 +22,18 @@ public:
     void run() {
         log_debug("DelayedWorker::run()\n");
         while (!_container._stop_delayed_tp) {
-            _container._lockForScheduleTasks.lock();
+            std::unique_lock lock(_container._lockForScheduleTasks);
 
             //no data, wait until data is available
             log_debug("[DelayedWorker] start to wait for task stop=%d\n", _container._stop);
             if (_container._scheduledTasks.empty()) {
                 log_debug("[DelayedWorker] empty, wait for task\n");
                 if (_container._stop_delayed_tp) {
-                    _container._lockForScheduleTasks.unlock();
+                    lock.unlock();
                     return;
                 }
-                _container._delayTaskNotEmpty.wait();
+                std::this_thread::yield();
+                _container._delayTaskNotEmpty.wait(lock);
                 log_debug("[DelayedWorker] wake up due to incoming event\n");
             }
 
@@ -57,32 +61,32 @@ public:
                 if (it->first <= now_time) {
                     Task *task = it->second;
                     _container._scheduledTasks.erase(it);
-                    _container._lockForScheduleTasks.unlock();
+                    lock.unlock();
                     //the task can also attempt to retrieve the lock
                     if (_container._stop_delayed_tp) {
                         return;
                     }
                     task->run();
-                    _container._lockForScheduleTasks.lock();
+                    lock.lock();
                     log_debug("[DelayedWorker] continue 2 next task\n");
                 } else {
                     //awake from sleep when a stop signal is sent
                     if (_container._stop_delayed_tp) {
-                        _container._lockForScheduleTasks.unlock();
+                        lock.unlock();
                         return;
                     }
-                    _container._delayTaskNotEmpty.wait(static_cast<long>(it->first - now_time));
+                    _container._delayTaskNotEmpty.wait_for(lock,std::chrono::milliseconds(static_cast<long>(it->first - now_time)));
                 }
             }
 
-            _container._lockForScheduleTasks.unlock();
+            lock.unlock();
         }
         _start = false;
     }
 };
 
 DelayedThreadPool::DelayedThreadPool(const NacosString &poolName, size_t poolSize)
-:ThreadPool(poolName, poolSize),_delayTaskNotEmpty(_lockForScheduleTasks), _stop_delayed_tp(true) {
+:ThreadPool(poolName, poolSize),/*_delayTaskNotEmpty(_lockForScheduleTasks),*/ _stop_delayed_tp(true) {
     log_debug("DelayedThreadPool::DelayedThreadPool() name = %s size = %d\n", poolName.c_str(), poolSize);
     if (poolSize <= 0) {
         throw NacosException(NacosException::INVALID_PARAM, "Poll size cannot be lesser than 0");
@@ -125,10 +129,12 @@ void DelayedThreadPool::schedule(Task *t, long futureTimeToRun) {
     log_debug("DelayedThreadPool::schedule() name=%s future = %ld\n", t->getTaskName().c_str(), futureTimeToRun);
     std::pair<long, Task*> scheduledTask = std::make_pair (futureTimeToRun, t);
     {
-        LockGuard __lockSchedTasks(_lockForScheduleTasks);
-        _scheduledTasks.push_back(scheduledTask);
-        std::sort(_scheduledTasks.begin(), _scheduledTasks.end(), ascOrdFunctor);
-        _delayTaskNotEmpty.notifyAll();
+        {
+            std::unique_lock lock(_lockForScheduleTasks);
+            _scheduledTasks.push_back(scheduledTask);
+            std::sort(_scheduledTasks.begin(), _scheduledTasks.end(), ascOrdFunctor);
+        }
+        _delayTaskNotEmpty.notify_all();
     }
 }
 
@@ -138,7 +144,7 @@ void DelayedThreadPool::start() {
     log_debug("DelayedThreadPool::start()\n");
     for (size_t i = 0; i < _poolSize; i++) {
         delayTasks[i]->_start = true;
-        put((Task*)delayTasks[i]);
+        put(delayTasks[i]);
     }
 }
 
@@ -148,9 +154,10 @@ void DelayedThreadPool::stop() {
     }
 
     _stop_delayed_tp = true;
-    _delayTaskNotEmpty.notifyAll();
-    for (std::list<Thread *>::iterator it = _threads.begin(); it != _threads.end(); it++) {
-        (*it)->kill();
+    _delayTaskNotEmpty.notify_all();
+    for (const auto& _thread : _threads)
+    {
+        _thread->kill();
     }
 
     ThreadPool::stop();

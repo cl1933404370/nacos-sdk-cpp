@@ -1,5 +1,8 @@
 #include <exception>
 #include "ThreadPool.h"
+
+#include <thread>
+
 #include "Task.h"
 
 using namespace std;
@@ -35,16 +38,21 @@ void *ThreadPool::runInThread(void *param) {
 }
 
 Task *ThreadPool::take() {
+#ifdef  _WIN32 | _MSC_VER
+    std::unique_lock<std::mutex> lock(_lock);
+#else
     LockGuard _lockGuard(_lock);
+#endif
+
     while (_taskList.empty() && !_stop) {
         std::this_thread::yield();
-        _NotEmpty.wait();
+        _NotEmpty.wait(lock);
     }
 
     if (!_taskList.empty()) {
         Task *curTask = _taskList.front();
         _taskList.pop_front();
-        _NotFull.notify();
+        _NotFull.notify_one();
 
         return curTask;
     }
@@ -57,16 +65,17 @@ Task *ThreadPool::take() {
 
 void ThreadPool::put(Task *t) {
     {
-        LockGuard _lockGuard(_lock);
+        std::unique_lock<std::mutex> lock(_lock);
 
         log_debug("ThreadPool:::::taskList:%d poolSize:%d stop:%d\n", _taskList.size(), _poolSize, _stop);
         while (!(_taskList.size() < _poolSize) && !_stop) {
-            _NotFull.wait();
+            std::this_thread::yield();
+            _NotFull.wait(lock);
         }
 
         if (!_stop) {
             _taskList.push_back(t);
-            _NotEmpty.notify();
+            _NotEmpty.notify_one();
             return;
         }
     }
@@ -98,9 +107,9 @@ void ThreadPool::stop() {
 
     _stop = true;
     {
-        LockGuard _lockGuard(_lock);
-        _NotEmpty.notifyAll();
-        _NotFull.notifyAll();
+        std::unique_lock<std::mutex> lock(_lock);
+        _NotEmpty.notify_all();
+        _NotFull.notify_all();
     }
 
     for (std::list<Thread *>::iterator it = _threads.begin(); it != _threads.end(); it++) {
