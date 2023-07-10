@@ -155,7 +155,7 @@ void DelayedThreadPool::stop() {
 
     _stop_delayed_tp = true;
     _delayTaskNotEmpty.notify_all();
-    for (const auto& _thread : _threads)
+    for (auto&& _thread : _threads)
     {
         _thread->kill();
     }
