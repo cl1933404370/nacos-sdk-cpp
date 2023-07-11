@@ -10,6 +10,8 @@
 #if defined(_MSC_VER) || defined(__WIN32__) || defined(WIN32)
 #include <io.h>
 #include <process.h>
+#include <Aclapi.h>
+#include <shellapi.h>
 #else
 #include <unistd.h>
 #endif /* _UNISTD_H */
@@ -179,6 +181,39 @@ bool IOUtils::recursivelyRemove(const NacosString &file) {
 }
 
 bool IOUtils::cleanDirectory(const NacosString &file) {
+
+#ifdef _WIN32 //|| _WIN64 || _MSC_VER
+    std::string search_path = file + "\\*.*";
+    WIN32_FIND_DATA file_data;
+    HANDLE search_handle = FindFirstFile(search_path.c_str(), &file_data);
+    if (search_handle == INVALID_HANDLE_VALUE) {
+        return true;
+    }
+    do {
+        if (std::strcmp(file_data.cFileName, ".") != 0
+            && std::strcmp(file_data.cFileName, "..") != 0) {
+
+            std::string file_path = file + "\\" + file_data.cFileName;
+                if ((file_data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)) {
+                    SetFileAttributes(file_path.c_str(), FILE_ATTRIBUTE_NORMAL);
+                     if (!RemoveDirectory(file_path.c_str())) {
+                         SHFILEOPSTRUCT file_op = {};
+                        std::string file_path_double_null(file_path + "\0\0"); // Needs to be double-null terminated
+                        file_op.fFlags = FOF_NOCONFIRMATION | FOF_NOERRORUI | FOF_SILENT;
+                        file_op.pFrom = file_path_double_null.c_str();
+                        file_op.wFunc = FO_DELETE;
+                        SHFileOperation(&file_op);
+                     }
+                }
+                else {
+                    SetFileAttributes(file_path.c_str(), FILE_ATTRIBUTE_NORMAL);
+                    DeleteFile(file_path.c_str());
+                }
+        }
+    } while (FindNextFile(search_handle, &file_data));
+    return true;
+#else
+
     struct stat thestat;
 
     if (stat(file.c_str(), &thestat) == -1 && errno != ENOENT) {
@@ -207,8 +242,8 @@ bool IOUtils::cleanDirectory(const NacosString &file) {
         direntp = readdir(curdir);
     }
     closedir(curdir);
-
     return true;
+#endif
 }
 
 void IOUtils::recursivelyCreate(const NacosString &file) {
@@ -219,19 +254,42 @@ void IOUtils::recursivelyCreate(const NacosString &file) {
 
     if (checkNotExistOrNotDir(file)) {
         #if defined(_MSC_VER) || defined(__WIN32__) || defined(WIN32)
-        if (!CreateDirectory(file.c_str(), NULL)) {
-            std::cerr << "Error creating directory: " << GetLastError() << std::endl;
-        }
-        else {
-            HANDLE hDir = CreateFile(file.c_str(), GENERIC_READ | GENERIC_WRITE | GENERIC_EXECUTE,
-                FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, NULL, OPEN_EXISTING,
-                FILE_FLAG_BACKUP_SEMANTICS, NULL);
-            if (hDir == INVALID_HANDLE_VALUE) {
-                std::cerr << "Error opening directory: " << GetLastError() << std::endl;
-            }
-            else {
-                CloseHandle(hDir);
-            }
+        if (!CreateDirectory(file.c_str(), nullptr)) {
+        //todo Î´ÉèÖÃÈ¨ÏÞ
+        //    // Get the existing security descriptor
+        //    PSECURITY_DESCRIPTOR descriptor = nullptr;
+        //    if (GetNamedSecurityInfo(file.c_str(), SE_FILE_OBJECT, DACL_SECURITY_INFORMATION, nullptr, nullptr, nullptr, nullptr, &descriptor) != ERROR_SUCCESS) {
+        //        std::cerr << "Failed to get security descriptor" << std::endl;
+        //    }
+
+        //    // Create a new access control list (ACL)
+        //    EXPLICIT_ACCESS access{};
+        //    BuildExplicitAccessWithName(&access, const_cast<LPSTR>("Everyone"), FILE_GENERIC_READ | FILE_GENERIC_WRITE | FILE_GENERIC_EXECUTE, SET_ACCESS, NO_INHERITANCE);
+
+        //    PACL acl = nullptr;
+        //    if (SetEntriesInAcl(1, &access, nullptr, &acl) != ERROR_SUCCESS) {
+        //        std::cerr << "Failed to create access control list" << std::endl;
+        //        return 1;
+        //    }
+
+        //    // Set the new security descriptor
+        //    if (SetNamedSecurityInfo(const_cast<LPSTR>(file.c_str()), SE_FILE_OBJECT, DACL_SECURITY_INFORMATION, nullptr, nullptr, acl, nullptr) != ERROR_SUCCESS) {
+        //        std::cerr << "Failed to set security descriptor" << std::endl;
+        //    }
+
+        //    std::cout << "Permissions set successfully" << std::endl;
+
+        //    std::cerr << "Error creating directory: " << GetLastError() << std::endl;
+        //}
+        //else {
+        //    if (const HANDLE hDir = CreateFile(file.c_str(), GENERIC_READ | GENERIC_WRITE | GENERIC_EXECUTE,
+        //        FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, nullptr, OPEN_EXISTING,
+        //        FILE_FLAG_BACKUP_SEMANTICS, nullptr); hDir == INVALID_HANDLE_VALUE) {
+        //        std::cerr << "Error opening directory: " << GetLastError() << std::endl;
+        //    }
+        //    else {
+        //        CloseHandle(hDir);
+        //    }
         }
         #else
         mkdir(file.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
