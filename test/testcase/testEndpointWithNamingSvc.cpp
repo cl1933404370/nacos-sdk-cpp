@@ -58,10 +58,10 @@ bool testEndpointWithNamingProxy() {
         cout << "encounter exception while registering service instance, raison:" << e.what() << endl;
         return false;
     }
-    cout << "Keep the services for 30 secs..." << endl;
+    cout << "Keep the services for 10 secs..." << endl;
 
     #if defined(_MSC_VER) || defined(__WIN32__) || defined(WIN32)
-    Sleep(30000);
+    Sleep(10000);
     #else
     sleep(30);
     #endif

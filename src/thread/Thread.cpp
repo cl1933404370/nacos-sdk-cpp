@@ -110,15 +110,14 @@ void nacos::Thread::kill()
     DWORD error = GetLastError();
     QueueUserAPC([](ULONG_PTR a) {}, _thread->handle, THREAD_STOP_SIGNAL);
     QueueUserAPC([](ULONG_PTR a){}, _thread->handle, SIGTERM);
-     QueueUserAPC([](ULONG_PTR a){}, _thread->handle, exciteCode);
+    QueueUserAPC([](ULONG_PTR a){}, _thread->handle, exciteCode);
     QueueUserAPC([](ULONG_PTR a){}, _thread->handle, error);
     if (exciteCode == STILL_ACTIVE)
     {
-        //TerminateThread(_thread->handle, 0);
+        //TerminateThread(_thread->handle, exciteCode);
     }
-   
+    //todo how to kill a thread
     //ExitThread(exciteCode);
-    //TerminateThread(_thread->handle,0);
 #else
     pthread_kill(_thread, THREAD_STOP_SIGNAL);
 #endif

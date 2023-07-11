@@ -26,18 +26,18 @@ bool testMaintainGetService() {
     ADD_SPAS_INFO(configProps);
     configProps[PropertyKeyConst::SERVER_ADDR] = "127.0.0.1";
     INacosServiceFactory *factory = NacosFactoryFactory::getNacosFactory(configProps);
-    ResourceGuard <INacosServiceFactory> _guardFactory(factory);
+    ResourceGuard _guardFactory(factory);
     NamingMaintainService *maintainService = factory->CreateNamingMaintainService();
-    ResourceGuard <NamingMaintainService> _guardService(maintainService);
+    ResourceGuard _guardService(maintainService);
     NamingService *namingService = factory->CreateNamingService();
-    ResourceGuard <NamingService> _guardService2(namingService);
+    ResourceGuard _guardService2(namingService);
 
-    ListView<NacosString> res;
+    //ListView<NacosString> res;
     try {
         namingService->registerInstance("MaintainTestService", "127.0.0.1", 2333);
-        ServiceInfo2 res = maintainService->queryService("MaintainTestService", NULLSTR);
-        cout << "service name got from server:" << res.getName() << endl;
-        SHOULD_BE_TRUE(res.getName().compare("MaintainTestService") == 0, "Service name should be MaintainTestService");
+        const ServiceInfo2 res1 = maintainService->queryService("MaintainTestService", NULLSTR);
+        cout << "service name got from server:" << res1.getName() << endl;
+        SHOULD_BE_TRUE(res1.getName().compare("MaintainTestService") == 0, "Service name should be MaintainTestService");
     }
     catch (NacosException &e) {
         cout << "encounter exception while getting service, raison:" << e.what() << endl;
@@ -54,19 +54,19 @@ bool testMaintainUpdateService() {
     ADD_SPAS_INFO(configProps);
     configProps[PropertyKeyConst::SERVER_ADDR] = "127.0.0.1";
     INacosServiceFactory *factory = NacosFactoryFactory::getNacosFactory(configProps);
-    ResourceGuard <INacosServiceFactory> _guardFactory(factory);
+    ResourceGuard _guardFactory(factory);
     NamingMaintainService *maintainService = factory->CreateNamingMaintainService();
-    ResourceGuard <NamingMaintainService> _guardService(maintainService);
+    ResourceGuard _guardService(maintainService);
     NamingService *namingService = factory->CreateNamingService();
-    ResourceGuard <NamingService> _guardService2(namingService);
+    ResourceGuard _guardService2(namingService);
 
     ListView<NacosString> res;
     try {
         namingService->registerInstance("MaintainTestUpdateService", "127.0.0.1", 2333);
         ServiceInfo2 serviceInfo2;
         serviceInfo2.setName("MaintainTestUpdateService");
-        serviceInfo2.setProtectThreshold((double)2);
-        bool updateRes = maintainService->updateService(serviceInfo2, NULL);
+        serviceInfo2.setProtectThreshold(2);
+        bool updateRes = maintainService->updateService(serviceInfo2, nullptr);
         cout << "update protect threshold:" << NacosStringOps::valueOf(updateRes) << endl;
         SHOULD_BE_TRUE(updateRes, "update of protect threshold should be successful");
 
@@ -105,11 +105,11 @@ bool testMaintainCreateService() {
 
         try {
             maintainService->deleteService("MaintainTestCreateService", NULLSTR);
-        } catch (exception &ignore) {
+        } catch ([[maybe_unused]] exception &ignore) {
             log_debug("designated service does not exist\n");
         }
 
-        bool createResult = maintainService->createService(serviceInfo2, NULL);
+        bool createResult = maintainService->createService(serviceInfo2, nullptr);
         SHOULD_BE_TRUE(createResult, "MaintainTestCreateService should be created");
 
         ServiceInfo2 serviceInfoQuery = maintainService->queryService("MaintainTestCreateService", NULLSTR);

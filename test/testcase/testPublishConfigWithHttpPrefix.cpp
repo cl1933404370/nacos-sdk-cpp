@@ -40,7 +40,7 @@ bool testPublishConfigWithHttpPrefix() {
             while (!(ss == val_s) && retry++ < 10) {
 
                 #if defined(_MSC_VER) || defined(__WIN32__) || defined(WIN32)
-                Sleep(1000);
+                Sleep(1);
                 #else
                 sleep(1);
                 #endif

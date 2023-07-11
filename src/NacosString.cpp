@@ -10,7 +10,7 @@ const NacosString NacosStringOps::STR_FALSE = "false";
 
 //Returns true if str refers to nullstr
 bool NacosStringOps::isNullStr(const NacosString &str) {
-    return (&str == &nullstr) || (str == "");
+    return (&str == &nullstr) || str.empty();
 }
 
 template<>
