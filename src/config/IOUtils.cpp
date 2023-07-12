@@ -13,6 +13,8 @@
 #include <Aclapi.h>
 #include <shellapi.h>
 #include <algorithm>
+#include <Shlobj.h>
+#include <shobjidl_core.h>
 #else
 #include <unistd.h>
 #endif /* _UNISTD_H */
@@ -215,6 +217,7 @@ namespace nacos
 	bool IOUtils::cleanDirectory(const NacosString& file)
 	{
 #ifdef _WIN32 //|| _WIN64 || _MSC_VER
+		int result = 0;
 		const std::string searchPath = file + "\\*.*";
 		WIN32_FIND_DATA fileData;
 		const HANDLE searchHandle = FindFirstFile(searchPath.c_str(), &fileData);
@@ -229,45 +232,32 @@ namespace nacos
 				&& std::strcmp(fileData.cFileName, "..") != 0)
 			{
 				std::string file_path = file + "\\" + fileData.cFileName;
-				if ((fileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY))
-				{
-					int a = SetFileAttributes(file_path.c_str(), FILE_ATTRIBUTE_NORMAL);
-					if (!RemoveDirectory(file_path.c_str()))
-					{
-						file_path += "\\";
-						SHFILEOPSTRUCT fileOp = {};
-						ZeroMemory(&fileOp,sizeof(SHFILEOPSTRUCT));
-						std::wstring filePath = std::wstring(file_path.begin(), file_path.end());
-						std::wstring filePathDoubleNull = filePath + L"\0\0"; // Needs to be double-null terminated
-						
-						fileOp.fFlags = FOF_SILENT |FOF_NOCONFIRMATION |FOF_NOERRORUI |FOF_NOCONFIRMMKDIR;
-					    
-
-						// Convert the wstring to a null-terminated wide-character string
-					    wchar_t* wideStr = wcsdup(filePathDoubleNull.c_str());
-
-					    // Get the required buffer size for the multibyte string
-					    int bufferSize = WideCharToMultiByte(CP_ACP, 0, wideStr, -1, NULL, 0, NULL, NULL);
-
-					    // Allocate memory for the multibyte string
-					    char* result = new char[bufferSize];
-
-					    // Convert the wide-character string to a multibyte string
-					    WideCharToMultiByte(CP_ACP, 0, wideStr, -1, result, bufferSize, NULL, NULL);
-
-					    // Free the memory allocated for the wide-character string
-					    free(wideStr);
-						fileOp.hwnd = nullptr;
-						fileOp.pFrom = result;
-					    fileOp.wFunc = FO_DELETE;
-						SHFileOperation(&fileOp); 
-					}
-				}
-				else
-				{
-					SetFileAttributes(file_path.c_str(), FILE_ATTRIBUTE_NORMAL);
-					DeleteFile(file_path.c_str());
-				}
+				std::ranges::replace(file_path, '/','\\');
+				IFileOperation *fileOperation = nullptr;
+				CoInitialize(nullptr);
+			    HRESULT hr = CoCreateInstance(CLSID_FileOperation, nullptr, CLSCTX_ALL, IID_PPV_ARGS(&fileOperation));
+			    if (SUCCEEDED(hr))
+			    {
+			        hr = fileOperation->SetOperationFlags(FOF_NOCONFIRMATION | FOF_SILENT | FOF_NOERRORUI | FOF_ALLOWUNDO);
+			        if (SUCCEEDED(hr))
+			        {
+			            IShellItem *destItem = nullptr;
+						IShellItem *destItem2 = nullptr;
+			            hr = SHCreateItemFromParsingName(std::wstring(file_path.begin(), file_path.end()).c_str(), nullptr, IID_PPV_ARGS(&destItem,&destItem2));
+			        	if (SUCCEEDED(hr))
+			            {
+			                fileOperation->DeleteItem(destItem, nullptr);
+			                hr = fileOperation->PerformOperations();
+			                if (!SUCCEEDED(hr))
+			                {
+			                	return false;
+			                }
+			               
+			                destItem->Release();
+			            }
+			        }
+			        fileOperation->Release();
+			    }
 			}
 		}
 		while (FindNextFile(searchHandle, &fileData));
