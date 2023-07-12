@@ -46,29 +46,38 @@ namespace nacos
             throw std::runtime_error("Failed to get adapter addresses");
         }
         PIP_ADAPTER_ADDRESSES adapter = pAddresses;
+        WSADATA wsaData; // Declare a variable of type WSADATA to store details of the Winsock implementation
+        WSAStartup(MAKEWORD(2, 2), &wsaData);    
+        sockaddr *sa = nullptr;
+        char host[NI_MAXHOST];
+        DWORD size = NI_MAXHOST;
         while (adapter)
         {
-            if (adapter->IfType == IF_TYPE_ETHERNET_CSMACD && adapter->OperStatus == IfOperStatusUp)
-            {
+             if (adapter->IfType != IF_TYPE_ETHERNET_CSMACD && adapter->IfType != IF_TYPE_SOFTWARE_LOOPBACK && adapter->OperStatus == IfOperStatusUp)
+             {
                 PIP_ADAPTER_UNICAST_ADDRESS address = adapter->FirstUnicastAddress;
                 while (address)
                 {
-                    sockaddr *sa = address->Address.lpSockaddr;
-                    char host[NI_MAXHOST];
-                    DWORD size = NI_MAXHOST;
+                    sa = address->Address.lpSockaddr;
                     int result = getnameinfo(sa, sa->sa_family == AF_INET ? sizeof(sockaddr_in) : sizeof(sockaddr_in6),
                                              host, size, NULL, 0, NI_NUMERICHOST);
                     if (result == 0)
                     {
                         free(pAddresses);
+                        WSACleanup();
                         return std::string(host);
+                    }
+                    else
+                    {
+                        printf("getnameinfo failed with error # %ld\n", WSAGetLastError());
                     }
                     address = address->Next;
                 }
-            }
+             }
             adapter = adapter->Next;
         }
         free(pAddresses);
+        WSACleanup();
         throw std::runtime_error("Failed to get local IP address");
         return "";
 #else
@@ -122,5 +131,5 @@ namespace nacos
 
         throw NacosException(NacosException::UNABLE_TO_GET_HOST_NAME, "Failed to get hostname, errno = " + NacosStringOps::valueOf(errno));
     }
-
-} // namespace nacos
+}
+        
