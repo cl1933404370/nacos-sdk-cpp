@@ -9,7 +9,7 @@
 namespace nacos{
 const NacosString ConfigConstant::DEFAULT_GROUP = "DEFAULT_GROUP";
 const NacosString ConfigConstant::DEFAULT_CONTEXT_PATH = "nacos";
-const NacosString ConfigConstant::PROTOCOL_VERSION = "v1";
+const NacosString ConfigConstant::PROTOCOL_VERSION = "v2";
 const NacosString ConfigConstant::GET_SERVERS_PATH = "ns/operator/servers";
 
 const NacosString ConfigConstant::DATAID = "dataId";
@@ -18,7 +18,7 @@ const NacosString ConfigConstant::PROBE_MODIFY_REQUEST = "Listening-Configs";
 
 const NacosString ConfigConstant::PROBE_MODIFY_RESPONSE = "Probe-Modify-Response";
 
-const NacosString ConfigConstant::BASE_PATH = "/v1/cs";
+const NacosString ConfigConstant::BASE_PATH = "/v2/cs";
 
 const NacosString ConfigConstant::CONFIG_CONTROLLER_PATH = BASE_PATH + "/configs";
 

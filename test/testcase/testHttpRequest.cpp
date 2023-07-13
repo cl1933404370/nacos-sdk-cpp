@@ -10,7 +10,7 @@ using namespace nacos;
 bool testNormalHttpRequest()
 {
     cout << "in function testNormalHttpRequest" << endl;
-    NacosString path = "http://127.0.0.1:8848/nacos/v1/ns/operator/servers";
+    NacosString path = "http://127.0.0.1:8848/nacos/v2/ns/operator/servers";
     NacosString ENCODING = DEFAULT_ENCODING;
     std::list<NacosString> headers;
     std::list<NacosString> paramValues;
@@ -47,7 +47,7 @@ bool testNormalHttpRequest()
 bool testNoServerRequest()
 {
     cout << "in function testNoServerRequest" << endl;
-    NacosString path = "http://127.0.0.1:9999/nacos/v1/ns/operator/servers";
+    NacosString path = "http://127.0.0.1:9999/nacos/v2/ns/operator/servers";
     NacosString ENCODING = DEFAULT_ENCODING;
     std::list<NacosString> headers;
     std::list<NacosString> paramValues;
