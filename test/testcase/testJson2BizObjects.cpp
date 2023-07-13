@@ -1,8 +1,5 @@
 #include <iostream>
 #include "src/debug/DebugAssertion.h"
-#include "src/json/rapidjson/document.h"
-#include "src/json/rapidjson/writer.h"
-#include "src/json/rapidjson/stringbuffer.h"
 #include "src/naming/beat/BeatInfo.h"
 #include "src/json/JSON.h"
 

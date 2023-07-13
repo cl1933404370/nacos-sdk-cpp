@@ -232,38 +232,38 @@ ServiceInfo JSON::JsonStr2ServiceInfo(const NacosString &jsonString) NACOS_THROW
     ServiceInfo si;
     Document d;
     d.Parse(jsonString.c_str());
-    d.GetObject();
+    const rapidjson::Value& value = d.GetObject()["data"];
     if (d.HasParseError()) {
         throw NacosException(NacosException::INVALID_JSON_FORMAT,
                              "Error while parsing the JSON String for ServiceInfo!");
     }
 
     //bugfix #75, need to refresh the lastRefTime if it is present in the json
-    if (d.HasMember("lastRefTime")) {
-        const Value &lastRefTime = d["lastRefTime"];
+    if (value.HasMember("lastRefTime")) {
+        const Value &lastRefTime = value["lastRefTime"];
         if (!lastRefTime.IsInt64()) {
             throw NacosException(NacosException::INVALID_JSON_FORMAT, "Error while parsing lastRefTime for ServiceInfo!");
         }
         si.setLastRefTime(lastRefTime.GetInt64());
     }
 
-    markRequired(d, "name");
-    const Value &name = d["name"];
+    markRequired(value, "name");
+    const Value &name = value["name"];
     ServiceInfo::fromKey(si, name.GetString());
 
-    markRequired(d, "clusters");
-    const Value &clusters = d["clusters"];
+    markRequired(value, "clusters");
+    const Value &clusters = value["clusters"];
     si.setClusters(clusters.GetString());
 
-    markRequired(d, "cacheMillis");
-    const Value &cacheMillis = d["cacheMillis"];
+    markRequired(value, "cacheMillis");
+    const Value &cacheMillis = value["cacheMillis"];
     if (!cacheMillis.IsInt64()) {
         throw NacosException(NacosException::INVALID_JSON_FORMAT, "Error while parsing cacheMillis for ServiceInfo!");
     }
     si.setCacheMillis(cacheMillis.GetInt64());
 
-    markRequired(d, "hosts");
-    const Value &hosts = d["hosts"];
+    markRequired(value, "hosts");
+    const Value &hosts = value["hosts"];
     if (hosts.Size() == 0) {
         return si;
     }
@@ -277,8 +277,8 @@ ServiceInfo JSON::JsonStr2ServiceInfo(const NacosString &jsonString) NACOS_THROW
 
     si.setHosts(hostlist);
 
-    markRequired(d, "checksum");
-    const Value &checkSum = d["checksum"];
+    markRequired(value, "checksum");
+    const Value &checkSum = value["checksum"];
     si.setChecksum(checkSum.GetString());
 
     return si;
