@@ -232,7 +232,7 @@ ServiceInfo JSON::JsonStr2ServiceInfo(const NacosString &jsonString) NACOS_THROW
     ServiceInfo si;
     Document d;
     d.Parse(jsonString.c_str());
-
+    d.GetObject();
     if (d.HasParseError()) {
         throw NacosException(NacosException::INVALID_JSON_FORMAT,
                              "Error while parsing the JSON String for ServiceInfo!");

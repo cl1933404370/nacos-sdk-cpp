@@ -53,7 +53,7 @@ namespace nacos
         DWORD size = NI_MAXHOST;
         while (adapter)
         {
-             if (adapter->IfType != IF_TYPE_ETHERNET_CSMACD && adapter->IfType != IF_TYPE_SOFTWARE_LOOPBACK && adapter->OperStatus == IfOperStatusUp)
+             if (adapter->IfType != IF_TYPE_SOFTWARE_LOOPBACK && adapter->OperStatus == IfOperStatusUp)
              {
                 PIP_ADAPTER_UNICAST_ADDRESS address = adapter->FirstUnicastAddress;
                 while (address)
@@ -65,11 +65,7 @@ namespace nacos
                     {
                         free(pAddresses);
                         WSACleanup();
-                        return std::string(host);
-                    }
-                    else
-                    {
-                        printf("getnameinfo failed with error # %ld\n", WSAGetLastError());
+                        return host;
                     }
                     address = address->Next;
                 }

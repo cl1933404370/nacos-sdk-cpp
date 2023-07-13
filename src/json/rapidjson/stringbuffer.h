@@ -1,6 +1,6 @@
 // Tencent is pleased to support the open source community by making RapidJSON available.
 // 
-// Copyright (C) 2015 THL A29 Limited, a Tencent company, and Milo Yip. All rights reserved.
+// Copyright (C) 2015 THL A29 Limited, a Tencent company, and Milo Yip.
 //
 // Licensed under the MIT License (the "License"); you may not use this file except
 // in compliance with the License. You may obtain a copy of the License at
@@ -16,13 +16,13 @@
 #define RAPIDJSON_STRINGBUFFER_H_
 
 #include "stream.h"
-#include "src/json/rapidjson/internal/stack.h"
+#include "internal/stack.h"
 
 #if RAPIDJSON_HAS_CXX11_RVALUE_REFS
 #include <utility> // std::move
 #endif
 
-#include "src/json/rapidjson/internal/stack.h"
+#include "internal/stack.h"
 
 #if defined(__clang__)
 RAPIDJSON_DIAG_PUSH

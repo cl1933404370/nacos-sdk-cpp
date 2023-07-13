@@ -5,7 +5,7 @@ NacosString UtilAndComs::VERSION = "Nacos-C-Client:v1.0.21";//TODO:fix nacos tru
 
 NacosString UtilAndComs::ENCODING = "UTF-8";
 
-NacosString UtilAndComs::NACOS_URL_BASE = "/v1/ns";
+NacosString UtilAndComs::NACOS_URL_BASE = "/v2/ns";
 
 NacosString UtilAndComs::NACOS_URL_INSTANCE = NACOS_URL_BASE + "/instance";
 
