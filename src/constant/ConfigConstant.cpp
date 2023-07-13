@@ -20,7 +20,7 @@ const NacosString ConfigConstant::PROBE_MODIFY_RESPONSE = "Probe-Modify-Response
 
 const NacosString ConfigConstant::BASE_PATH = "/v2/cs";
 
-const NacosString ConfigConstant::CONFIG_CONTROLLER_PATH = BASE_PATH + "/configs";
+const NacosString ConfigConstant::CONFIG_CONTROLLER_PATH = BASE_PATH + "/config";
 
 /**
 * second
