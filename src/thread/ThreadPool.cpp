@@ -45,7 +45,7 @@ namespace nacos
 
     Task* ThreadPool::take()
     {
-#ifdef  _WIN32 | _MSC_VER
+#ifdef  _WIN32 //|| _MSC_VER
         std::unique_lock<std::mutex> lock(_lock);
 #else
     LockGuard _lockGuard(_lock);
@@ -76,7 +76,6 @@ namespace nacos
     {
         {
             std::unique_lock<std::mutex> lock(_lock);
-
             log_debug("ThreadPool:::::taskList:%d poolSize:%d stop:%d\n", _taskList.size(), _poolSize, _stop);
             while (!(_taskList.size() < _poolSize) && !_stop)
             {
@@ -87,7 +86,7 @@ namespace nacos
             {
                 {
                     lock.lock();
-                    _taskList.push_back(t);
+                    _taskList.push_back(std::move(t));
                 }
                 _NotEmpty.notify_one();
                 return;
