@@ -45,23 +45,20 @@ namespace nacos
 
     Task* ThreadPool::take()
     {
-#ifdef  _WIN32 | _MSC_VER
-        std::unique_lock<std::mutex> lock(_lock);
-#else
+
     LockGuard _lockGuard(_lock);
-#endif
 
         while (_taskList.empty() && !_stop)
         {
-            _NotEmpty.wait(lock);
+            _NotEmpty.wait();
         }
 
         if (!_taskList.empty())
         {
             Task* curTask = std::move(_taskList.front());
             _taskList.pop_front();
-            lock.unlock()();
-            _NotFull.notify_one();
+            lock.unlock();
+            _NotFull.notify();
             return curTask;
         }
         if (_stop)
@@ -75,21 +72,20 @@ namespace nacos
     void ThreadPool::put(Task* t)
     {
         {
-            std::unique_lock<std::mutex> lock(_lock);
-
+            LockGuard _lockGuard(_lock);
             log_debug("ThreadPool:::::taskList:%d poolSize:%d stop:%d\n", _taskList.size(), _poolSize, _stop);
             while (!(_taskList.size() < _poolSize) && !_stop)
             {
-                _NotFull.wait(lock);
+                _NotFull.wait();
             }
             lock.unlock();
             if (!_stop)
             {
                 {
                     lock.lock();
-                    _taskList.push_back(t);
+                    _taskList.push_back(std::move(t));
                 }
-                _NotEmpty.notify_one();
+                _NotEmpty.notify();
                 return;
             }
         }
@@ -125,8 +121,8 @@ namespace nacos
         }
 
         _stop = true;
-        _NotEmpty.notify_all();
-        _NotFull.notify_all();
+        _NotEmpty.notifyAll();
+        _NotFull.notifyAll();
 
         for (auto&& _thread : _threads)
         {
