@@ -26,7 +26,7 @@ namespace nacos
     void SecurityManager::doLogin(const NacosString &serverAddr) NACOS_THROW(NacosException, NetworkException)
     {
         // TODO:refactor string constants //todo ÊÇ·ñÐÞ¸Ä
-        NacosString url = serverAddr + "/" + _objectConfigData->_appConfigManager->getContextPath() + "/v2/auth/users/login";
+        NacosString url = serverAddr + "/" + _objectConfigData->_appConfigManager->getContextPath() + "/v1/auth/users/login";
         list<NacosString> headers;
         list<NacosString> paramValues;
 

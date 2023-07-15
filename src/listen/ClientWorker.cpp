@@ -455,7 +455,7 @@ namespace nacos
                 if (res.code == HttpStatus::HTTP_OK)
                 {
                     md5.reset();
-                    md5.update(updatedcontent.c_str());
+                    md5.update(updatedcontent);
                     listenedList->setMD5(md5.toString());
                     log_debug("[ClientWorker]-performWatch:MD5 got for that data: %s\n", listenedList->getMD5().c_str());
                 }
@@ -465,10 +465,9 @@ namespace nacos
                     updatedcontent = "";
                 }
                 std::map<Listener *, char> const *listenerList = listenedList->getListenerList();
-                for (std::map<Listener *, char>::const_iterator listenerIt = listenerList->begin();
-                     listenerIt != listenerList->end(); listenerIt++)
+                for (auto [fst, snd] : *listenerList)
                 {
-                    Listener *curListener = listenerIt->first;
+                    Listener *curListener = fst;
 
                     NACOS_ASSERT(curListener->refCnt() > 0);
                     curListener->receiveConfigInfo(updatedcontent);

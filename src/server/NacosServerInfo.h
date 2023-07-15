@@ -124,7 +124,7 @@ public:
     }
 
     bool operator<(const NacosServerInfo &other) const {
-        return getCompleteAddress().compare(other.getCompleteAddress());
+        return getCompleteAddress().compare(other.getCompleteAddress()) < 0;
     }
 
     bool operator==(const NacosServerInfo &other) const {

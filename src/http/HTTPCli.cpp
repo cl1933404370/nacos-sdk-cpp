@@ -447,25 +447,25 @@ namespace nacos
 
         NacosString strbuf = "";
         /* we pass our 'strbuf' struct to the callback function */
-        curl_easy_setopt(curlHandle, CURLOPT_WRITEDATA, (void *)&strbuf);
+        curl_easy_setopt(curlHandle, CURLOPT_WRITEDATA, static_cast<void*>(&strbuf));
 
         /* Get response headers from the response */
         std::map<NacosString, NacosString> respheaders;
-        curl_easy_setopt(curlHandle, CURLOPT_HEADERDATA, (void *)&respheaders);
+        curl_easy_setopt(curlHandle, CURLOPT_HEADERDATA, static_cast<void*>(&respheaders));
 
         // TODO:Time out in a more precise way
         curl_easy_setopt(curlHandle, CURLOPT_TIMEOUT, readTimeoutMs / 1000);
 
         /*Add the request headers to the request*/
-        struct curl_slist *headerlist = NULL;
+        struct curl_slist *headerlist = nullptr;
 
-        for (list<NacosString>::iterator it = assembledHeaders.begin(); it != assembledHeaders.end(); it++)
+        for (list<NacosString>::iterator it = assembledHeaders.begin(); it != assembledHeaders.end(); ++it)
         {
             headerlist = curl_slist_append(headerlist, it->c_str());
             log_debug("[HTTPCli]-PUT:RequestHeaders:%s\n", it->c_str());
         }
 
-        if (headerlist != NULL)
+        if (headerlist != nullptr)
         {
             curl_easy_setopt(curlHandle, CURLOPT_HTTPHEADER, headerlist);
         }

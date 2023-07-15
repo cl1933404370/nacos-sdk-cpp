@@ -8,6 +8,9 @@
 #endif /* _UNISTD_H */
 
 #include "ServerListManager.h"
+
+#include <algorithm>
+
 #include "constant/PropertyKeyConst.h"
 #include "src/utils/ParamUtils.h"
 #include "src/log/Logger.h"
@@ -17,7 +20,7 @@ using namespace std;
 
 namespace nacos
 {
-    void ServerListManager::addToSrvList(NacosString &address)
+    void ServerListManager::addToSrvList(NacosString& address)
     {
         address = ParamUtils::trim(address);
         NacosString address_lc = ParamUtils::toLower(address);
@@ -75,13 +78,13 @@ namespace nacos
         }
     }
 
-    ServerListManager::ServerListManager(list<NacosString> &fixed)
+    ServerListManager::ServerListManager(list<NacosString>& fixed)
     {
         started = false;
         isFixed = true;
         _pullThread = NULL;
         refreshInterval = 30000;
-        for (list<NacosString>::iterator it = fixed.begin(); it != fixed.end(); it++)
+        for (auto it = fixed.begin(); it != fixed.end(); it++)
         {
             addToSrvList(*it);
         }
@@ -94,11 +97,11 @@ namespace nacos
         ReadGuard _readGuard(rwLock);
         size_t max_serv_slot = serverList.size();
         srand(static_cast<unsigned>(time(nullptr)));
-        int to_skip = rand() % max_serv_slot;
-        std::list<NacosServerInfo>::iterator it = serverList.begin();
+        const int to_skip = rand() % max_serv_slot;
+        auto it = serverList.begin();
         for (int skipper = 0; skipper < to_skip; skipper++)
         {
-            it++;
+            ++it;
         }
 
         return it->getCompleteAddress();
@@ -109,23 +112,27 @@ namespace nacos
         serverList.clear();
         Properties props = _objectConfigData->_appConfigManager->getAllConfig();
         if (props.contains(PropertyKeyConst::SERVER_ADDR))
-        { // Server address is configured
+        {
+            // Server address is configured
             isFixed = true;
             NacosString server_addr = props[PropertyKeyConst::SERVER_ADDR];
 
             vector<NacosString> explodedServers;
             ParamUtils::Explode(explodedServers, server_addr, ',');
-            for (vector<NacosString>::iterator it = explodedServers.begin(); it != explodedServers.end(); it++)
+            for (auto& explodedServer : explodedServers)
             {
-                addToSrvList(*it);
+                addToSrvList(explodedServer);
             }
+
             serverList.sort();
         }
         else
-        { // use endpoint mode to pull nacos server info from server
+        {
+            // use endpoint mode to pull nacos server info from server
             if (!props.contains(PropertyKeyConst::ENDPOINT))
             {
-                throw NacosException(NacosException::CLIENT_INVALID_PARAM, "no server address specified and the endpoint is blank");
+                throw NacosException(NacosException::CLIENT_INVALID_PARAM,
+                                     "no server address specified and the endpoint is blank");
             }
 
             isFixed = false;
@@ -139,12 +146,12 @@ namespace nacos
             if (NacosStringOps::isNullStr(getNamespace()))
             {
                 addressServerUrl = endpoint + ":" + NacosStringOps::valueOf(getEndpointPort()) + "/" +
-                                   getContextPath() + "/" + getClusterName();
+                    getContextPath() + "/" + getClusterName();
             }
             else
             {
                 addressServerUrl = endpoint + ":" + NacosStringOps::valueOf(getEndpointPort()) + "/" +
-                                   getContextPath() + "/" + getClusterName() + "?namespace=" + getNamespace();
+                    getContextPath() + "/" + getClusterName() + "?namespace=" + getNamespace();
             }
 
             log_debug("Assembled addressServerUrl:%s\n", addressServerUrl.c_str());
@@ -154,12 +161,22 @@ namespace nacos
         }
     }
 
-    ServerListManager::ServerListManager(ObjectConfigData *objectConfigData) NACOS_THROW(NacosException)
+    ServerListManager::ServerListManager(ObjectConfigData* objectConfigData) NACOS_THROW(NacosException)
     {
         started = false;
-        _pullThread = NULL;
+        _pullThread = nullptr;
         _objectConfigData = objectConfigData;
-        refreshInterval = atoi(_objectConfigData->_appConfigManager->get(PropertyKeyConst::SRVLISTMGR_REFRESH_INTERVAL).c_str());
+        try
+        {
+           
+            refreshInterval = std::strtol(
+                _objectConfigData->_appConfigManager->get(PropertyKeyConst::SRVLISTMGR_REFRESH_INTERVAL).c_str(), nullptr,
+                10);
+        }
+        catch (...)
+        {
+            refreshInterval = 30000;
+        }
         initAll();
     }
 
@@ -180,22 +197,23 @@ namespace nacos
         for (size_t i = 0; i < serverList.size(); i++)
         {
             size_t selectedServer = rand() % maxSvrSlot;
-            const NacosServerInfo &server = ParamUtils::getNthElem(serverList, selectedServer);
+            const NacosServerInfo& server = ParamUtils::getNthElem(serverList, selectedServer);
             log_debug("selected_server:%d\n", selectedServer);
             log_debug("Trying to access server:%s\n", server.getCompleteAddress().c_str());
             try
             {
                 HttpResult serverRes = _objectConfigData->_httpDelegate->httpGet(
-                    server.getCompleteAddress() + "/" + _objectConfigData->_appConfigManager->getContextPath() + "/" + ConfigConstant::PROTOCOL_VERSION + "/" + ConfigConstant::GET_SERVERS_PATH,
+                    server.getCompleteAddress() + "/" + _objectConfigData->_appConfigManager->getContextPath() + "/" +
+                    ConfigConstant::PROTOCOL_VERSION + "/" + ConfigConstant::GET_SERVERS_PATH,
                     headers, paramValues, NULLSTR, _read_timeout);
                 return JSON::Json2NacosServerInfo(serverRes.content);
             }
-            catch (NacosException &e)
+            catch (NacosException& e)
             {
                 errmsg = e.what();
                 log_error("request %s failed.\n", server.getCompleteAddress().c_str());
             }
-            catch (exception &e)
+            catch (exception& e)
             {
                 errmsg = e.what();
                 log_error("request %s failed.\n", server.getCompleteAddress().c_str());
@@ -216,8 +234,9 @@ namespace nacos
         long _read_timeout = _objectConfigData->_appConfigManager->getServeReqTimeout();
         if (!NacosStringOps::isNullStr(addressServerUrl))
         {
-            HttpResult serverRes = _objectConfigData->_httpDelegate->httpGet(addressServerUrl, headers, paramValues, NULLSTR,
-                                                                             _read_timeout);
+            HttpResult serverRes = _objectConfigData->_httpDelegate->httpGet(
+                addressServerUrl, headers, paramValues, NULLSTR,
+                _read_timeout);
             list<NacosString> explodedServerList;
             ParamUtils::Explode(explodedServerList, serverRes.content, '\n');
             list<NacosServerInfo> serversPulled;
@@ -258,11 +277,11 @@ namespace nacos
         return tryPullServerListFromNacosServer();
     }
 
-    NacosString ServerListManager::serverListToString(const std::list<NacosServerInfo> &serverList)
+    NacosString ServerListManager::serverListToString(const std::list<NacosServerInfo>& serverList)
     {
         NacosString res;
         bool first = true;
-        for (list<NacosServerInfo>::const_iterator it = serverList.begin(); it != serverList.end(); it++)
+        for (auto it = serverList.begin(); it != serverList.end(); it++)
         {
             if (first)
             {
@@ -283,9 +302,9 @@ namespace nacos
         return serverListToString(serverList);
     }
 
-    void *ServerListManager::pullWorkerThread(void *param)
+    void* ServerListManager::pullWorkerThread(void* param)
     {
-        ServerListManager *thisMgr = (ServerListManager *)param;
+        auto thisMgr = (ServerListManager*)param;
         while (thisMgr->started)
         {
             try
@@ -309,20 +328,20 @@ namespace nacos
                     thisMgr->serverList = serverList;
                 }
             }
-            catch ([[maybe_unused]] NacosException &e)
+            catch ([[maybe_unused]] NacosException& e)
             {
 #if defined(_MSC_VER) || defined(__WIN32__) || defined(WIN32)
                 std::this_thread::sleep_for(std::chrono::seconds(thisMgr->refreshInterval / 1000));
 #else
-                // Error occured during the invocation, sleep for a longer time
-                sleep(thisMgr->refreshInterval / 1000);
+    // Error occured during the invocation, sleep for a longer time
+    sleep(thisMgr->refreshInterval / 1000);
 #endif
             }
 
 #if defined(_MSC_VER) || defined(__WIN32__) || defined(WIN32)
             std::this_thread::sleep_for(std::chrono::seconds(thisMgr->refreshInterval / 1000));
 #else
-            sleep(thisMgr->refreshInterval / 1000);
+   sleep(thisMgr->refreshInterval / 1000);
 #endif
         }
 
@@ -341,8 +360,8 @@ namespace nacos
         if (_pullThread == NULL)
         {
             NacosString threadName = getClusterName() + "," + getEndpoint() + ":" +
-                                     NacosStringOps::valueOf(getEndpointPort()) + "-" + getNamespace();
-            _pullThread = new Thread(threadName, pullWorkerThread, (void *)this);
+                NacosStringOps::valueOf(getEndpointPort()) + "-" + getNamespace();
+            _pullThread = new Thread(threadName, pullWorkerThread, (void*)this);
         }
         _pullThread->start();
     }
@@ -362,7 +381,7 @@ namespace nacos
         }
     }
 
-    const NacosString &ServerListManager::getContextPath() const
+    const NacosString& ServerListManager::getContextPath() const
     {
         return _objectConfigData->_appConfigManager->getContextPath();
     }
