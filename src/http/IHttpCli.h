@@ -24,12 +24,12 @@ namespace nacos
         CURLcode curlcode;
 
         HttpResult(long _code, const NacosString &_content, std::map<NacosString, NacosString> &_headers)
-            : code(_code), content(_content)
+            : code(_code), content(_content), curlcode(CURLE_OK)
         {
             headers.insert(_headers.begin(), _headers.end());
         }
 
-        HttpResult(long _code, const NacosString &_content) : code(_code), content(_content) {}
+        HttpResult(long _code, const NacosString &_content) : code(_code), content(_content),curlcode(CURLE_OK) {}
 
         HttpResult()
         {

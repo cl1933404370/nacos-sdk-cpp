@@ -26,7 +26,7 @@ void HMACSha1::getMac(const void *k,   /* secret key */
                       size_t ld,  /* length of data in bytes */
                       void *out, /* output buffer, at least "t" bytes */
                       size_t *t) {
-    hmac_sha1((const uint8_t*)k, lk, (const uint8_t*)d, ld, (uint8_t*)out, t);
+    hmac_sha1(static_cast<const uint8_t*>(k), lk, static_cast<const uint8_t*>(d), ld, static_cast<uint8_t*>(out), t);
 }
 
 void MACProvider::Init() {

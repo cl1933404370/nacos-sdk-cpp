@@ -21,7 +21,7 @@ namespace nacos
     {
         _objectConfigData = objectConfigData;
         _started = false;
-        _tokenRefreshThread = new Thread("TokenRefreshThread", tokenRefreshThreadFunc, (void *)this);
+        _tokenRefreshThread = new Thread("TokenRefreshThread", tokenRefreshThreadFunc, static_cast<void*>(this));
     }
     void SecurityManager::doLogin(const NacosString &serverAddr) NACOS_THROW(NacosException, NetworkException)
     {
@@ -57,7 +57,7 @@ namespace nacos
 
         if (nr_servers > 1)
         {
-            start = RandomUtils::random(0, nr_servers - 1);
+            start = RandomUtils::random(0, static_cast<int>(nr_servers) - 1);
         }
 
         for (size_t nr_tries = 0; nr_tries < nr_servers; nr_tries++)
@@ -145,7 +145,7 @@ namespace nacos
 
     void *SecurityManager::tokenRefreshThreadFunc(void *param)
     {
-        SecurityManager *thisObj = (SecurityManager *)param;
+        SecurityManager *thisObj = static_cast<SecurityManager*>(param);
         log_debug("In thread SecurityManager::tokenRefreshThreadFunc\n");
         while (thisObj->_started)
         {

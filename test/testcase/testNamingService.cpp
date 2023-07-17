@@ -36,7 +36,7 @@ bool testNamingProxySmokeTest() {
     ResourceGuard <INacosServiceFactory> _guardFactory(factory);
     NamingService *n = factory->CreateNamingService();
     ResourceGuard <NamingService> _serviceFactory(n);
-    NacosNamingService *nn = (NacosNamingService *) n;
+    NacosNamingService *nn = static_cast<NacosNamingService*>(n);
     NamingProxy *namingProxy = nn->getServerProxy();
     Instance theinstance;
     theinstance.instanceId = "TestInstance";
@@ -120,7 +120,7 @@ bool testNamingProxyServerHealthy() {
     ResourceGuard <INacosServiceFactory> _guardFactory(factory);
     NamingService *n = factory->CreateNamingService();
     ResourceGuard <NamingService> _serviceFactory(n);
-    NacosNamingService *nn = (NacosNamingService *) n;
+    NacosNamingService *nn = static_cast<NacosNamingService*>(n);
     NamingProxy *namingProxy = nn->getServerProxy();
 
     //Create a clean environment

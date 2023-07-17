@@ -55,7 +55,7 @@ bool testThreadSmoke() {
 }
 
 void *threadStopper(void *param) {
-    ThreadPool *tp = (ThreadPool *) param;
+    ThreadPool *tp = static_cast<ThreadPool*>(param);
     log_info("Hello from threadStopper() in another thread, stopping threadpool\n");
 
     #if defined(_MSC_VER) || defined(__WIN32__) || defined(WIN32)

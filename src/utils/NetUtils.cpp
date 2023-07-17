@@ -38,7 +38,7 @@ namespace nacos
         DWORD result = GetAdaptersAddresses(family, flags, NULL, pAddresses, &bufferSize);
         if (result == ERROR_BUFFER_OVERFLOW)
         {
-            pAddresses = (PIP_ADAPTER_ADDRESSES)malloc(bufferSize);
+            pAddresses = static_cast<PIP_ADAPTER_ADDRESSES>(malloc(bufferSize));
             result = GetAdaptersAddresses(family, flags, NULL, pAddresses, &bufferSize);
         }
         if (result != 0L)
@@ -49,8 +49,6 @@ namespace nacos
         WSADATA wsaData; // Declare a variable of type WSADATA to store details of the Winsock implementation
         WSAStartup(MAKEWORD(2, 2), &wsaData);    
         sockaddr *sa = nullptr;
-        char host[NI_MAXHOST];
-        DWORD size = NI_MAXHOST;
         while (adapter)
         {
              if (adapter->IfType != IF_TYPE_SOFTWARE_LOOPBACK && adapter->OperStatus == IfOperStatusUp)
@@ -58,10 +56,11 @@ namespace nacos
                 PIP_ADAPTER_UNICAST_ADDRESS address = adapter->FirstUnicastAddress;
                 while (address)
                 {
+                    const DWORD size = NI_MAXHOST;
+                    char host[NI_MAXHOST];
                     sa = address->Address.lpSockaddr;
-                    int result = getnameinfo(sa, sa->sa_family == AF_INET ? sizeof(sockaddr_in) : sizeof(sockaddr_in6),
-                                             host, size, NULL, 0, NI_NUMERICHOST);
-                    if (result == 0)
+                    if (const int result1 = getnameinfo(sa, sa->sa_family == AF_INET ? sizeof(sockaddr_in) : sizeof(sockaddr_in6),
+                                                        host, size, nullptr, 0, NI_NUMERICHOST); result1 == 0)
                     {
                         free(pAddresses);
                         WSACleanup();

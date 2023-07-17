@@ -5,17 +5,16 @@
 #include <time.h>
 
 #if defined(_MSC_VER) || defined(__WIN32__) || defined(WIN32)
-#include <windows.h>
-#include <io.h>
-#include <process.h>
-#include <iostream>
+#include <folly/portability/PThread.h>
 #include <wincrypt.h>
-#include <ncrypt.h>
+#include <random>
 #else
 #include <unistd.h>
 #endif
 
 #include "src/utils/RandomUtils.h"
+
+
 
 namespace nacos
 {
@@ -53,7 +52,7 @@ namespace nacos
         if (!CryptAcquireContext(&hProvider, nullptr, nullptr, PROV_RSA_FULL, CRYPT_VERIFYCONTEXT)) {
             throw std::runtime_error("Failed to acquire crypto context");
         }
-        if (!CryptGenRandom(hProvider, size, (BYTE*)dest)) {
+        if (!CryptGenRandom(hProvider, static_cast<DWORD>(size), static_cast<BYTE*>(dest))) {
             throw std::runtime_error("Failed to generate random data");
         }
         CryptReleaseContext(hProvider, 0);
@@ -73,13 +72,18 @@ namespace nacos
     {
 
 #ifndef _MSC_VER || __WIN32__ || WIN32
+    static ThreadLocal<bool> initedForThisThread(false); // thread safety check with thread local
+    if (!initedForThisThread.get())
+    {
+        srand(time(nullptr) ^ pthread_self()->threadID);
+        initedForThisThread.set(true);
+    }
+    return rand();
 #else
-        if (!initedForThisThread.get())
-        {
-            srand(time(NULL));
-            initedForThisThread.set(true);
-        }
-        return rand();
+    std::random_device rd; 
+    std::mt19937 gen(rd());
+    std::uniform_int_distribution<> distrib(INT_MIN, INT_MAX);
+    return distrib(gen);
 #endif
     }
 

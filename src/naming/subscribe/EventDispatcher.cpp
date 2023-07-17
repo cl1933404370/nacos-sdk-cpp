@@ -156,7 +156,7 @@ void EventDispatcher::notifyDirectly(const ChangeAdvice &changeAdvice)
 
 void *EventDispatcher::eventDispatcherThread(void *parm)
 {
-    EventDispatcher *thisObj = (EventDispatcher*)parm;
+    EventDispatcher *thisObj = static_cast<EventDispatcher*>(parm);
 
     while (true) {
         NotifyData notifyData = thisObj->notifyDataList.dequeue();
@@ -226,7 +226,7 @@ void EventDispatcher::purgeAllListeners()
 EventDispatcher::EventDispatcher()
 {
     _started = false;
-    eventNotifier = new Thread("Nacos-NamingEvent-Dispatcher", eventDispatcherThread, (void*)this);
+    eventNotifier = new Thread("Nacos-NamingEvent-Dispatcher", eventDispatcherThread, static_cast<void*>(this));
 }
 
 EventDispatcher::~EventDispatcher()

@@ -69,7 +69,7 @@ void NacosNamingService::registerInstance
     Instance instance;
     instance.ip = ip;
     instance.port = port;
-    instance.weight = (double)1;
+    instance.weight = static_cast<double>(1);
     instance.clusterName = clusterName;
 
     registerInstance(serviceName, groupName, instance);

@@ -47,7 +47,8 @@ private:
     bool _start;
     void *_threadData;
 
-    Thread() {};
+    Thread(): _threadName(""), _function(NULL), _threadData(NULL), _start(false), _tid(0), _thread(0)
+    {};
 
     static void empty_signal_handler(int signum) {};
 

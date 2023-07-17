@@ -1,22 +1,5 @@
 #include "Thread.h"
 
-// void handle_signal(int signal) {
-//     switch (signal) {
-// #ifdef _WIN32
-//     case SIGTERM:
-//     case SIGABRT:
-//     case SIGBREAK:
-// #else
-//     case SIGHUP:
-// #endif
-//       got_sighup = true;
-//       break;
-//     case SIGINT:
-//       got_sigint = true;
-//       break;
-//     }
-//   }
-
 #if defined(_MSC_VER) || defined(__WIN32__) || defined(WIN32)
 
 #else
@@ -58,7 +41,7 @@ void nacos::Thread::DeInit()
 #endif
 };
 
-void *nacos::Thread::threadFunc(void *param)
+void* nacos::Thread::threadFunc(void* param)
 {
     const auto currentThread = static_cast<Thread*>(param);
     currentThread->_tid = gettidv1();
@@ -67,7 +50,7 @@ void *nacos::Thread::threadFunc(void *param)
     {
         return currentThread->_function(currentThread->_threadData);
     }
-    catch (std::exception &e)
+    catch (std::exception& e)
     {
         currentThread->_function = NULL;
         nacos::log_error("Exception happens when executing:\n");
@@ -87,7 +70,7 @@ void *nacos::Thread::threadFunc(void *param)
 void nacos::Thread::start()
 {
     _start = true;
-    pthread_create(&_thread, NULL, threadFunc, (void *)this);
+    pthread_create(&_thread, NULL, threadFunc, (void*)this);
 }
 
 void nacos::Thread::join()
@@ -106,99 +89,27 @@ void nacos::Thread::kill()
 {
 #if defined(_MSC_VER) || defined(__WIN32__) || defined(WIN32)
     DWORD exciteCode;
-    bool aa = GetExitCodeThread (_thread->handle, &exciteCode);
+    bool aa = GetExitCodeThread(_thread->handle, &exciteCode);
     DWORD error = GetLastError();
-    QueueUserAPC([](ULONG_PTR a) {}, _thread->handle, THREAD_STOP_SIGNAL);
-    QueueUserAPC([](ULONG_PTR a){}, _thread->handle, SIGTERM);
-    QueueUserAPC([](ULONG_PTR a){}, _thread->handle, exciteCode);
-    QueueUserAPC([](ULONG_PTR a){}, _thread->handle, error);
-    if (exciteCode == STILL_ACTIVE)
+    QueueUserAPC([](ULONG_PTR a)
     {
-        //TerminateThread(_thread->handle, exciteCode);
-    }
+    }, _thread->handle, THREAD_STOP_SIGNAL);
+    QueueUserAPC([](ULONG_PTR a)
+    {
+    }, _thread->handle, SIGTERM);
+    QueueUserAPC([](ULONG_PTR a)
+    {
+    }, _thread->handle, exciteCode);
+    QueueUserAPC([](ULONG_PTR a)
+    {
+    }, _thread->handle, error);
+   //if (exciteCode == STILL_ACTIVE)
+   //{
+   //    TerminateThread(_thread->handle, exciteCode);
+   //}
+    ExitThread(exciteCode);
     //todo how to kill a thread
-    //ExitThread(exciteCode);
 #else
     pthread_kill(_thread, THREAD_STOP_SIGNAL);
 #endif
-
-
-    // https://github.com/GerHobbelt/pthread-win32/blob/master/pthread_kill.c
-    // int result = 0;
-    //   ptw32_thread_t * tp;
-    //   ptw32_mcs_local_node_t node;
-
-    //   ptw32_mcs_lock_acquire(&ptw32_thread_reuse_lock, &node);
-
-    //   tp = (ptw32_thread_t *) thread.p;
-
-    //   if (NULL == tp
-    //       || thread.x != tp->ptHandle.x
-    //       || NULL == tp->threadH)
-    //     {
-    //       result = ESRCH;
-    //     }
-
-    //   ptw32_mcs_lock_release(&node);
-
-    //   if (0 == result && 0 != sig)
-    //     {
-    //       /*
-    //        * Currently only supports direct thread termination via SIGABRT.
-    //        */
-    //       switch (sig)
-    //       {
-    //       default:
-    //           result = EINVAL;
-    //           break;
-    // #ifdef SIGINT
-    //       case SIGINT:
-    // #endif
-    // #ifdef SIGTERM
-    //       case SIGTERM:
-    // #endif
-    // #ifdef SIGBREAK
-    //       case SIGBREAK:
-    // #endif
-    // #ifdef SIGABRT
-    //       case SIGABRT:
-    // #endif
-    // #ifdef SIGABRT_COMPAT
-    //       case SIGABRT_COMPAT:
-    // #endif
-    //       {
-    //           ptw32_mcs_local_node_t stateLock;
-
-    //           /*
-    //            * Lock for async-cancel safety.
-    //            */
-    //           ptw32_mcs_lock_acquire(&tp->stateLock, &stateLock);
-
-    //           // Only terminate the thread when it is still running:
-    //           if (tp->state < PThreadStateLast)
-    //           {
-    //               tp->state = PThreadStateLast;
-    //               tp->cancelState = PTHREAD_CANCEL_DISABLE;
-    //               ptw32_mcs_lock_release(&stateLock);
-
-    //               result = TerminateThread(tp->threadH, (DWORD)(ptrdiff_t)PTHREAD_CANCELED);
-    //               result = (result != 0) ? 0 : EINVAL;
-
-    //               // Set exit to CANCELED (KILLED) when it hasn't been set already.
-    //               if (tp->exitStatus == NULL)
-    //                   tp->exitStatus = PTHREAD_CANCELED;
-    //           }
-    //           else
-    //           {
-    //               ptw32_mcs_lock_release(&stateLock);
-
-    //               // TODO: ? flag the call as not-necessary-any-more because thread has already terminated ?
-    //               result = 0;
-    //           }
-    //       }
-    //           break;
-    //       }
-    //     }
-
-    //   return result;
 }

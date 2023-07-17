@@ -122,7 +122,7 @@ namespace nacos
     void *ClientWorker::listenerThread(void *parm)
     {
         log_debug("[ClientWorker]-listenerThread:Entered watch thread...\n");
-        ClientWorker *thelistener = (ClientWorker *)parm;
+        ClientWorker *thelistener = static_cast<ClientWorker*>(parm);
 
         while (!thelistener->stopThread)
         {

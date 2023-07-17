@@ -13,8 +13,8 @@ class DelayedWorker;
 
 class DelayedThreadPool : public ThreadPool {
 private:
-    std::condition_variable _delayTaskNotEmpty;
-    std::mutex _lockForScheduleTasks;//for _scheduledTasks
+    Condition _delayTaskNotEmpty;
+    Mutex _lockForScheduleTasks;//for _scheduledTasks
     std::vector< std::pair<long, Task*> > _scheduledTasks;
     DelayedThreadPool();
     DelayedWorker **delayTasks;

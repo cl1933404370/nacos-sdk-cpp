@@ -15,7 +15,7 @@ int tid[NR_THREADS];
 SequenceProvider<uint64_t> *sequenceProvider;
 
 void *SeqThreadFunc(void *param) {
-    int *thread_no = (int*)param;
+    int *thread_no = static_cast<int*>(param);
     for (int i = 0; i < GENERATION_PER_THREAD; i++) {
         int64_t res = sequenceProvider->next();
         sequences[(*thread_no) * GENERATION_PER_THREAD + i] = res;
@@ -35,7 +35,7 @@ bool testSequenceProvider() {
     for (int i = 0; i < NR_THREADS; i++) {
         NacosString threadName = "SEQThread-" + NacosStringOps::valueOf(i);
         tid[i] = i;
-        threads[i] = new Thread(threadName, SeqThreadFunc, (void *) &tid[i]);
+        threads[i] = new Thread(threadName, SeqThreadFunc, static_cast<void*>(&tid[i]));
         threads[i]->start();
     }
 

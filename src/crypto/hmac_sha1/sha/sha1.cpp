@@ -270,14 +270,14 @@ void SHA1_Init(SHA1_CTX *context) {
 * @param len     Number of bytes
 */
 void SHA1_Update(SHA1_CTX *context, const void *p, size_t len) {
-    const uint8_t *data = (const uint8_t *)p;
-    size_t i, j;
+    const uint8_t *data = static_cast<const uint8_t*>(p);
+    size_t i;
 
-    j = (context->count[0] >> 3) & 63;
-    if ((context->count[0] += (uint32_t) (len << 3)) < (len << 3)) {
+    size_t j = (context->count[0] >> 3) & 63;
+    if ((context->count[0] += static_cast<uint32_t>(len << 3)) < (len << 3)) {
         context->count[1]++;
     }
-    context->count[1] += (uint32_t) (len >> 29);
+    context->count[1] += static_cast<uint32_t>(len >> 29);
     if ((j + len) > 63) {
         memcpy(&context->buffer[j], data, (i = 64 - j));
         SHA1_Transform(context->state, context->buffer);
@@ -302,8 +302,8 @@ void SHA1_Final(uint8_t digest[SHA1_DIGEST_SIZE], SHA1_CTX *context) {
     uint8_t finalcount[8];
 
     for (i = 0; i < 8; i++) {
-        finalcount[i] = (uint8_t) ((context->count[(i >= 4 ? 0 : 1)]
-                >> ((3 - (i & 3)) * 8)) & 255);
+        finalcount[i] = static_cast<uint8_t>((context->count[(i >= 4 ? 0 : 1)]
+            >> ((3 - (i & 3)) * 8)) & 255);
     }
     SHA1_Update(context, (uint8_t *) "\200", 1);
     while ((context->count[0] & 504) != 448) {
@@ -311,8 +311,7 @@ void SHA1_Final(uint8_t digest[SHA1_DIGEST_SIZE], SHA1_CTX *context) {
     }
     SHA1_Update(context, finalcount, 8); /* Should cause SHA1_Transform */
     for (i = 0; i < SHA1_DIGEST_SIZE; i++) {
-        digest[i] = (uint8_t)
-                ((context->state[i >> 2] >> ((3 - (i & 3)) * 8)) & 255);
+        digest[i] = static_cast<uint8_t>((context->state[i >> 2] >> ((3 - (i & 3)) * 8)) & 255);
     }
 
     /* Wipe variables */

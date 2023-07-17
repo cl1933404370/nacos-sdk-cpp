@@ -35,7 +35,7 @@ std::list<Instance> RandomByWeightSelector::select(const std::list<Instance> &in
     std::vector<std::pair<int, std::list<Instance>::const_iterator> >::const_iterator it = weightedList.begin();
     while (selectedWeight > it->second->weight * BASIC_WEIGHT) {
         selectedWeight -= it->second->weight * BASIC_WEIGHT;
-        it++;
+        ++it;
     }
 
     result.push_back(*it->second);

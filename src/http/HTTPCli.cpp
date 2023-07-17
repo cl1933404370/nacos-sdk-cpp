@@ -16,9 +16,9 @@ namespace nacos
         void *userp)
     {
         size_t realsize = size * nmemb;
-        NacosString *strbuf = (NacosString *)userp;
+        NacosString *strbuf = static_cast<std::string*>(userp);
 
-        strbuf->append((char *)contents, realsize);
+        strbuf->append(static_cast<char*>(contents), realsize);
 
         return realsize;
     }
@@ -29,19 +29,19 @@ namespace nacos
         size_t nmemb,
         void *userp)
     {
-        char *content_s = (char *)contents;
+        char *content_s = static_cast<char*>(contents);
         // Parse the 'HeaderName: HeaderContent' format
         char *pos = strchr(content_s, ':');
         if (pos != NULL) // Skip status
         {
-            std::map<NacosString, NacosString> *respheaders = (std::map<NacosString, NacosString> *)userp;
+            std::map<NacosString, NacosString> *respheaders = static_cast<std::map<std::string, std::string>*>(userp);
             NacosString k = NacosString(content_s, pos - content_s);
             NacosString v = NacosString(pos + 1);
             (*respheaders)[k] = v;
         }
         size_t realsize = size * nmemb;
 
-        log_debug("[HTTPCli]-receivedHeaders: %s", (char *)contents);
+        log_debug("[HTTPCli]-receivedHeaders: %s", static_cast<char*>(contents));
 
         return realsize;
     }
@@ -197,11 +197,11 @@ namespace nacos
         /* send all data to this function  */
         NacosString strbuf = "";
         /* we pass our 'strbuf' struct to the callback function */
-        curl_easy_setopt(curlHandle, CURLOPT_WRITEDATA, (void *)&strbuf);
+        curl_easy_setopt(curlHandle, CURLOPT_WRITEDATA, static_cast<void*>(&strbuf));
 
         /* Get response headers from the response */
         std::map<NacosString, NacosString> respheaders;
-        curl_easy_setopt(curlHandle, CURLOPT_HEADERDATA, (void *)&respheaders);
+        curl_easy_setopt(curlHandle, CURLOPT_HEADERDATA, static_cast<void*>(&respheaders));
 
         // TODO:Time out in a more precise way
         curl_easy_setopt(curlHandle, CURLOPT_TIMEOUT, readTimeoutMs / 1000);
@@ -240,7 +240,7 @@ namespace nacos
         curl_easy_getinfo(curlHandle, CURLINFO_RESPONSE_CODE, &response_code);
         HttpResult httpresp = HttpResult(response_code, strbuf, respheaders);
         httpresp.curlcode = curlres;
-        log_debug("[HTTPCli]-Get:%lu bytes retrieved\n", (unsigned long)strbuf.length());
+        log_debug("[HTTPCli]-Get:%lu bytes retrieved\n", static_cast<unsigned long>(strbuf.length()));
         log_debug("[HTTPCli]-Get:content:%s\n", strbuf.c_str());
         log_debug("[HTTPCli]-Get:resp-code:%d\n", response_code);
 
@@ -321,11 +321,11 @@ namespace nacos
 
         NacosString strbuf = "";
         /* we pass our 'strbuf' struct to the callback function */
-        curl_easy_setopt(curlHandle, CURLOPT_WRITEDATA, (void *)&strbuf);
+        curl_easy_setopt(curlHandle, CURLOPT_WRITEDATA, static_cast<void*>(&strbuf));
 
         /* Get response headers from the response */
         std::map<NacosString, NacosString> respheaders;
-        curl_easy_setopt(curlHandle, CURLOPT_HEADERDATA, (void *)&respheaders);
+        curl_easy_setopt(curlHandle, CURLOPT_HEADERDATA, static_cast<void*>(&respheaders));
 
         // TODO:Time out in a more precise way
         curl_easy_setopt(curlHandle, CURLOPT_TIMEOUT, readTimeoutMs / 1000);
@@ -366,7 +366,7 @@ namespace nacos
         HttpResult httpresp = HttpResult(response_code, strbuf, respheaders);
         httpresp.curlcode = curlres;
 
-        log_debug("[HTTPCli]-POST:%lu bytes retrieved\n", (unsigned long)strbuf.length());
+        log_debug("[HTTPCli]-POST:%lu bytes retrieved\n", static_cast<unsigned long>(strbuf.length()));
         log_debug("[HTTPCli]-POST:content:%s\n", strbuf.c_str());
         log_debug("[HTTPCli]-POST:resp-code:%d\n", response_code);
 
@@ -492,7 +492,7 @@ namespace nacos
         HttpResult httpresp = HttpResult(response_code, strbuf, respheaders);
         httpresp.curlcode = curlres;
 
-        log_debug("[HTTPCli]-PUT:%lu bytes retrieved\n", (unsigned long)strbuf.length());
+        log_debug("[HTTPCli]-PUT:%lu bytes retrieved\n", static_cast<unsigned long>(strbuf.length()));
         log_debug("[HTTPCli]-PUT:content:%s\n", strbuf.c_str());
         log_debug("[HTTPCli]-PUT:resp-code:%d\n", response_code);
 
@@ -562,11 +562,11 @@ namespace nacos
 
         NacosString strbuf = "";
         /* we pass our 'strbuf' struct to the callback function */
-        curl_easy_setopt(curlHandle, CURLOPT_WRITEDATA, (void *)&strbuf);
+        curl_easy_setopt(curlHandle, CURLOPT_WRITEDATA, static_cast<void*>(&strbuf));
 
         /* Get response headers from the response */
         std::map<NacosString, NacosString> respheaders;
-        curl_easy_setopt(curlHandle, CURLOPT_HEADERDATA, (void *)&respheaders);
+        curl_easy_setopt(curlHandle, CURLOPT_HEADERDATA, static_cast<void*>(&respheaders));
 
         // TODO:Time out in a more precise way
         curl_easy_setopt(curlHandle, CURLOPT_TIMEOUT, readTimeoutMs / 1000);
@@ -606,7 +606,7 @@ namespace nacos
         HttpResult httpresp = HttpResult(response_code, strbuf, respheaders);
         httpresp.curlcode = curlres;
 
-        log_debug("[HTTPCli]-DELETE:%lu bytes retrieved\n", (unsigned long)strbuf.length());
+        log_debug("[HTTPCli]-DELETE:%lu bytes retrieved\n", static_cast<unsigned long>(strbuf.length()));
         log_debug("[HTTPCli]-DELETE:content:%s\n", strbuf.c_str());
         log_debug("[HTTPCli]-DELETE:resp-code:%d\n", response_code);
 

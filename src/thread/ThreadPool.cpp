@@ -1,47 +1,38 @@
 #include <exception>
 #include "ThreadPool.h"
-
-#include <thread>
-
 #include "Task.h"
 
 using namespace std;
 
-namespace nacos
-{
-    DummyTask ThreadPool::_dummyTask;
+namespace nacos{
+DummyTask ThreadPool::_dummyTask;
 
-    void* ThreadPool::runInThread(void* param)
-    {
-        auto* thisobj = static_cast<ThreadPool*>(param);
+void *ThreadPool::runInThread(void *param) {
+    ThreadPool *thisobj = static_cast<ThreadPool*>(param);
 
-        log_debug("ThreadPool::runInThread()\n");
-        while (!thisobj->_stop)
-        {
-            Task* t = thisobj->take();
-            NacosString taskName = t->getTaskName();
-            log_debug("Thread got task:%s\n", taskName.c_str());
-            try
-            {
-                t->run();
-            }
-            catch (exception& e)
-            {
-                log_error("Exception happens when executing:\n");
-                log_error("Thread pool Name:%s Task name:%s\n", thisobj->_poolName.c_str(), taskName.c_str());
-                log_error("Raison:%s", e.what());
-            }
-            catch (...)
-            {
-                log_error("Unknown exception happens when executing:\n");
-                log_error("Thread pool Name:%s Task name:%s\n", thisobj->_poolName.c_str(), taskName.c_str());
-                throw;
-            }
-            log_debug("Thread finished task:%s without problem\n", taskName.c_str());
+    log_debug("ThreadPool::runInThread()\n");
+    while (!thisobj->_stop) {
+        Task *t = thisobj->take();
+        NacosString taskName = t->getTaskName();
+        log_debug("Thread got task:%s\n", taskName.c_str());
+        try {
+            t->run();
         }
-
-        return nullptr;
+        catch (exception &e) {
+            log_error("Exception happens when executing:\n");
+            log_error("Thread pool Name:%s Task name:%s\n", thisobj->_poolName.c_str(), taskName.c_str());
+            log_error("Raison:%s", e.what());
+        }
+        catch (...) {
+            log_error("Unknown exception happens when executing:\n");
+            log_error("Thread pool Name:%s Task name:%s\n", thisobj->_poolName.c_str(), taskName.c_str());
+            throw;
+        }
+        log_debug("Thread finished task:%s without problem\n", taskName.c_str());
     }
+
+    return NULL;
+}
 
     Task* ThreadPool::take()
     {
@@ -66,8 +57,8 @@ namespace nacos
             return nullptr;
         }
 
-        return &_dummyTask;
-    }
+    return &_dummyTask;
+};
 
     void ThreadPool::put(Task* t)
     {
@@ -90,46 +81,40 @@ namespace nacos
             }
         }
 
-        //The thread pool is stopped, we need to run it locally
-        log_debug("Running locally since the threadpool is stopped\n");
-        t->run();
-    };
+    //The thread pool is stopped, we need to run it locally
+    log_debug("Running locally since the threadpool is stopped\n");
+    t->run();
+};
 
-    void ThreadPool::start()
-    {
-        log_warn("ThreadPool::start() start\n");
-        if (!_stop)
-        {
-            log_warn("Thread pool named '%s' is started multiple times\n", _poolName.c_str());
-            return;
-        }
+void ThreadPool::start() {
+    log_warn("ThreadPool::start() start\n");
+    if (!_stop) {
+        log_warn("Thread pool named '%s' is started multiple times\n", _poolName.c_str());
+        return;
+    }
 
-        _stop = false;
-        for (size_t i = 0; i < _poolSize; i++)
-        {
-            auto currentThread = new Thread(_poolName + "-poolthread-" + NacosStringOps::valueOf(i), runInThread, this);
-            _threads.push_back(currentThread);
-            currentThread->start();
-        }
-    };
+    _stop = false;
+    for (size_t i = 0; i < _poolSize; i++) {
+        Thread *currentThread = new Thread(_poolName + "-poolthread-" + NacosStringOps::valueOf(i), runInThread, this);
+        _threads.push_back(currentThread);
+        currentThread->start();
+    }
+};
 
-    void ThreadPool::stop()
-    {
-        if (_stop)
-        {
-            return;
-        }
+void ThreadPool::stop() {
+    if (_stop) {
+        return;
+    }
 
         _stop = true;
         _NotEmpty.notifyAll();
         _NotFull.notifyAll();
 
-        for (auto&& _thread : _threads)
-        {
-            _thread->join();
-            delete _thread;
-        }
+    for (std::list<Thread *>::iterator it = _threads.begin(); it != _threads.end(); it++) {
+        (*it)->join();
+        delete *it;
+    }
 
-        _threads.clear();
-    };
-} //namespace nacos
+    _threads.clear();
+};
+}//namespace nacos

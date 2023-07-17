@@ -304,7 +304,7 @@ namespace nacos
 
     void* ServerListManager::pullWorkerThread(void* param)
     {
-        auto thisMgr = (ServerListManager*)param;
+        auto thisMgr = static_cast<ServerListManager*>(param);
         while (thisMgr->started)
         {
             try
@@ -361,7 +361,7 @@ namespace nacos
         {
             NacosString threadName = getClusterName() + "," + getEndpoint() + ":" +
                 NacosStringOps::valueOf(getEndpointPort()) + "-" + getNamespace();
-            _pullThread = new Thread(threadName, pullWorkerThread, (void*)this);
+            _pullThread = new Thread(threadName, pullWorkerThread, static_cast<void*>(this));
         }
         _pullThread->start();
     }

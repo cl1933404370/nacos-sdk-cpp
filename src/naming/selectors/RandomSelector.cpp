@@ -12,7 +12,7 @@ std::list<Instance> RandomSelector::select(const std::list<Instance> &instancesT
     if (maxSvrSlot == 1) {
         selectedServer = 0;
     } else {
-        selectedServer = RandomUtils::random(0, maxSvrSlot - 1);
+        selectedServer = RandomUtils::random(0, static_cast<int>(maxSvrSlot) - 1);
     }
     log_debug("RandomSelector::select:%d\n", selectedServer);
 

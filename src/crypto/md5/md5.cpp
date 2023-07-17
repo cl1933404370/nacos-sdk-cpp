@@ -113,7 +113,7 @@ void MD5::reset() {
 
 /* Updating the context with a input buffer. */
 void MD5::update(const void *input, size_t length) {
-    update((const byte *) input, length);
+    update(static_cast<const byte*>(input), length);
 }
 
 /* Updating the context with a string. */
@@ -146,7 +146,7 @@ context.
 */
 void MD5::update(const byte *input, size_t length) {
 
-    uint32 i, index, partLen;
+    uint32 i, index;
 
     _finished = false;
 
@@ -154,15 +154,13 @@ void MD5::update(const byte *input, size_t length) {
     index = (uint32)((_count[0] >> 3) & 0x3f);
 
     /* update number of bits */
-    if ((_count[0] += ((uint32) length << 3)) < ((uint32) length << 3)) {
+    if ((_count[0] += (static_cast<uint32>(length) << 3)) < (static_cast<uint32>(length) << 3)) {
         ++_count[1];
     }
-    _count[1] += ((uint32) length >> 29);
-
-    partLen = 64 - index;
+    _count[1] += (static_cast<uint32>(length) >> 29);
 
     /* transform as many times as possible. */
-    if (length >= partLen) {
+    if (const uint32 partLen = 64 - index; length >= partLen) {
 
         memcpy(&_buffer[index], input, partLen);
         transform(_buffer);
@@ -303,10 +301,10 @@ a multiple of 4.
 void MD5::encode(const uint32 *input, byte *output, size_t length) {
 
     for (size_t i = 0, j = 0; j < length; ++i, j += 4) {
-        output[j] = (byte)(input[i] & 0xff);
-        output[j + 1] = (byte)((input[i] >> 8) & 0xff);
-        output[j + 2] = (byte)((input[i] >> 16) & 0xff);
-        output[j + 3] = (byte)((input[i] >> 24) & 0xff);
+        output[j] = static_cast<byte>(input[i] & 0xff);
+        output[j + 1] = static_cast<byte>((input[i] >> 8) & 0xff);
+        output[j + 2] = static_cast<byte>((input[i] >> 16) & 0xff);
+        output[j + 3] = static_cast<byte>((input[i] >> 24) & 0xff);
     }
 }
 
@@ -315,8 +313,8 @@ a multiple of 4.
 */
 void MD5::decode(const byte *input, uint32 *output, size_t length) {
     for (size_t i = 0, j = 0; j < length; ++i, j += 4) {
-        output[i] = ((uint32) input[j]) | (((uint32) input[j + 1]) << 8) |
-                    (((uint32) input[j + 2]) << 16) | (((uint32) input[j + 3]) << 24);
+        output[i] = static_cast<uint32>(input[j]) | (static_cast<uint32>(input[j + 1]) << 8) |
+                    (static_cast<uint32>(input[j + 2]) << 16) | (static_cast<uint32>(input[j + 3]) << 24);
     }
 }
 

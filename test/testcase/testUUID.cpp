@@ -18,7 +18,7 @@ bool testUUID() {
 }
 
 void *UUIDThreadFunc(void *param) {
-    Thread *thisThread = *((Thread **) param);
+    Thread *thisThread = *static_cast<Thread**>(param);
     for (int i = 0; i < 100; i++) {
         log_debug("Thread %s UUID: %s\n", thisThread->getThreadName().c_str(), UuidUtils::generateUuid().c_str());
     }
@@ -34,7 +34,7 @@ bool testUUIDMT() {
     Thread *threads[10] = {NULL};
     for (int i = 0; i < 10; i++) {
         NacosString threadName = "UUIDThread-" + NacosStringOps::valueOf(i);
-        threads[i] = new Thread(threadName, UUIDThreadFunc, (void *) &threads[i]);
+        threads[i] = new Thread(threadName, UUIDThreadFunc, static_cast<void*>(&threads[i]));
         threads[i]->start();
     }
 

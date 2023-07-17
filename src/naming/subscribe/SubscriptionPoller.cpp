@@ -86,7 +86,7 @@ void SubscriptionPoller::stop()
 
 void *SubscriptionPoller::pollingThreadFunc(void *parm)
 {
-    SubscriptionPoller *thisObj = (SubscriptionPoller*)parm;
+    SubscriptionPoller *thisObj = static_cast<SubscriptionPoller*>(parm);
     while (thisObj->_started) {
         log_debug("SubscriptionPoller::pollingThreadFunc start polling, interval = %d\n", thisObj->_pollingInterval);
         map<NacosString, PollingData> copiedList;

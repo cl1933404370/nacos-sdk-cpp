@@ -52,7 +52,7 @@ private:
     std::map<NacosString, NacosString> metadata;
 public:
     static ServiceInfo2 nullServiceInfo2;
-    ServiceInfo2() {
+    ServiceInfo2():protectThreshold(0.0) {
         nullObj = true;
         namespaceIdIsSet = false;
         groupNameIsSet = false;

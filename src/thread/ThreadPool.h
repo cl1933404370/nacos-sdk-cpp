@@ -29,7 +29,6 @@ namespace nacos {
         Mutex _lock;
         Condition _NotEmpty;
         Condition _NotFull;
-#endif
         static DummyTask _dummyTask;
 
         static void* runInThread(void* param);

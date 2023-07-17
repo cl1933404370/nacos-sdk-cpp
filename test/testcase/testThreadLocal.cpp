@@ -9,16 +9,18 @@ using namespace std;
 using namespace nacos;
 
 ThreadLocal<NacosString> threadLocal;
-ThreadLocal<int*> threadLocalPtr(NULL);
+ThreadLocal<int*> threadLocalPtr(nullptr);
 
 class ThreadLocalWithInit : public ThreadLocal<int*> {
 public:
-    void onCreate(int **value){
-        *value = (int*)0xffff;
+    void onCreate(int **value) override
+    {
+        *value = reinterpret_cast<int*>(0xffff);
         log_debug("ThreadLocalWithInit::onCreate is called, ptr value: %p\n", *value);
     }
 
-    void onDestroy(int **value) {
+    void onDestroy(int **value) override
+    {
         log_debug("ThreadLocalWithInit::onDestroy is called, ptr value: %p\n", *value);
     }
 };
@@ -30,38 +32,40 @@ void *ThreadLocalFuncs4Ptr(void *param) {
     NACOS_ASSERT(threadLocalPtr.get() == NULL);
 
     for (int i = 0; i < 100; i++) {
-        int* rndPtr = reinterpret_cast<int*>(RandomUtils::random(0, 1000));
+        int* rndPtr = nullptr;
+        *rndPtr = RandomUtils::random(0, 1000);
         threadLocalPtr.set(rndPtr);
 
         NACOS_ASSERT(rndPtr == threadLocalPtr.get())
     }
 
-    return NULL;
+    return nullptr;
 }
 
 void *ThreadLocalFuncs4PtrWithInitializer(void *param) {
     log_debug("threadLocalPtr.get() : %p, should be 0xFFFF\n", threadLocalPtrWithInitializer.get());
-    NACOS_ASSERT(threadLocalPtrWithInitializer.get() == (int*)0xFFFF);
+    NACOS_ASSERT(threadLocalPtrWithInitializer.get() == reinterpret_cast<int*>(0xFFFF));
 
     for (int i = 0; i < 100; i++) {
-        int* rndPtr = reinterpret_cast<int*>(RandomUtils::random(0, 1000));
+        int* rndPtr = nullptr;
+        *rndPtr = RandomUtils::random(0, 1000);
         threadLocalPtrWithInitializer.set(rndPtr);
 
         NACOS_ASSERT(rndPtr == threadLocalPtrWithInitializer.get())
     }
 
-    return NULL;
+    return nullptr;
 }
 
 void *ThreadLocalFuncs(void *param) {
-    Thread *thisThread = *((Thread **) param);
+    Thread *thisThread = *static_cast<Thread**>(param);
 
     for (int i = 0; i < 100; i++) {
         threadLocal.set(UuidUtils::generateUuid().c_str());
         log_debug("Thread %s UUID: %s\n", thisThread->getThreadName().c_str(), threadLocal.get().c_str());
     }
 
-    return NULL;
+    return nullptr;
 }
 
 bool testThreadLocal() {
@@ -69,10 +73,10 @@ bool testThreadLocal() {
 
     cout << "Generating threads..." << endl;
 
-    Thread *threads[10] = {NULL};
+    Thread *threads[10] = {nullptr};
     for (int i = 0; i < 10; i++) {
         NacosString threadName = "Thread-" + NacosStringOps::valueOf(i);
-        threads[i] = new Thread(threadName, ThreadLocalFuncs, (void *) &threads[i]);
+        threads[i] = new Thread(threadName, ThreadLocalFuncs, static_cast<void*>(&threads[i]));
         threads[i]->start();
     }
 
@@ -94,7 +98,7 @@ bool testThreadLocalPtr() {
     Thread *threads[10] = {NULL};
     for (int i = 0; i < 10; i++) {
         NacosString threadName = "ThreadPtr-" + NacosStringOps::valueOf(i);
-        threads[i] = new Thread(threadName, ThreadLocalFuncs4Ptr, (void *) &threads[i]);
+        threads[i] = new Thread(threadName, ThreadLocalFuncs4Ptr, static_cast<void*>(&threads[i]));
         threads[i]->start();
     }
 
@@ -116,7 +120,7 @@ bool testThreadLocalPtrWithInitializer() {
     Thread *threads[10] = {NULL};
     for (int i = 0; i < 10; i++) {
         NacosString threadName = "ThreadPtr-" + NacosStringOps::valueOf(i);
-        threads[i] = new Thread(threadName, ThreadLocalFuncs4PtrWithInitializer, (void *) &threads[i]);
+        threads[i] = new Thread(threadName, ThreadLocalFuncs4PtrWithInitializer, static_cast<void*>(&threads[i]));
         threads[i]->start();
     }
 
