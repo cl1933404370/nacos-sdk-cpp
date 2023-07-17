@@ -74,7 +74,7 @@ namespace nacos
         {
             LockGuard _lockGuard(_lock);
             log_debug("ThreadPool:::::taskList:%d poolSize:%d stop:%d\n", _taskList.size(), _poolSize, _stop);
-            while (!(_taskList.size() < _poolSize) && !_stop)
+            while (_taskList.size() >= _poolSize && !_stop)
             {
                 _NotFull.wait();
             }
@@ -83,7 +83,7 @@ namespace nacos
             {
                 {
                     lock.lock();
-                    _taskList.push_back(std::move(t));
+                    _taskList.push_back(t);
                 }
                 _NotEmpty.notify();
                 return;
