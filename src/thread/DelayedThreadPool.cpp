@@ -29,7 +29,7 @@ public:
                     _container._lockForScheduleTasks.unlock();
                     return;
                 }
-                _container._delayTaskNotEmpty.wait();
+                _container._delayTaskNotEmpty.wait([this] {return !_container._scheduledTasks.empty(); });
                 log_debug("[DelayedWorker] wake up due to incoming event\n");
             }
 
@@ -71,7 +71,7 @@ public:
                         _container._lockForScheduleTasks.unlock();
                         return;
                     }
-                    _container._delayTaskNotEmpty.wait(it->first - now_time);
+                    _container._delayTaskNotEmpty.wait([&it,&now_time]{return it->first <= now_time;},it->first - now_time);
                 }
             }
 
