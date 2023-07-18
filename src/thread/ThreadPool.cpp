@@ -31,13 +31,13 @@ void *ThreadPool::runInThread(void *param) {
         log_debug("Thread finished task:%s without problem\n", taskName.c_str());
     }
 
-    return NULL;
+    return nullptr;
 }
 
     Task* ThreadPool::take()
     {
 
-    LockGuard _lockGuard(_lock);
+		LockGuard _lockGuard(_lock);
 
         while (_taskList.empty() && !_stop)
         {
@@ -46,9 +46,8 @@ void *ThreadPool::runInThread(void *param) {
 
         if (!_taskList.empty())
         {
-            Task* curTask = std::move(_taskList.front());
+            Task* curTask = _taskList.front();
             _taskList.pop_front();
-            lock.unlock();
             _NotFull.notify();
             return curTask;
         }
@@ -57,8 +56,8 @@ void *ThreadPool::runInThread(void *param) {
             return nullptr;
         }
 
-    return &_dummyTask;
-};
+		return &_dummyTask;
+	};
 
     void ThreadPool::put(Task* t)
     {
@@ -69,11 +68,11 @@ void *ThreadPool::runInThread(void *param) {
             {
                 _NotFull.wait();
             }
-            lock.unlock();
+            _lock.unlock();
             if (!_stop)
             {
                 {
-                    lock.lock();
+                    _lock.lock();
                     _taskList.push_back(t);
                 }
                 _NotEmpty.notify();

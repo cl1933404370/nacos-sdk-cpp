@@ -11,8 +11,8 @@
 // #endif
 //
 // #elif defined(__linux__) || defined(__APPLE__)
-// #ifdef DEEPNETAPI_EXPORT
-// #define DEEPNETAPI __attribute__((visibility("default")))
+// #ifdef DEEPNETAPI_EXPORTlity("default")
+// #define DEEPNETAPI __attribute__((visibi))
 // #else
 // #define DEEPNETAPI
 // #endif // DEEPNETAPI_EXPORT
@@ -38,17 +38,14 @@ namespace nacos
 		friend class Condition;
 
 	private:
-		TID_T _holder;
-		pthread_mutex_t _mutex{};
-		pthread_mutexattr_t _attr{};
+		TID_T _holder{};
+		pthread_mutex_t _mutex = pthread_mutex_t{};
 	public:
-		Mutex() { 
-			pthread_mutexattr_init(&_attr);
-			pthread_mutexattr_settype(&_attr, PTHREAD_MUTEX_RECURSIVE);
-			pthread_mutex_init(&_mutex, &_attr); };
+		Mutex() {
+			pthread_mutex_init(&_mutex, nullptr);
+		};
 
 		~Mutex() {
-			pthread_mutexattr_destroy(&_attr);
 			pthread_mutex_destroy(&_mutex); };
 
 		void lock()
@@ -77,12 +74,16 @@ namespace nacos
 		pthread_cond_t _cond{};
 
 	public:
-		explicit Condition(Mutex &mutex) : _mutex(mutex) { pthread_cond_init(&_cond, nullptr); };
+		explicit Condition(Mutex &mutex) : _mutex(mutex)
+		{
+			pthread_cond_init(&_cond, nullptr);
+		};
 
 		~Condition() { pthread_cond_destroy(&_cond); };
 
 		int wait()
 		{
+			//_mutex.unassignHolder();
 			return pthread_cond_wait(&_cond, _mutex.getPthreadMutex());
 		}
 
@@ -104,7 +105,7 @@ namespace nacos
 			wakeup_time.tv_sec = now.tv_sec;
 			// std::cout << " millis:" << millis
 			//<< "   wakeup time:sec:" << wakeup_time.tv_sec << "  nsec:" << wakeup_time.tv_nsec << std::endl;
-
+			//_mutex.unassignHolder();
 			return pthread_cond_timedwait(&_cond, _mutex.getPthreadMutex(), &wakeup_time);
 		}
 

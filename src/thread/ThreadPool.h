@@ -6,12 +6,12 @@
 #include "Thread.h"
 #include "Task.h"
 #include "NacosString.h"
-#include "src/thread/Mutex.h"
-#ifdef _WIN32 || _MSC_VER
-#include <thread>
-#include <memory>
-#include <mutex>
-#endif
+//#include "src/thread/Mutex.h"
+//#ifdef _WIN32 || _MSC_VER
+//#include <thread>
+//#include <memory>
+//#include <mutex>
+//#endif
 
 
 namespace nacos {
@@ -26,9 +26,9 @@ namespace nacos {
     private:
         NacosString _poolName;
         std::deque<Task*> _taskList;
-        Mutex _lock;
-        Condition _NotEmpty;
-        Condition _NotFull;
+        mutable  Mutex _lock;
+        mutable  Condition _NotEmpty;
+        mutable Condition _NotFull;
         static DummyTask _dummyTask;
 
         static void* runInThread(void* param);
@@ -59,4 +59,5 @@ namespace nacos {
         virtual void stop();
     };
 
-}//namespace 
+}//namespace
+#endif
