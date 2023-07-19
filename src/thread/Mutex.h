@@ -31,6 +31,7 @@ namespace nacos
 #if defined(_WIN32) || defined(_MSC_VER)
         std::mutex _mutex;
         std::unique_ptr<std::unique_lock<std::mutex>> _lock;
+        std::atomic<bool> _lockFlag{true};
 #else
         pthread_mutex_t _mutex = pthread_mutex_t{};
 #endif
@@ -45,6 +46,7 @@ namespace nacos
         ~Mutex() {
 
 #if defined(_WIN32) || defined(_MSC_VER)
+            _lockFlag = false;
 #else
             pthread_mutex_destroy(&_mutex);
 #endif
@@ -54,13 +56,19 @@ namespace nacos
         {
 
 #if defined(_WIN32) || defined(_MSC_VER)
-	        if (!_lock)
+	        if (_lockFlag)
 	        {
-                _lock = std::make_unique<std::unique_lock<std::mutex>>(_mutex);
-	        }
-	        else
-	        {
-				_lock->lock();
+		         if (!_lock)
+		        {
+	                _lock = std::make_unique<std::unique_lock<std::mutex>>(_mutex);
+		        }
+		        else
+		        {
+					if (!_lock->owns_lock())
+				    {
+				        _lock->lock();
+				    }
+		        }
 	        }
 #else
             pthread_mutex_lock(&_mutex);
@@ -195,10 +203,28 @@ namespace nacos
     public:
         explicit LockGuard(Mutex& mutex) : mutex_(mutex)
         {
+#if defined(_WIN32) || defined(_MSC_VER)
+	        if (1)
+	        {
+				mutex_.lock();
+	        }
+#else
 	       mutex_.lock();
+#endif
         };
 
-        ~LockGuard() { mutex_.unlock(); };
+        ~LockGuard()
+        {
+
+#if defined(_WIN32) || defined(_MSC_VER)
+		if (1)
+		{
+			mutex_.unlock();
+		}
+#else
+	    mutex_.unlock();
+#endif
+        };
     };
 } // namespace nacos
 
