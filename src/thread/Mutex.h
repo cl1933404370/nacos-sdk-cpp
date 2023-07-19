@@ -49,17 +49,22 @@ namespace nacos
 #endif
         }
 
-        void lock()
-        {
+        
 
 #if defined(_WIN32) || defined(_MSC_VER)
-            _mutex.lock();
-#else
-            pthread_mutex_lock(&_mutex);
-#endif
+        void lock()
+        {
             assignHolder();
-        };
-
+            _mutex.lock();
+        }
+#else
+        void lock()
+        {
+            pthread_mutex_lock(&_mutex);
+            assignHolder();
+        }
+#endif
+           
         void unlock()
         {
             
@@ -102,14 +107,10 @@ namespace nacos
 #else
             pthread_cond_init(&_cond, nullptr);
 #endif
-
-
-
         };
 
         ~Condition() {
 #if defined(_WIN32) || defined(_MSC_VER)
-            _cond.~condition_variable();
 #else
             pthread_cond_destroy(&_cond);
 #endif
@@ -117,9 +118,10 @@ namespace nacos
 
 #if defined(_WIN32) || defined(_MSC_VER)
         template <typename PRED>
-        void wait(PRED waitForCondition) {
-            std::unique_lock<std::mutex> lock1(*_mutex.getPthreadMutex());
-            _cond.wait(lock1, waitForCondition);
+        std::unique_lock<std::mutex> wait(PRED waitForCondition) {
+            std::unique_lock lock{*_mutex.getPthreadMutex()};
+            _cond.wait(lock, waitForCondition);
+            return lock;
         }
 #else
         int wait()
@@ -131,12 +133,12 @@ namespace nacos
 
 #if defined(_WIN32) || defined(_MSC_VER)
         template <typename PRED>
-        int wait(PRED waitForCondition, long millis) {
+        std::unique_lock<std::mutex> wait(PRED waitForCondition, long millis) {
             // std::cout << " millis:" << millis
             //<< "   wakeup time:sec:" << wakeup_time.tv_sec << "  nsec:" << wakeup_time.tv_nsec << std::endl;
-            std::unique_lock<std::mutex> lock1(*_mutex.getPthreadMutex());
-            bool status = _cond.wait_for(lock1, std::chrono::milliseconds(millis), waitForCondition);
-            return  status;
+            std::unique_lock lock{*_mutex.getPthreadMutex()};
+            bool status = _cond.wait_for(lock, std::chrono::milliseconds(millis), waitForCondition);
+            return  lock;
         }
 #else
         int wait(long millis)
@@ -186,6 +188,9 @@ namespace nacos
     class LockGuard
     {
         Mutex& mutex_;
+#if defined(_WIN32) || defined(_MSC_VER)
+#endif
+
 
     public:
         explicit LockGuard(Mutex& mutex) : mutex_(mutex)
