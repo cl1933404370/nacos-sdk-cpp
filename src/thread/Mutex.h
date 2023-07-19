@@ -30,8 +30,6 @@ namespace nacos
         TID_T _holder{};
 #if defined(_WIN32) || defined(_MSC_VER)
         std::mutex _mutex;
-        std::unique_ptr<std::unique_lock<std::mutex>> _lock;
-        std::atomic<bool> _lockFlag{true};
 #else
         pthread_mutex_t _mutex = pthread_mutex_t{};
 #endif
@@ -46,7 +44,6 @@ namespace nacos
         ~Mutex() {
 
 #if defined(_WIN32) || defined(_MSC_VER)
-            _lockFlag = false;
 #else
             pthread_mutex_destroy(&_mutex);
 #endif
@@ -56,20 +53,7 @@ namespace nacos
         {
 
 #if defined(_WIN32) || defined(_MSC_VER)
-	        if (_lockFlag)
-	        {
-		         if (!_lock)
-		        {
-	                _lock = std::make_unique<std::unique_lock<std::mutex>>(_mutex);
-		        }
-		        else
-		        {
-					if (!_lock->owns_lock())
-				    {
-				        _lock->lock();
-				    }
-		        }
-	        }
+            _mutex.lock();
 #else
             pthread_mutex_lock(&_mutex);
 #endif
@@ -78,27 +62,28 @@ namespace nacos
 
         void unlock()
         {
+            
             unassignHolder();
 #if defined(_WIN32) || defined(_MSC_VER)
-            _lock->unlock();
+            _mutex.unlock();
 #else
             pthread_mutex_unlock(&_mutex);
 #endif
         };
 
 #if defined(_WIN32) || defined(_MSC_VER)
-        std::unique_lock<std::mutex>* getPthreadMutex()
+        std::mutex* getPthreadMutex()
         {
-            return _lock.get();
+            return &_mutex;
         }
 #else
         pthread_mutex_t* getPthreadMutex() { return &_mutex; };
 
 #endif
-        void assignHolder() { _holder = gettidv1();};
+        void assignHolder() { _holder = gettidv1(); };
 
         void unassignHolder() { _holder = nullptr; };
-    };
+        };
 
     class Condition
     {
@@ -122,18 +107,19 @@ namespace nacos
 
         };
 
-        ~Condition() { 
+        ~Condition() {
 #if defined(_WIN32) || defined(_MSC_VER)
             _cond.~condition_variable();
 #else
-        pthread_cond_destroy(&_cond); 
+            pthread_cond_destroy(&_cond);
 #endif
         };
 
 #if defined(_WIN32) || defined(_MSC_VER)
         template <typename PRED>
         void wait(PRED waitForCondition) {
-            _cond.wait(*_mutex.getPthreadMutex(), waitForCondition);
+            std::unique_lock<std::mutex> lock1(*_mutex.getPthreadMutex());
+            _cond.wait(lock1, waitForCondition);
         }
 #else
         int wait()
@@ -148,7 +134,8 @@ namespace nacos
         int wait(PRED waitForCondition, long millis) {
             // std::cout << " millis:" << millis
             //<< "   wakeup time:sec:" << wakeup_time.tv_sec << "  nsec:" << wakeup_time.tv_nsec << std::endl;
-            bool status = _cond.wait_for(*_mutex.getPthreadMutex(), std::chrono::milliseconds(millis), waitForCondition);
+            std::unique_lock<std::mutex> lock1(*_mutex.getPthreadMutex());
+            bool status = _cond.wait_for(lock1, std::chrono::milliseconds(millis), waitForCondition);
             return  status;
         }
 #else
@@ -204,12 +191,12 @@ namespace nacos
         explicit LockGuard(Mutex& mutex) : mutex_(mutex)
         {
 #if defined(_WIN32) || defined(_MSC_VER)
-	        if (1)
-	        {
-				mutex_.lock();
-	        }
+            if (1)
+            {
+                mutex_.lock();
+            }
 #else
-	       mutex_.lock();
+            mutex_.lock();
 #endif
         };
 
@@ -217,15 +204,15 @@ namespace nacos
         {
 
 #if defined(_WIN32) || defined(_MSC_VER)
-		if (1)
-		{
-			mutex_.unlock();
-		}
+            if (1)
+            {
+                mutex_.unlock();
+            }
 #else
-	    mutex_.unlock();
+            mutex_.unlock();
 #endif
         };
     };
-} // namespace nacos
+        } // namespace nacos
 
 #endif
