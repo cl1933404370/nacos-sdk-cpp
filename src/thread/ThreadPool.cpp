@@ -96,9 +96,10 @@ void ThreadPool::stop() {
         _NotEmpty.notifyAll();
         _NotFull.notifyAll();
 
-    for (std::list<Thread *>::iterator it = _threads.begin(); it != _threads.end(); it++) {
-        (*it)->join();
-        delete *it;
+    for (const auto& thread : _threads)
+    {
+        thread->join();
+        delete thread;
     }
 
     _threads.clear();
