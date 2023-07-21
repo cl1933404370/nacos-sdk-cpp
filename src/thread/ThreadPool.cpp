@@ -34,40 +34,38 @@ void *ThreadPool::runInThread(void *param) {
     return nullptr;
 }
 
-    Task* ThreadPool::take()
+Task* ThreadPool::take()
+{
+
+	LockGuard _lockGuard(_lock);
+    _NotEmpty.wait([this] {return !(_taskList.empty() && !_stop); });
+
+    if (!_taskList.empty())
     {
-
-		LockGuard _lockGuard(_lock);
-        _NotEmpty.wait([this] {return !(_taskList.empty() && !_stop); });
-
-        if (!_taskList.empty())
-        {
-            Task* curTask = _taskList.front();
-            _taskList.pop_front();
-            _NotFull.notify();
-            return curTask;
-        }
-        if (_stop)
-        {
-            return nullptr;
-        }
-
-		return &_dummyTask;
-	};
-
-    void ThreadPool::put(Task* t)
+        Task* curTask = _taskList.front();
+        _taskList.pop_front();
+        _NotFull.notify();
+        return curTask;
+    }
+    if (_stop)
     {
-        {
-            LockGuard _lockGuard(_lock);
-            log_debug("ThreadPool:::::taskList:%d poolSize:%d stop:%d\n", _taskList.size(), _poolSize, _stop);
-            _NotFull.wait([&]{return !(_taskList.size() >= _poolSize && !_stop);});
-            if (!_stop)
-            {
-                _taskList.push_back(t);
-                _NotEmpty.notify();
-                return;
-            }
-        }
+        return nullptr;
+    }
+
+	return &_dummyTask;
+};
+
+void ThreadPool::put(Task* t)
+{
+    LockGuard _lockGuard(_lock);
+    log_debug("ThreadPool:::::taskList:%d poolSize:%d stop:%d\n", _taskList.size(), _poolSize, _stop);
+    _NotFull.wait([&]{return !(_taskList.size() >= _poolSize && !_stop);});
+    if (!_stop)
+    {
+        _taskList.push_back(t);
+        _NotEmpty.notify();
+        return;
+    }
 
     //The thread pool is stopped, we need to run it locally
     log_debug("Running locally since the threadpool is stopped\n");
