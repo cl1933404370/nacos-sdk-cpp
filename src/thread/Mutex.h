@@ -31,7 +31,7 @@ namespace nacos
 			std::condition_variable d_condition;
 
 			void lock() { d_mutex.lock(); }
-			void unlock() { d_mutex.unlock(); d_condition.notify_one(); }
+			void unlock() { d_mutex.unlock();}
 
 			void notify_one() {  d_condition.notify_one();}
 			void notify_all() {  d_condition.notify_all(); }
@@ -143,8 +143,9 @@ namespace nacos
 
 #if defined(_WIN32) || defined(_MSC_VER)
 		template <typename PRED>
-		std::unique_lock<std::mutex> wait(PRED waitForCondition) {
-			return _mutex.makeLockWithWait(waitForCondition);
+		int wait(PRED waitForCondition) {
+			const auto lock =_mutex.makeLockWithWait(waitForCondition);
+			return 0;
 		}
 #else
 		int wait()
@@ -156,10 +157,11 @@ namespace nacos
 
 #if defined(_WIN32) || defined(_MSC_VER)
 		template <typename PRED>
-		std::unique_lock<std::mutex> wait(PRED waitForCondition, long millis) {
+		int wait(PRED waitForCondition, long millis) {
 			// std::cout << " millis:" << millis
 			//<< "   wakeup time:sec:" << wakeup_time.tv_sec << "  nsec:" << wakeup_time.tv_nsec << std::endl;
-			return _mutex.makeLockWithWait(waitForCondition, millis);
+			const auto lock = _mutex.makeLockWithWait(waitForCondition, millis);
+			return 0;
 		}
 #else
 		int wait(long millis)
@@ -217,7 +219,7 @@ namespace nacos
 		explicit LockGuard(Mutex& mutex) : mutex_(mutex)
 		{
 #if defined(_WIN32) || defined(_MSC_VER)
-			mutex_.lock();
+			const auto aa = mutex_.makeLockWithNotify();
 #else
 			mutex_.lock();
 #endif
@@ -227,7 +229,6 @@ namespace nacos
 		{
 
 #if defined(_WIN32) || defined(_MSC_VER)
-			mutex_.unlock();
 #else
 			mutex_.unlock();
 #endif
