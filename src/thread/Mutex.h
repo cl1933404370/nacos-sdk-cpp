@@ -219,7 +219,7 @@ namespace nacos
 		explicit LockGuard(Mutex& mutex) : mutex_(mutex)
 		{
 #if defined(_WIN32) || defined(_MSC_VER)
-			const auto aa = mutex_.makeLockWithNotify();
+			const auto&& aa = mutex_.makeLockWithNotify();
 #else
 			mutex_.lock();
 #endif
