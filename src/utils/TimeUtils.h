@@ -18,7 +18,7 @@ namespace nacos
     class TimeUtils
     {
     public:
-        static int64_t getCurrentTimeInMs();
+        static uint64_t getCurrentTimeInMs();
         static void getCurrentTimeInStruct(struct timeval &tv);
         std::string TimeValueToString(const timeval& tv);
         std::string TimevalToString(const timeval& tv);

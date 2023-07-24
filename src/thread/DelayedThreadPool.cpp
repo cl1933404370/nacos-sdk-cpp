@@ -52,7 +52,7 @@ public:
             log_debug("[DelayedWorker] iterating on _scheduledTasks\n");
             std::vector< std::pair<uint64_t, Task*> >::iterator it;
             while ((it = _container._scheduledTasks.begin()) != _container._scheduledTasks.end()) {
-                int64_t now_time = TimeUtils::getCurrentTimeInMs();
+                uint64_t now_time = TimeUtils::getCurrentTimeInMs();
                 log_debug("[DelayedWorker] now = %ld wakeup time = %ld\n", now_time, it->first);
                 if (it->first <= now_time) {
                     Task *task = it->second;
@@ -71,7 +71,7 @@ public:
                         _container._lockForScheduleTasks.unlock();
                         return;
                     }
-                    _container._delayTaskNotEmpty.wait([&it,&now_time]{return it->first <= now_time;},it->first - now_time);
+                    _container._delayTaskNotEmpty.wait([/*it,now_time*/]{/*return it->first <= now_time;*/return true;},it->first - now_time);
                 }
             }
 
