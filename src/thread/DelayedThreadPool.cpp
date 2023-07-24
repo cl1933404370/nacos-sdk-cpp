@@ -50,7 +50,7 @@ public:
             * */
 
             log_debug("[DelayedWorker] iterating on _scheduledTasks\n");
-            std::vector< std::pair<long, Task*> >::iterator it;
+            std::vector< std::pair<uint64_t, Task*> >::iterator it;
             while ((it = _container._scheduledTasks.begin()) != _container._scheduledTasks.end()) {
                 int64_t now_time = TimeUtils::getCurrentTimeInMs();
                 log_debug("[DelayedWorker] now = %ld wakeup time = %ld\n", now_time, it->first);
@@ -115,17 +115,14 @@ struct tagAscOrdFunctor{
 
 #include <stdio.h>
 //futureTimeToRun: time in MS
-void DelayedThreadPool::schedule(Task *t, long futureTimeToRun) {
+void DelayedThreadPool::schedule(Task *t, uint64_t futureTimeToRun) {
     if (_stop) {
         return;
     }
-    if (futureTimeToRun < 0) {
-        throw NacosException(NacosException::INVALID_PARAM, "futureTimeToRun must not be negative");
-    }
     log_debug("DelayedThreadPool::schedule() name=%s future = %ld\n", t->getTaskName().c_str(), futureTimeToRun);
-    std::pair<long, Task*> scheduledTask = std::make_pair (futureTimeToRun, t);
     {
-        LockGuard __lockSchedTasks(_lockForScheduleTasks);
+	    const std::pair<uint64_t, Task*> scheduledTask = std::make_pair (futureTimeToRun, t);
+	    LockGuard __lockSchedTasks(_lockForScheduleTasks);
         _scheduledTasks.push_back(scheduledTask);
         std::sort(_scheduledTasks.begin(), _scheduledTasks.end(), ascOrdFunctor);
         _delayTaskNotEmpty.notifyAll();

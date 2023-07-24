@@ -3,21 +3,22 @@ cmake_minimum_required(VERSION 3.4.1)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_C_STANDARD 17)
 
-#设置C++版本
+# 设置C++版本
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS ON)
 
-#设置C版本
+# 设置C版本
 set(CMAKE_C_STANDARD 17)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_C_EXTENSIONS ON)
 
-#win32下添加宏定义
+# win32下添加宏定义
 if(WIN32)
 	add_definitions(-DWIN32)
 	add_definitions(-D_WIN32)
 	add_definitions(-DNOMINMAX)
+
 	# add_definitions(-DUNICODE)
 	# add_definitions(-D_UNICODE)
 	add_definitions(-DWIN32_LEAN_AND_MEAN)
@@ -25,6 +26,7 @@ if(WIN32)
 	add_definitions(-DEIGEN_FORCE_INLINING)
 	add_definitions(-DGLOG_NO_ABBREVIATED_SEVERITIES)
 	add_definitions(-D_SILENCE_ALL_CXX23_DEPRECATION_WARNINGS)
+
 	# add_definitions(-D_CRT_SECURE_NO_WARNINGS)
 	# add_definitions(-D_SCL_SECURE_NO_WARNINGS)
 	# add_definitions(-D_CRT_SECURE_NO_DEPRECATE)
@@ -43,8 +45,6 @@ project(nacos-sdk-cpp)
 # if (CMAKE_VERSION VERSION_GREATER 3.12)
 # set_property(TARGET nacos-sdk-cpp PROPERTY CXX_STANDARD 20)
 # endif()
-
-
 
 # add_definitions(-DNACOS_AUTH)
 # add_definitions(-DNACOS_SPAS)
@@ -93,13 +93,14 @@ add_library(nacos-cli SHARED ${SRCS_DIRS})
 add_library(nacos-cli-static STATIC ${SRCS_DIRS})
 
 set(THREADS_PREFER_PTHREAD_FLAG ON)
-target_link_libraries(nacos-cli PRIVATE Threads::Threads ZLIB::ZLIB Folly::folly Folly::folly_deps Folly::follybenchmark Folly::folly_test_util CURL::libcurl)
-target_link_libraries(nacos-cli-static PRIVATE Threads::Threads ZLIB::ZLIB Folly::folly Folly::folly_deps Folly::follybenchmark Folly::folly_test_util CURL::libcurl)
-target_link_libraries(nacos-cli.out PRIVATE Threads::Threads ZLIB::ZLIB Folly::folly Folly::folly_deps Folly::follybenchmark Folly::folly_test_util CURL::libcurl)
+target_link_libraries(nacos-cli PRIVATE Threads::Threads ZLIB::ZLIB Folly::folly Folly::folly_deps Folly::follybenchmark Folly::folly_test_util CURL::libcurl rapidjson)
+target_link_libraries(nacos-cli-static PRIVATE Threads::Threads ZLIB::ZLIB Folly::folly Folly::folly_deps Folly::follybenchmark Folly::folly_test_util CURL::libcurl rapidjson)
+target_link_libraries(nacos-cli.out PRIVATE Threads::Threads ZLIB::ZLIB Folly::folly Folly::folly_deps Folly::follybenchmark Folly::folly_test_util CURL::libcurl rapidjson)
 find_package(Threads REQUIRED)
 find_package(CURL REQUIRED)
 find_package(ZLIB REQUIRED)
 find_package(folly REQUIRED)
+find_package(RapidJSON CONFIG REQUIRED)
 
 install(TARGETS nacos-cli
 	LIBRARY DESTINATION lib)
