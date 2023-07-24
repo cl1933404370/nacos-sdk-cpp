@@ -102,7 +102,7 @@ namespace nacos
     }
 
 	template <typename PRED>
-    std::unique_lock<std::mutex> makeLockWithWait(PRED waitForCondition, long millis) {
+    std::unique_lock<std::mutex> makeLockWithWait(PRED waitForCondition, long long millis) {
         std::unique_lock lock{d_combined.d_mutex};
         d_combined.d_condition.wait_for(lock, std::chrono::milliseconds(millis), waitForCondition);
         return lock;
@@ -143,9 +143,8 @@ namespace nacos
 
 #if defined(_WIN32) || defined(_MSC_VER)
 		template <typename PRED>
-		int wait(PRED waitForCondition) {
-			const auto lock =_mutex.makeLockWithWait(waitForCondition);
-			return 0;
+		std::unique_lock<std::mutex> wait(PRED waitForCondition) {
+			return _mutex.makeLockWithWait(waitForCondition);
 		}
 #else
 		int wait()
@@ -157,11 +156,10 @@ namespace nacos
 
 #if defined(_WIN32) || defined(_MSC_VER)
 		template <typename PRED>
-		int wait(PRED waitForCondition, long millis) {
+		std::unique_lock<std::mutex> wait(PRED waitForCondition, long long millis) {
 			// std::cout << " millis:" << millis
 			//<< "   wakeup time:sec:" << wakeup_time.tv_sec << "  nsec:" << wakeup_time.tv_nsec << std::endl;
-			const auto lock = _mutex.makeLockWithWait(waitForCondition, millis);
-			return 0;
+			return _mutex.makeLockWithWait(waitForCondition, millis);
 		}
 #else
 		int wait(long millis)
