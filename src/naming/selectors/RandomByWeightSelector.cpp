@@ -22,7 +22,7 @@ std::list<Instance> RandomByWeightSelector::select(const std::list<Instance> &in
         }
         total_weight += it->weight * BASIC_WEIGHT;
         log_debug("RandomByWeightSelector::select:weight for current instance:%f\n", it->weight);
-        weightedList.push_back(std::make_pair(it->weight * BASIC_WEIGHT, it));
+        weightedList.emplace_back(it->weight * BASIC_WEIGHT, it);
     }
     if (total_weight == 0) {
         //no server instance is chosen

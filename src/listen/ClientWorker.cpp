@@ -28,10 +28,10 @@ namespace nacos
 {
     ClientWorker::ClientWorker(ObjectConfigData *objectConfigData)
     {
-        threadId = 0;
+        threadId = nullptr;
         stopThread = true;
-        pthread_mutex_init(&watchListMutex, NULL);
-        pthread_mutex_init(&stopThreadMutex, NULL);
+        pthread_mutex_init(&watchListMutex, nullptr);
+        pthread_mutex_init(&stopThreadMutex, nullptr);
         _objectConfigData = objectConfigData;
 
         _longPullingTimeoutStr = _objectConfigData->_appConfigManager->get(PropertyKeyConst::CONFIG_LONGPULLLING_TIMEOUT);
@@ -133,7 +133,7 @@ namespace nacos
             log_debug("[ClientWorker]-listenerThread:Watch function exit at %u...\n", TimeUtils::getCurrentTimeInMs());
         }
 
-        return 0;
+        return nullptr;
     }
 
     vector<NacosString> ClientWorker::parseListenedKeys(const NacosString &ReturnedKeys)
@@ -175,7 +175,7 @@ namespace nacos
         pthread_mutex_unlock(&stopThreadMutex);
 
         log_debug("[ClientWorker]-startListening:Starting the thread...\n");
-        pthread_create(&threadId, NULL, listenerThread, (void *)this);
+        pthread_create(&threadId, nullptr, listenerThread, (void *)this);
         log_debug("[ClientWorker]-startListening:Started thread with id:%d...\n", threadId);
     }
 
@@ -199,7 +199,7 @@ namespace nacos
         stopThread = true;
         pthread_mutex_unlock(&stopThreadMutex);
 
-        pthread_join(threadId, NULL);
+        pthread_join(threadId, nullptr);
         log_info("[ClientWorker]-stopListening:The thread is stopped successfully...\n");
     }
 
@@ -279,7 +279,7 @@ namespace nacos
                           "Refcount of the listener(Name = %s) is 0 so delete it.\n",
                           listener->getListenerName().c_str());
                 delete listener;
-                listener = NULL;
+                listener = nullptr;
             }
         }
 
@@ -517,12 +517,12 @@ namespace nacos
             {
                 delete theListener;
             }
-            itm.setListener(NULL);
+            itm.setListener(nullptr);
             if (slotOfListener->isEmpty())
             {
                 log_debug("[ClientWorker]-clearDeleteList:The slot (Name = %s) is empty and removed\n", key.c_str());
                 delete slotOfListener;
-                slotOfListener = NULL;
+                slotOfListener = nullptr;
                 listeningKeys.erase(key);
             }
             deleteList.erase(it);
@@ -540,7 +540,7 @@ namespace nacos
             log_debug("[ClientWorker]-cleanUp:Cleaning %s\n", listeningData->toString().c_str());
             listeningData->clearListeners();
             delete listeningData;
-            listeningData = NULL;
+            listeningData = nullptr;
         }
     }
 

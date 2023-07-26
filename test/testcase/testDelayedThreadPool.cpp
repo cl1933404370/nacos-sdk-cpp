@@ -39,7 +39,7 @@ public:
         }
         last_exec_time = now_ms;
         executor->schedule(this, now_ms + interval); // interval/1000 secs later
-        if (executor == NULL)
+        if (executor == nullptr)
         {
             throw NacosException(NacosException::INVALID_CONFIG_PARAM, "no executor");
         }

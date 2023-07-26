@@ -40,7 +40,7 @@ namespace nacos
         NACOS_THROW(IOException) {
         size_t toRead = getFileSize(file);
         FILE* fp = fopen(file.c_str(), "rb");
-        if (fp == NULL)
+        if (fp == nullptr)
         {
             throw IOException(NacosException::FILE_NOT_FOUND, "File not found:" + file);
         }
@@ -175,7 +175,7 @@ namespace nacos
         {
             DIR* curdir = opendir(file.c_str());
             struct dirent* direntp = readdir(curdir);
-            while (direntp != NULL)
+            while (direntp != nullptr)
             {
                 if (!strcmp(direntp->d_name, ".") || !strcmp(direntp->d_name, ".."))
                 {
@@ -335,7 +335,7 @@ namespace nacos
 
         DIR* curdir = opendir(path.c_str());
         struct dirent* direntp = readdir(curdir);
-        while (direntp != NULL)
+        while (direntp != nullptr)
         {
             if (!strcmp(direntp->d_name, ".") || !strcmp(direntp->d_name, ".."))
             {

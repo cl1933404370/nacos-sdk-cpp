@@ -18,18 +18,18 @@ namespace nacos{
 ObjectConfigData::ObjectConfigData(FactoryType theFactoryType) {
     objectId = UuidUtils::generateUuid();
     factoryType = theFactoryType;
-    _httpDelegate = NULL;
-    _httpCli = NULL;
-    _serverProxy = NULL;
-    _beatReactor = NULL;
-    _eventDispatcher = NULL;
-    _subscriptionPoller = NULL;
-    _appConfigManager = NULL;
-    _serverListManager = NULL;
-    _clientWorker = NULL;
-    _localSnapshotManager = NULL;
-    _securityManager = NULL;
-    _configProxy = NULL;
+    _httpDelegate = nullptr;
+    _httpCli = nullptr;
+    _serverProxy = nullptr;
+    _beatReactor = nullptr;
+    _eventDispatcher = nullptr;
+    _subscriptionPoller = nullptr;
+    _appConfigManager = nullptr;
+    _serverListManager = nullptr;
+    _clientWorker = nullptr;
+    _localSnapshotManager = nullptr;
+    _securityManager = nullptr;
+    _configProxy = nullptr;
 }
 
 void ObjectConfigData::checkNamingService() NACOS_THROW(NacosException) {
@@ -79,11 +79,11 @@ void ObjectConfigData::checkMaintainService() NACOS_THROW(NacosException) {
 
 void ObjectConfigData::destroyConfigService() {
 
-    if (_clientWorker != NULL) {
+    if (_clientWorker != nullptr) {
         _clientWorker->stopListening();
     }
 
-    if (_securityManager != NULL) {
+    if (_securityManager != nullptr) {
         _securityManager->stop();
     }
 
@@ -91,62 +91,62 @@ void ObjectConfigData::destroyConfigService() {
         _serverListManager->stop();
     }
 
-    if (_clientWorker != NULL) {
+    if (_clientWorker != nullptr) {
         _clientWorker->stopListening();
         delete _clientWorker;
-        _clientWorker = NULL;
+        _clientWorker = nullptr;
     }
 
-    if (_httpDelegate != NULL) {
+    if (_httpDelegate != nullptr) {
         delete _httpDelegate;
-        _httpDelegate = NULL;
+        _httpDelegate = nullptr;
     }
 
-    if (_securityManager != NULL) {
+    if (_securityManager != nullptr) {
         delete _securityManager;
-        _securityManager = NULL;
+        _securityManager = nullptr;
     }
 
-    if (_serverListManager != NULL) {
+    if (_serverListManager != nullptr) {
         delete _serverListManager;
-        _serverListManager = NULL;
+        _serverListManager = nullptr;
     }
 
-    if (_httpCli != NULL) {
+    if (_httpCli != nullptr) {
         delete _httpCli;
-        _httpCli = NULL;
+        _httpCli = nullptr;
     }
 
-    if (_appConfigManager != NULL) {
+    if (_appConfigManager != nullptr) {
         delete _appConfigManager;
-        _appConfigManager = NULL;
+        _appConfigManager = nullptr;
     }
 
-    if (_configProxy != NULL) {
+    if (_configProxy != nullptr) {
         delete _configProxy;
-        _configProxy = NULL;
+        _configProxy = nullptr;
     }
 }
 
 void ObjectConfigData::destroyNamingService() {
 
-    if (_beatReactor != NULL) {
+    if (_beatReactor != nullptr) {
         _beatReactor->stop();
     }
 
-    if (_subscriptionPoller != NULL) {
+    if (_subscriptionPoller != nullptr) {
         _subscriptionPoller->stop();
     }
 
-    if (_udpNamingServiceListener != NULL) {
+    if (_udpNamingServiceListener != nullptr) {
         _udpNamingServiceListener->stop();
     }
 
-    if (_eventDispatcher != NULL) {
+    if (_eventDispatcher != nullptr) {
         _eventDispatcher->stop();
     }
 
-    if (_securityManager != NULL) {
+    if (_securityManager != nullptr) {
         _securityManager->stop();
     }
 
@@ -154,109 +154,109 @@ void ObjectConfigData::destroyNamingService() {
         _serverListManager->stop();
     }
 
-    if (_httpDelegate != NULL) {
+    if (_httpDelegate != nullptr) {
         delete _httpDelegate;
-        _httpDelegate = NULL;
+        _httpDelegate = nullptr;
     }
 
-    if (_beatReactor != NULL) {
+    if (_beatReactor != nullptr) {
         delete _beatReactor;
-        _beatReactor = NULL;
+        _beatReactor = nullptr;
     }
 
-    if (_subscriptionPoller != NULL)
+    if (_subscriptionPoller != nullptr)
     {
         delete _subscriptionPoller;
-        _subscriptionPoller = NULL;
+        _subscriptionPoller = nullptr;
     }
 
-    if (_udpNamingServiceListener != NULL)
+    if (_udpNamingServiceListener != nullptr)
     {
         delete _udpNamingServiceListener;
-        _udpNamingServiceListener = NULL;
+        _udpNamingServiceListener = nullptr;
     }
 
-    if (_eventDispatcher != NULL)
+    if (_eventDispatcher != nullptr)
     {
         delete _eventDispatcher;
-        _eventDispatcher = NULL;
+        _eventDispatcher = nullptr;
     }
 
-    if (_hostReactor != NULL) {
+    if (_hostReactor != nullptr) {
         delete _hostReactor;
-        _hostReactor = NULL;
+        _hostReactor = nullptr;
     }
 
-    if (_serverProxy != NULL) {
+    if (_serverProxy != nullptr) {
         delete _serverProxy;
-        _serverProxy = NULL;
+        _serverProxy = nullptr;
     }
 
-    if (_securityManager != NULL) {
+    if (_securityManager != nullptr) {
         delete _securityManager;
-        _securityManager = NULL;
+        _securityManager = nullptr;
     }
 
-    if (_serverListManager != NULL) {
+    if (_serverListManager != nullptr) {
         delete _serverListManager;
-        _serverListManager = NULL;
+        _serverListManager = nullptr;
     }
 
-    if (_httpDelegate != NULL) {
+    if (_httpDelegate != nullptr) {
         delete _httpDelegate;
-        _httpDelegate = NULL;
+        _httpDelegate = nullptr;
     }
 
-    if (_httpCli != NULL) {
+    if (_httpCli != nullptr) {
         delete _httpCli;
-        _httpCli = NULL;
+        _httpCli = nullptr;
     }
 
-    if (_appConfigManager != NULL)
+    if (_appConfigManager != nullptr)
     {
         delete _appConfigManager;
-        _appConfigManager = NULL;
+        _appConfigManager = nullptr;
     }
 
-    if (_sequenceProvider != NULL)
+    if (_sequenceProvider != nullptr)
     {
         delete _sequenceProvider;
-        _sequenceProvider = NULL;
+        _sequenceProvider = nullptr;
     }
 }
 
 void ObjectConfigData::destroyMaintainService() {
-    if (_serverListManager != NULL) {
+    if (_serverListManager != nullptr) {
         _serverListManager->stop();
     }
 
-    if (_securityManager != NULL) {
+    if (_securityManager != nullptr) {
         _securityManager->stop();
     }
 
-    if (_serverProxy != NULL) {
+    if (_serverProxy != nullptr) {
         delete _serverProxy;
-        _serverProxy = NULL;
+        _serverProxy = nullptr;
     }
-    if (_serverListManager != NULL) {
+    if (_serverListManager != nullptr) {
         delete _serverListManager;
-        _serverListManager = NULL;
+        _serverListManager = nullptr;
     }
-    if (_appConfigManager != NULL) {
+    if (_appConfigManager != nullptr) {
         delete _appConfigManager;
-        _appConfigManager = NULL;
+        _appConfigManager = nullptr;
     }
-    if (_securityManager != NULL) {
+    if (_securityManager != nullptr) {
         delete _securityManager;
-        _securityManager = NULL;
+        _securityManager = nullptr;
     }
-    if (_httpDelegate != NULL) {
+    if (_httpDelegate != nullptr) {
         delete _httpDelegate;
-        _httpDelegate = NULL;
+        _httpDelegate = nullptr;
     }
-    if (_httpCli != NULL) {
+    if (_httpCli != nullptr) {
         delete _httpCli;
-        _httpCli = NULL;
+        _httpCli = nullptr;
     }
 }
 

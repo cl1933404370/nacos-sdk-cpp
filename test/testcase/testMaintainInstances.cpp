@@ -50,7 +50,7 @@ bool testMaintainUpdateInstance() {
         bool res = maintainService->updateInstance("MaintainTestUpdateInstance", NULLSTR, instance);
         SHOULD_BE_TRUE(res, "updateInstance should succeed");
 
-        list<Instance> instanceList = namingService->getInstanceWithPredicate("MaintainTestUpdateInstance", NULL);
+        list<Instance> instanceList = namingService->getInstanceWithPredicate("MaintainTestUpdateInstance", nullptr);
         SHOULD_BE_TRUE(instanceList.size() == 1, "there should be one and only one instance of MaintainTestUpdateInstance");
         map<NacosString, NacosString> &metadataGet = instanceList.begin()->metadata;
         SHOULD_BE_TRUE(metadataGet.count("hello") == 1, "metadata should contain hello");

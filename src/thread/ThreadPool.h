@@ -34,18 +34,18 @@ namespace nacos {
         static void* runInThread(void* param);
 
         ThreadPool() :
-            _poolName("CannotBeCreated"), _NotEmpty(_lock), _NotFull(_lock), _stop(true), _poolSize(0) {};
+            _poolName("CannotBeCreated"),_NotEmpty(&_lock), _NotFull(&_lock), _stop(true), _poolSize(0) {};
     protected:
         std::list<Thread*> _threads;
         volatile bool _stop;
         size_t _poolSize;
     public:
         ThreadPool(const NacosString& poolName, size_t poolSize) :
-            _poolName(poolName), _NotEmpty(_lock), _NotFull(_lock), _stop(true), _poolSize(poolSize) {
-        };
+            _poolName(poolName), _NotEmpty(&_lock), _NotFull(&_lock), _stop(true), _poolSize(poolSize) {
+        };  
 
         ThreadPool(size_t poolSize) :
-            _poolName("NacosCliWorkerThread"), _NotEmpty(_lock), _NotFull(_lock), _stop(true), _poolSize(poolSize) {
+            _poolName("NacosCliWorkerThread"), _NotEmpty(&_lock), _NotFull(&_lock), _stop(true), _poolSize(poolSize) {
         };
 
         virtual ~ThreadPool() {};

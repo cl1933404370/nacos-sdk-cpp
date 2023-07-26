@@ -51,11 +51,11 @@ namespace nacos
         //reference:https://zlib.net/zlib_how.html
         /* allocate inflate state */
         z_stream strm;
-        strm.zalloc = Z_NULL;
-        strm.zfree = Z_NULL;
-        strm.opaque = Z_NULL;
+        strm.zalloc = nullptr;
+        strm.zfree = nullptr;
+        strm.opaque = nullptr;
         strm.avail_in = 0;
-        strm.next_in = Z_NULL;
+        strm.next_in = nullptr;
         int ret = inflateInit2(&strm, MAX_WBITS + 16);
         if (ret != Z_OK)
         {
@@ -192,7 +192,7 @@ namespace nacos
 
     UdpNamingServiceListener::UdpNamingServiceListener(ObjectConfigData* objectConfigData)
     {
-        _listenerThread = NULL;
+        _listenerThread = nullptr;
         _started = false;
         _objectConfigData = objectConfigData;
         udpReceiverPort = atoi(_objectConfigData->_appConfigManager->get(PropertyKeyConst::UDP_RECEIVER_PORT).c_str());
@@ -229,7 +229,7 @@ namespace nacos
         {
             stop();
         }
-        if (_listenerThread != NULL)
+        if (_listenerThread != nullptr)
         {
             delete _listenerThread;
         }

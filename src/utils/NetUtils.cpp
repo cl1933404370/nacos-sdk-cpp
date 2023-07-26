@@ -31,15 +31,15 @@ namespace nacos
     NacosString NetUtils::getHostIp() NACOS_THROW(NacosException)
     {
 #if defined(_MSC_VER) || defined(__WIN32__) || defined(WIN32)
-        PIP_ADAPTER_ADDRESSES pAddresses = NULL;
+        PIP_ADAPTER_ADDRESSES pAddresses = nullptr;
         ULONG family = AF_INET;
         ULONG flags = GAA_FLAG_INCLUDE_PREFIX;
         ULONG bufferSize = 0;
-        DWORD result = GetAdaptersAddresses(family, flags, NULL, pAddresses, &bufferSize);
+        DWORD result = GetAdaptersAddresses(family, flags, nullptr, pAddresses, &bufferSize);
         if (result == ERROR_BUFFER_OVERFLOW)
         {
             pAddresses = static_cast<PIP_ADAPTER_ADDRESSES>(malloc(bufferSize));
-            result = GetAdaptersAddresses(family, flags, NULL, pAddresses, &bufferSize);
+            result = GetAdaptersAddresses(family, flags, nullptr, pAddresses, &bufferSize);
         }
         if (result != 0L)
         {

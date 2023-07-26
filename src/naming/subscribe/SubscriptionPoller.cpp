@@ -22,10 +22,10 @@ SubscriptionPoller::~SubscriptionPoller()
     if (_started) {
         stop();
     }
-    if (_pollingThread != NULL)
+    if (_pollingThread != nullptr)
     {
         delete _pollingThread;
-        _pollingThread = NULL;
+        _pollingThread = nullptr;
     }
 }
 
@@ -136,6 +136,6 @@ void *SubscriptionPoller::pollingThreadFunc(void *parm)
         std::this_thread::sleep_for(std::chrono::milliseconds(thisObj->_pollingInterval));
     }
     log_debug("Polling thread for NamingService exited normally.\n");
-    return NULL;
+    return nullptr;
 }
 }//namespace nacos

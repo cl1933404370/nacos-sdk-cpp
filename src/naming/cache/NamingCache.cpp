@@ -20,7 +20,7 @@ bool NamingCache::contains(const NacosString &key)
 void NamingCache::setServiceInfo(const NacosString &key, const ServiceInfo &info)
 {
     WriteGuard __writeGuard(_rwLock);
-    if (_eventDispatcher != NULL)
+    if (_eventDispatcher != nullptr)
     {
         ChangeAdvice changeAdvice;
         if (namingList.count(key) > 0)
@@ -44,7 +44,7 @@ void NamingCache::removeServiceInfo(const NacosString &key)
     {
         return;
     }
-    if (_eventDispatcher != NULL)
+    if (_eventDispatcher != nullptr)
     {
         ChangeAdvice changeAdvice;
         //changeAdvice.oldServiceInfo = namingList[key];

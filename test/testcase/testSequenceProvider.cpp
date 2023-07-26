@@ -21,7 +21,7 @@ void *SeqThreadFunc(void *param) {
         sequences[(*thread_no) * GENERATION_PER_THREAD + i] = res;
     }
 
-    return NULL;
+    return nullptr;
 }
 
 bool testSequenceProvider() {
@@ -31,7 +31,7 @@ bool testSequenceProvider() {
 
     sequenceProvider = new SequenceProvider<uint64_t> (DirUtils::getCwd() + "/test_seq.dat", 20000, 100);
 
-    Thread *threads[NR_THREADS] = {NULL};
+    Thread *threads[NR_THREADS] = {nullptr};
     for (int i = 0; i < NR_THREADS; i++) {
         NacosString threadName = "SEQThread-" + NacosStringOps::valueOf(i);
         tid[i] = i;

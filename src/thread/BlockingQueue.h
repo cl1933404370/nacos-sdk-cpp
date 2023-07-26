@@ -23,47 +23,40 @@ private:
 public:
 
     bool full() {
-        LockGuard lockguard(_mutex);
-		this->_full = _queue.size() == _maxSize ? true : false;
-        return this->_full;
+        LockGuard lockguard(&_mutex);
+        return _full;
     };
     bool empty() {
-        LockGuard lockguard(_mutex);
-		_empty = _queue.empty();
+        LockGuard lockguard(&_mutex);
         return _empty;
     };
 
-	BlockingQueue() : _mutex(), _notEmpty(_mutex), _notFull(_mutex), _maxSize(64), _full(false), _empty(true) {};
-	BlockingQueue(size_t queueSize) : _mutex(), _notEmpty(_mutex), _notFull(_mutex), _maxSize(queueSize), _full(false), _empty(true) {};
+	BlockingQueue() : _mutex(), _notEmpty(&_mutex), _notFull(&_mutex), _maxSize(64), _full(false), _empty(true) {};
+	BlockingQueue(size_t queueSize) : _mutex(), _notEmpty(&_mutex), _notFull(&_mutex), _maxSize(queueSize), _full(false), _empty(true) {};
 	void enqueue(const T &data)
 	{
-		full();
-		empty();
+		LockGuard lockguard(&_mutex);
+        _empty = false;
+		while (_queue.size() == _maxSize)
 		{
-			LockGuard lockguard(_mutex);
-			_notFull.wait([this] {return _queue.size() != _maxSize;});
-			_queue.push_back(data);
+		    _full = true;
+			_notFull.wait();
 		}
-		full();
-		empty();
+		_queue.push_back(data);
 		_notEmpty.notify();
 	}
 
 	T dequeue()
 	{
-		
-		full();
-		empty();
-		T front{};
+		LockGuard lockguard(&_mutex);
+        _full = false;
+		while (_queue.empty())
 		{
-			LockGuard lockguard(_mutex);
-			_notEmpty.wait([this] {
-				return !_queue.empty(); });
-			front = _queue.front();
-			_queue.pop_front();
+		    _empty = true;
+			_notEmpty.wait();
 		}
-		full();
-		empty();
+		T front = _queue.front();
+		_queue.pop_front();
 		_notFull.notify();
 		return front;
 	}

@@ -173,7 +173,7 @@ void *EventDispatcher::eventDispatcherThread(void *parm)
                     }
                 }
             }
-            return 0;
+            return nullptr;
         }
 
         for (list<EventListener*>::iterator curListener = notifyData.listeners.begin();
@@ -187,7 +187,7 @@ void *EventDispatcher::eventDispatcherThread(void *parm)
         }
     }
 
-    return 0;
+    return nullptr;
 }
 
 //NOTE:This function can be called ONLY when the dispatcher thread is stopped!
@@ -206,7 +206,7 @@ void EventDispatcher::purgeAllListeners()
             {
                 log_debug("[EventDispatcher]:Deleting the object whose refcount = 0:%s\n", (*listenerItem)->getListenerName().c_str());
                 delete *listenerItem;
-                *listenerItem = NULL;
+                *listenerItem = nullptr;
             }
         }
     }
@@ -234,7 +234,7 @@ EventDispatcher::~EventDispatcher()
     stop();
     eventNotifier->join();
     delete eventNotifier;
-    eventNotifier = NULL;
+    eventNotifier = nullptr;
     purgeAllListeners();
 }
 }//namespace nacos

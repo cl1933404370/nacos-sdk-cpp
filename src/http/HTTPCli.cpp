@@ -32,7 +32,7 @@ namespace nacos
         char *content_s = static_cast<char*>(contents);
         // Parse the 'HeaderName: HeaderContent' format
         char *pos = strchr(content_s, ':');
-        if (pos != NULL) // Skip status
+        if (pos != nullptr) // Skip status
         {
             std::map<NacosString, NacosString> *respheaders = static_cast<std::map<std::string, std::string>*>(userp);
             NacosString k = NacosString(content_s, pos - content_s);
@@ -55,7 +55,7 @@ namespace nacos
     CURL *HTTPCli::getCurlHandle()
     {
         CURL *curlHandle = pthread_getspecific(pthreadKey);
-        if (curlHandle == NULL)
+        if (curlHandle == nullptr)
         {
             curlHandle = curl_easy_init();
             pthread_setspecific(pthreadKey, reinterpret_cast<void *>(curlHandle));
@@ -66,10 +66,10 @@ namespace nacos
     void HTTPCli::destroyCurlHandle(void *arg)
     {
         CURL *curlHandle = reinterpret_cast<CURL *>(arg);
-        if (curlHandle != NULL)
+        if (curlHandle != nullptr)
         {
             curl_easy_cleanup(curlHandle);
-            curlHandle = NULL;
+            curlHandle = nullptr;
         }
     }
 
@@ -207,14 +207,14 @@ namespace nacos
         curl_easy_setopt(curlHandle, CURLOPT_TIMEOUT, readTimeoutMs / 1000);
 
         /*Add the request headers to the request*/
-        struct curl_slist *headerlist = NULL;
+        struct curl_slist *headerlist = nullptr;
 
         for (list<NacosString>::iterator it = assembledHeaders.begin(); it != assembledHeaders.end(); it++)
         {
             headerlist = curl_slist_append(headerlist, it->c_str());
         }
 
-        if (headerlist != NULL)
+        if (headerlist != nullptr)
         {
             curl_easy_setopt(curlHandle, CURLOPT_HTTPHEADER, headerlist);
         }
@@ -223,10 +223,10 @@ namespace nacos
         curlres = curl_easy_perform(curlHandle);
 
         /*Since the headerlist is not needed anymore, free it to prevent mem leak*/
-        if (headerlist != NULL)
+        if (headerlist != nullptr)
         {
             curl_slist_free_all(headerlist);
-            headerlist = NULL;
+            headerlist = nullptr;
         }
 
         if (curlres != CURLE_OK)
@@ -331,7 +331,7 @@ namespace nacos
         curl_easy_setopt(curlHandle, CURLOPT_TIMEOUT, readTimeoutMs / 1000);
 
         /*Add the request headers to the request*/
-        struct curl_slist *headerlist = NULL;
+        struct curl_slist *headerlist = nullptr;
 
         for (list<NacosString>::iterator it = assembledHeaders.begin(); it != assembledHeaders.end(); it++)
         {
@@ -339,7 +339,7 @@ namespace nacos
             log_debug("[HTTPCli]-POST:RequestHeaders:%s\n", it->c_str());
         }
 
-        if (headerlist != NULL)
+        if (headerlist != nullptr)
         {
             curl_easy_setopt(curlHandle, CURLOPT_HTTPHEADER, headerlist);
         }
@@ -348,10 +348,10 @@ namespace nacos
         curlres = curl_easy_perform(curlHandle);
 
         /*Since the headerlist is not needed anymore, free it to prevent mem leak*/
-        if (headerlist != NULL)
+        if (headerlist != nullptr)
         {
             curl_slist_free_all(headerlist);
-            headerlist = NULL;
+            headerlist = nullptr;
         }
 
         if (curlres != CURLE_OK)
@@ -474,10 +474,10 @@ namespace nacos
         curlres = curl_easy_perform(curlHandle);
 
         /*Since the headerlist is not needed anymore, free it to prevent mem leak*/
-        if (headerlist != NULL)
+        if (headerlist != nullptr)
         {
             curl_slist_free_all(headerlist);
-            headerlist = NULL;
+            headerlist = nullptr;
         }
 
         if (curlres != CURLE_OK)
@@ -572,14 +572,14 @@ namespace nacos
         curl_easy_setopt(curlHandle, CURLOPT_TIMEOUT, readTimeoutMs / 1000);
 
         /*Add the request headers to the request*/
-        struct curl_slist *headerlist = NULL;
+        struct curl_slist *headerlist = nullptr;
 
         for (list<NacosString>::iterator it = assembledHeaders.begin(); it != assembledHeaders.end(); it++)
         {
             headerlist = curl_slist_append(headerlist, it->c_str());
         }
 
-        if (headerlist != NULL)
+        if (headerlist != nullptr)
         {
             curl_easy_setopt(curlHandle, CURLOPT_HTTPHEADER, headerlist);
         }
@@ -588,10 +588,10 @@ namespace nacos
         curlres = curl_easy_perform(curlHandle);
 
         /*Since the headerlist is not needed anymore, free it to prevent mem leak*/
-        if (headerlist != NULL)
+        if (headerlist != nullptr)
         {
             curl_slist_free_all(headerlist);
-            headerlist = NULL;
+            headerlist = nullptr;
         }
 
         if (curlres != CURLE_OK)
@@ -616,7 +616,7 @@ namespace nacos
     HTTPCli::~HTTPCli()
     {
         CURL *curlHandle = pthread_getspecific(pthreadKey);
-        if (curlHandle != NULL)
+        if (curlHandle != nullptr)
         {
             curl_easy_cleanup(curlHandle);
         }

@@ -48,7 +48,7 @@ IMAC *MACProvider::getMAC(int algorithm) {
         return (*MACRegistry)[algorithm];
     }
 
-    return NULL;
+    return nullptr;
 }
 
 }

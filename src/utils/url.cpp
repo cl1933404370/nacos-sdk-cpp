@@ -8,7 +8,7 @@ namespace nacos
     {
         NacosString result;
         CURL *curl = curl_easy_init();
-        char *output = NULL;
+        char *output = nullptr;
         if (curl)
         {
             output = curl_easy_escape(curl, content.c_str(), static_cast<int>(content.length()));
@@ -28,10 +28,10 @@ namespace nacos
     {
         NacosString result;
         CURL *curl = curl_easy_init();
-        char *output = NULL;
+        char *output = nullptr;
         if (curl)
         {
-            output = curl_easy_unescape(curl, content.c_str(), static_cast<int>(content.length()), NULL);
+            output = curl_easy_unescape(curl, content.c_str(), static_cast<int>(content.length()), nullptr);
         }
 
         if (output)

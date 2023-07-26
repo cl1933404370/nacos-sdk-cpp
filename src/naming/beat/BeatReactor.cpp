@@ -102,7 +102,7 @@ bool BeatReactor::modifyBeatInfo(const NacosString &serviceName, BeatInfo &beatI
 bool BeatReactor::removeBeatInfo(const NacosString &serviceName, const NacosString &ip, int port) {
     log_info("[BEAT] removing beat: %s:%s:%d from beat map.", serviceName.c_str(), ip.c_str(), port);
     NacosString beatKey = buildKey(serviceName, ip, port);
-    BeatTask *beatTaskToRemove = NULL;
+    BeatTask *beatTaskToRemove = nullptr;
     {
         WriteGuard _lockguard(_beatInfoLock);
         //If we can't find the beatInfo in the list, just return
@@ -126,7 +126,7 @@ void BeatReactor::removeAllBeatInfo() {
          it != _beatInfoList.end(); it++) {
         BeatTask *curTask = it->second;
         delete curTask;
-        curTask = NULL;
+        curTask = nullptr;
     }
     _beatInfoList.clear();
 }

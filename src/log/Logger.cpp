@@ -43,18 +43,18 @@ namespace nacos
 
     void Logger::setBaseDir(const NacosString &baseDir)
     {
-        LockGuard _setFile(setFileLock);
+        LockGuard _setFile(&setFileLock);
         _log_base_dir = baseDir;
-        if (_output_file != NULL)
+        if (_output_file != nullptr)
         {
             fclose(_output_file);
-            _output_file = NULL;
+            _output_file = nullptr;
         }
 
         _log_file = _log_base_dir + ConfigConstant::FILE_SEPARATOR + "nacos-sdk-cpp.log";
         IOUtils::recursivelyCreate(_log_base_dir.c_str());
         _output_file = fopen(_log_file.c_str(), "a");
-        if (_output_file == NULL)
+        if (_output_file == nullptr)
         {
             NacosString errMsg = "Unable to open file ";
             errMsg += _log_file;
@@ -138,7 +138,7 @@ namespace nacos
             break;
         }
 
-        time_t t = time(0);
+        time_t t = time(nullptr);
         struct tm current_time;
         localtime_r(&t, &current_time);
         // length of [9999-12-31 99:99:99] = 19
@@ -205,10 +205,10 @@ namespace nacos
 
     void Logger::deInit()
     {
-        if (_output_file != NULL)
+        if (_output_file != nullptr)
         {
             fclose(_output_file);
-            _output_file = NULL;
+            _output_file = nullptr;
         }
     }
 

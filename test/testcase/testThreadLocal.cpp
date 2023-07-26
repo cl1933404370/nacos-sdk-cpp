@@ -95,7 +95,7 @@ bool testThreadLocalPtr() {
 
     cout << "Generating threads..." << endl;
 
-    Thread *threads[10] = {NULL};
+    Thread *threads[10] = {nullptr};
     for (int i = 0; i < 10; i++) {
         NacosString threadName = "ThreadPtr-" + NacosStringOps::valueOf(i);
         threads[i] = new Thread(threadName, ThreadLocalFuncs4Ptr, static_cast<void*>(&threads[i]));
@@ -117,7 +117,7 @@ bool testThreadLocalPtrWithInitializer() {
 
     cout << "Generating threads..." << endl;
 
-    Thread *threads[10] = {NULL};
+    Thread *threads[10] = {nullptr};
     for (int i = 0; i < 10; i++) {
         NacosString threadName = "ThreadPtr-" + NacosStringOps::valueOf(i);
         threads[i] = new Thread(threadName, ThreadLocalFuncs4PtrWithInitializer, static_cast<void*>(&threads[i]));

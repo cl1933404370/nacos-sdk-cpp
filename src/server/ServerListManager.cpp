@@ -82,7 +82,7 @@ namespace nacos
     {
         started = false;
         isFixed = true;
-        _pullThread = NULL;
+        _pullThread = nullptr;
         refreshInterval = 30000;
         for (auto it = fixed.begin(); it != fixed.end(); it++)
         {
@@ -345,7 +345,7 @@ namespace nacos
 #endif
         }
 
-        return NULL;
+        return nullptr;
     }
 
     void ServerListManager::start()
@@ -357,7 +357,7 @@ namespace nacos
 
         started = true;
 
-        if (_pullThread == NULL)
+        if (_pullThread == nullptr)
         {
             NacosString threadName = getClusterName() + "," + getEndpoint() + ":" +
                 NacosStringOps::valueOf(getEndpointPort()) + "-" + getNamespace();
@@ -374,10 +374,10 @@ namespace nacos
         }
 
         started = false;
-        if (_pullThread != NULL)
+        if (_pullThread != nullptr)
         {
             _pullThread->join();
-            _pullThread = NULL;
+            _pullThread = nullptr;
         }
     }
 
@@ -389,10 +389,10 @@ namespace nacos
     ServerListManager::~ServerListManager()
     {
         stop();
-        if (_pullThread != NULL)
+        if (_pullThread != nullptr)
         {
             delete _pullThread;
-            _pullThread = NULL;
+            _pullThread = nullptr;
         }
     }
 

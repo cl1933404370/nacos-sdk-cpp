@@ -117,7 +117,7 @@ namespace nacos
     {
         stop();
         delete _tokenRefreshThread;
-        _tokenRefreshThread = NULL;
+        _tokenRefreshThread = nullptr;
     }
 
     void SecurityManager::sleepWithRunStatusCheck(long _milliSecsToSleep)
@@ -200,7 +200,7 @@ namespace nacos
                 }
             }
         }
-        return NULL;
+        return nullptr;
     }
 
     void SecurityManager::start()

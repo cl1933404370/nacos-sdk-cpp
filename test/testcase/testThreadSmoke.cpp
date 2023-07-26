@@ -40,7 +40,7 @@ public:
 
 void *threadFunc(void *param) {
     log_info("Hello from threadFunc() in another thread, stopping threadpool\n");
-    return NULL;
+    return nullptr;
 }
 
 bool testThreadSmoke() {
@@ -66,7 +66,7 @@ void *threadStopper(void *param) {
     
     tp->stop();
     log_info("threadStopper():ok\n");
-    return NULL;
+    return nullptr;
 }
 
 bool testThreadPoolSmoke() {
@@ -90,7 +90,7 @@ bool testThreadPoolSmoke() {
     for (size_t i = 0; i < 40; i++) {
         cout << "destroying task " << i << "..." << endl;
         delete tasks[i];
-        tasks[i] = NULL;
+        tasks[i] = nullptr;
         cout << "ok" << endl;
     }
     cout << "If no coredump, should be successful" << endl;
@@ -154,7 +154,7 @@ bool testThreadPoolConcurrentWithAtomicCounter() {
     for (size_t i = 0; i < 40; i++) {
         cout << "destroying task " << i << "..." << endl;
         delete tasks[i];
-        tasks[i] = NULL;
+        tasks[i] = nullptr;
         cout << "ok" << endl;
     }
     return true;

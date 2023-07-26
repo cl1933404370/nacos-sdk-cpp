@@ -52,7 +52,7 @@ void* nacos::Thread::threadFunc(void* param)
     }
     catch (std::exception& e)
     {
-        currentThread->_function = NULL;
+        currentThread->_function = nullptr;
         nacos::log_error("Exception happens when executing:\n");
         nacos::log_error("Thread Name:%s Thread Id:%d\n", currentThread->_threadName.c_str(), currentThread->_tid);
         nacos::log_error("Raison:%s", e.what());
@@ -60,7 +60,7 @@ void* nacos::Thread::threadFunc(void* param)
     }
     catch (...)
     {
-        currentThread->_function = NULL;
+        currentThread->_function = nullptr;
         nacos::log_error("Unknown exception happens when executing:\n");
         nacos::log_error("Thread Name:%s Thread Id:%d\n", currentThread->_threadName.c_str(), currentThread->_tid);
         throw;
@@ -70,7 +70,7 @@ void* nacos::Thread::threadFunc(void* param)
 void nacos::Thread::start()
 {
     _start = true;
-    pthread_create(&_thread, NULL, threadFunc, (void*)this);
+    pthread_create(&_thread, nullptr, threadFunc, (void*)this);
 }
 
 void nacos::Thread::join()

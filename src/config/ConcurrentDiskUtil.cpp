@@ -39,7 +39,7 @@ namespace nacos
         }
         size_t toRead = IOUtils::getFileSize(file);
         FILE *fp = fopen(file.c_str(), "rb");
-        if (fp == NULL)
+        if (fp == nullptr)
         {
             char errbuf[100];
             sprintf(errbuf, "Failed to open file for read, errno: %d", errno);
@@ -74,7 +74,7 @@ namespace nacos
         const NacosString &charsetName) NACOS_THROW(IOException)
     {
         FILE *fp = fopen(path.c_str(), "wb");
-        if (fp == NULL)
+        if (fp == nullptr)
         {
             char errbuf[100];
             sprintf(errbuf, "Failed to open file for write, errno: %d", errno);

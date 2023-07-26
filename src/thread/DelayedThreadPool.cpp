@@ -14,7 +14,7 @@ public:
     volatile bool _start;
     DelayedWorker(DelayedThreadPool &container) : _container(container) {
         _start = false;
-    };
+    }
 
     void run() {
         log_debug("DelayedWorker::run()\n");
@@ -29,7 +29,7 @@ public:
                     _container._lockForScheduleTasks.unlock();
                     return;
                 }
-                _container._delayTaskNotEmpty.wait([this] {return !_container._scheduledTasks.empty(); });
+                _container._delayTaskNotEmpty.wait();
                 log_debug("[DelayedWorker] wake up due to incoming event\n");
             }
 
@@ -69,9 +69,9 @@ public:
                     //awake from sleep when a stop signal is sent
                     if (_container._stop_delayed_tp) {
                         _container._lockForScheduleTasks.unlock();
-                        return;
+                        return; 
                     }
-                    _container._delayTaskNotEmpty.wait([&it,&now_time]{return it->first <= now_time;},it->first - now_time);
+                    _container._delayTaskNotEmpty.wait(it->first - now_time);
                 }
             }
 
@@ -82,7 +82,7 @@ public:
 };
 
 DelayedThreadPool::DelayedThreadPool(const NacosString &poolName, size_t poolSize)
-:ThreadPool(poolName, poolSize),_delayTaskNotEmpty(_lockForScheduleTasks), _stop_delayed_tp(true) {
+:ThreadPool(poolName, poolSize),_delayTaskNotEmpty(&_lockForScheduleTasks), _stop_delayed_tp(true) {
     log_debug("DelayedThreadPool::DelayedThreadPool() name = %s size = %d\n", poolName.c_str(), poolSize);
     if (poolSize <= 0) {
         throw NacosException(NacosException::INVALID_PARAM, "Poll size cannot be lesser than 0");
@@ -97,13 +97,13 @@ DelayedThreadPool::DelayedThreadPool(const NacosString &poolName, size_t poolSiz
 
 DelayedThreadPool::~DelayedThreadPool() {
     log_debug("DelayedThreadPool::~DelayedThreadPool\n");
-    if (delayTasks != NULL) {
+    if (delayTasks != nullptr) {
         for (size_t i = 0; i < _poolSize; i++) {
             delete delayTasks[i];
-            delayTasks[i] = NULL;
+            delayTasks[i] = nullptr;
         }
         delete [] delayTasks;
-        delayTasks = NULL;
+        delayTasks = nullptr;
     }
 }
 
@@ -113,7 +113,6 @@ struct tagAscOrdFunctor{
     };
 } ascOrdFunctor = {};
 
-#include <stdio.h>
 //futureTimeToRun: time in MS
 void DelayedThreadPool::schedule(Task *t, uint64_t futureTimeToRun) {
     if (_stop) {
@@ -122,7 +121,7 @@ void DelayedThreadPool::schedule(Task *t, uint64_t futureTimeToRun) {
     log_debug("DelayedThreadPool::schedule() name=%s future = %ld\n", t->getTaskName().c_str(), futureTimeToRun);
     {
 	    const std::pair<uint64_t, Task*> scheduledTask = std::make_pair (futureTimeToRun, t);
-	    LockGuard __lockSchedTasks(_lockForScheduleTasks);
+	    LockGuard lockSchedTasks(&_lockForScheduleTasks);
         _scheduledTasks.push_back(scheduledTask);
         std::sort(_scheduledTasks.begin(), _scheduledTasks.end(), ascOrdFunctor);
         _delayTaskNotEmpty.notifyAll();

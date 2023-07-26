@@ -38,8 +38,8 @@ namespace nacos
         Mutex(const Mutex&) = delete;
         Mutex& operator=(const Mutex&) = delete;
 
-        void Lock() EXCLUSIVE_LOCK_FUNCTION() { mu_.lock(); }
-        void Unlock() UNLOCK_FUNCTION() { mu_.unlock(); }
+        void lock() EXCLUSIVE_LOCK_FUNCTION() { mu_.lock(); }
+        void unlock() UNLOCK_FUNCTION() { mu_.unlock(); }
         void AssertHeld() ASSERT_EXCLUSIVE_LOCK() {}
 
     private:
@@ -56,13 +56,36 @@ namespace nacos
         Condition(const Condition&) = delete;
         Condition& operator=(const Condition&) = delete;
 
-        void Wait() {
+         void wait() {
             std::unique_lock<std::mutex> lock(mu_->mu_, std::adopt_lock);
             cv_.wait(lock);
             lock.release();
         }
-        void Signal() { cv_.notify_one(); }
-        void SignalAll() { cv_.notify_all(); }
+
+        void wait(uint64_t millis)
+        {
+            std::unique_lock<std::mutex> lock(mu_->mu_, std::adopt_lock);
+            cv_.wait_for(lock, std::chrono::milliseconds(millis));
+            lock.release();
+        }
+
+        template <typename Predicate>
+        void wait(Predicate pred) const {                 // (10)
+            std::unique_lock<std::mutex> lock(mu_->mu_, std::adopt_lock);
+            cv_.wait(lock, pred);
+            lock.release();
+        }
+
+        template <typename Predicate>
+        void wait(Predicate pred, long millis) const {  // (11)
+            std::unique_lock<std::mutex> lock(mu_->mu_, std::adopt_lock);
+            cv_.wait_for(lock, std::chrono::milliseconds(millis), pred);
+            lock.release();
+        }
+
+
+        void notify() { cv_.notify_one(); }
+        void notifyAll() { cv_.notify_all(); }
 
     private:
         std::condition_variable cv_;
@@ -72,9 +95,9 @@ namespace nacos
     class SCOPED_LOCKABLE LockGuard {
     public:
         explicit LockGuard(Mutex* mu) EXCLUSIVE_LOCK_FUNCTION(mu) : mu_(mu) {
-            this->mu_->Lock();
+            this->mu_->lock();
         }
-        ~LockGuard() UNLOCK_FUNCTION() { this->mu_->Unlock(); }
+        ~LockGuard() UNLOCK_FUNCTION() { this->mu_->unlock(); }
 
         LockGuard(const LockGuard&) = delete;
         LockGuard& operator=(const LockGuard&) = delete;
