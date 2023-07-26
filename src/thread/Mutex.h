@@ -8,6 +8,8 @@
 #include  <mutex>
 #include <condition_variable>
 #include <memory>
+#include "port.h"
+
 #endif
 
 
@@ -20,218 +22,172 @@
 
 namespace nacos
 {
+    typedef pthread_t TID_T;
 
-	typedef pthread_t TID_T;
+#ifdef _WIN32
+    static const bool kLittleEndian = !LEVELDB_IS_BIG_ENDIAN;
 
-	class Mutex
-	{
-#if defined(_WIN32) || defined(_MSC_VER)
-		struct UnlockAndNotify {
-			std::mutex d_mutex;
-			std::condition_variable d_condition;
+    class Condition;
 
-			void lock() { d_mutex.lock(); }
-			void unlock() { d_mutex.unlock();}
+    // Thinly wraps std::mutex.
+    class LOCKABLE Mutex {
+    public:
+        Mutex() = default;
+        ~Mutex() = default;
 
-			void notify_one() {  d_condition.notify_one();}
-			void notify_all() {  d_condition.notify_all(); }
+        Mutex(const Mutex&) = delete;
+        Mutex& operator=(const Mutex&) = delete;
 
+        void Lock() EXCLUSIVE_LOCK_FUNCTION() { mu_.lock(); }
+        void Unlock() UNLOCK_FUNCTION() { mu_.unlock(); }
+        void AssertHeld() ASSERT_EXCLUSIVE_LOCK() {}
 
-		};
+    private:
+        friend class Condition;
+        std::mutex mu_;
+    };
+
+    // Thinly wraps std::condition_variable.
+    class Condition {
+    public:
+        explicit Condition(Mutex* mu) : mu_(mu) { assert(mu != nullptr); }
+        ~Condition() = default;
+
+        Condition(const Condition&) = delete;
+        Condition& operator=(const Condition&) = delete;
+
+        void Wait() {
+            std::unique_lock<std::mutex> lock(mu_->mu_, std::adopt_lock);
+            cv_.wait(lock);
+            lock.release();
+        }
+        void Signal() { cv_.notify_one(); }
+        void SignalAll() { cv_.notify_all(); }
+
+    private:
+        std::condition_variable cv_;
+        Mutex* const mu_;
+    };
+
+    class SCOPED_LOCKABLE LockGuard {
+    public:
+        explicit LockGuard(Mutex* mu) EXCLUSIVE_LOCK_FUNCTION(mu) : mu_(mu) {
+            this->mu_->Lock();
+        }
+        ~LockGuard() UNLOCK_FUNCTION() { this->mu_->Unlock(); }
+
+        LockGuard(const LockGuard&) = delete;
+        LockGuard& operator=(const LockGuard&) = delete;
+
+    private:
+        Mutex* const mu_;
+    };
+#elif
+
+    class Mutex
+    {
+        friend class Condition;
+    private:
+        TID_T _holder{};
+        pthread_mutex_t _mutex = pthread_mutex_t{};
+    public:
+        Mutex() {
+            pthread_mutex_init(&_mutex, nullptr);
+        };
+
+        ~Mutex() {
+            pthread_mutex_destroy(&_mutex);
+        }
+        void lock()
+        {
+            pthread_mutex_lock(&_mutex);
+            assignHolder();
+        }
+
+        void unlock()
+        {
+            unassignHolder();
+            pthread_mutex_unlock(&_mutex);
+        };
+
+        pthread_mutex_t* getPthreadMutex() { return &_mutex; };
+        void assignHolder() { _holder = gettidv1(); };
+        void unassignHolder() { _holder = nullptr; };
+    };
+
+    class Condition
+    {
+    private:
+        Mutex& _mutex;
+
+        pthread_cond_t _cond{};
+    public:
+        explicit Condition(Mutex& mutex) : _mutex(mutex)
+        {
+            pthread_cond_init(&_cond, nullptr);
+        };
+
+        ~Condition() {
+            pthread_cond_destroy(&_cond);
+        };
+
+        int wait()
+        {
+            _mutex.unassignHolder();
+            return pthread_cond_wait(&_cond, _mutex.getPthreadMutex());
+        }
+
+        int wait(long millis)
+        {
+            struct timeval now
+            {
+            };
+            struct timespec wakeup_time
+            {
+            };
+
+            TimeUtils::getCurrentTimeInStruct(now);
+            now.tv_usec = now.tv_usec + millis * 1000;
+            now.tv_sec = now.tv_sec + now.tv_usec / 1000000;
+            now.tv_usec = now.tv_usec % 1000000;
+
+            wakeup_time.tv_nsec = now.tv_usec * 1000;
+            wakeup_time.tv_sec = now.tv_sec;
+            // std::cout << " millis:" << millis
+            //<< "   wakeup time:sec:" << wakeup_time.tv_sec << "  nsec:" << wakeup_time.tv_nsec << std::endl;
+            _mutex.unassignHolder();
+            return pthread_cond_timedwait(&_cond, _mutex.getPthreadMutex(), &wakeup_time);
+        }
+        void notify()
+        {
+
+            pthread_cond_signal(&_cond);
+        }
+
+        void notifyAll()
+        {
+
+            pthread_cond_broadcast(&_cond);
+        }
+    };
+
+    class LockGuard
+    {
+        Mutex& mutex_;
+
+    public:
+        explicit LockGuard(Mutex& mutex) : mutex_(mutex)
+        {
+            mutex_.lock();
+        };
+
+        ~LockGuard()
+        {
+
+            mutex_.unlock();
+        };
+    };
 #endif
-		friend class Condition;
-	private:
-		TID_T _holder{};
-#if defined(_WIN32) || defined(_MSC_VER)
-		UnlockAndNotify d_combined;
-#else
-		pthread_mutex_t _mutex = pthread_mutex_t{};
-#endif
-	public:
-		Mutex() {
-#if defined(_WIN32) || defined(_MSC_VER)
-#else
-			pthread_mutex_init(&_mutex, nullptr);
-#endif
-		};
-
-		~Mutex() {
-
-#if defined(_WIN32) || defined(_MSC_VER)
-#else
-			pthread_mutex_destroy(&_mutex);
-#endif
-		}
-
-
-
-#if defined(_WIN32) || defined(_MSC_VER)
-		void lock()
-		{
-			assignHolder();
-			const auto lock = makeLockWithNotify();
-		}
-#else
-		void lock()
-		{b
-			pthread_mutex_lock(&_mutex);
-			assignHolder();
-		}
-#endif
-
-		void unlock()
-		{
-			unassignHolder();
-#if defined(_WIN32) || defined(_MSC_VER)
-			//d_combined.unlock();
-#else
-			pthread_mutex_unlock(&_mutex);
-#endif
-		};
-
-#if defined(_WIN32) || defined(_MSC_VER)
-    std::unique_lock<UnlockAndNotify> makeLockWithNotify() {
-        return std::unique_lock{d_combined};
-    }
-
-    template <typename PRED>
-    std::unique_lock<std::mutex> makeLockWithWait(PRED waitForCondition) {
-        std::unique_lock lock{d_combined.d_mutex};
-        d_combined.d_condition.wait(lock, waitForCondition);
-        return lock;
-    }
-
-	template <typename PRED>
-    std::unique_lock<std::mutex> makeLockWithWait(PRED waitForCondition, long long millis) {
-        std::unique_lock lock{d_combined.d_mutex};
-        d_combined.d_condition.wait_for(lock, std::chrono::milliseconds(millis), waitForCondition);
-        return lock;
-    }
-#else
-		pthread_mutex_t* getPthreadMutex() { return &_mutex; };
-
-#endif
-		void assignHolder() { _holder = gettidv1(); };
-
-		void unassignHolder() { _holder = nullptr; };
-	};
-
-	class Condition
-	{
-	private:
-		Mutex& _mutex;
-
-#if defined(_WIN32) || defined(_MSC_VER)
-#else
-		pthread_cond_t _cond{};
-#endif
-	public:
-		explicit Condition(Mutex& mutex) : _mutex(mutex)
-		{
-#if defined(_WIN32) || defined(_MSC_VER)
-#else
-			pthread_cond_init(&_cond, nullptr);
-#endif
-		};
-
-		~Condition() {
-#if defined(_WIN32) || defined(_MSC_VER)
-#else
-			pthread_cond_destroy(&_cond);
-#endif
-		};
-
-#if defined(_WIN32) || defined(_MSC_VER)
-		template <typename PRED>
-		std::unique_lock<std::mutex> wait(PRED waitForCondition) {
-			return _mutex.makeLockWithWait(waitForCondition);
-		}
-#else
-		int wait()
-		{
-			_mutex.unassignHolder();
-			return pthread_cond_wait(&_cond, _mutex.getPthreadMutex());
-		}
-#endif
-
-#if defined(_WIN32) || defined(_MSC_VER)
-		template <typename PRED>
-		std::unique_lock<std::mutex> wait(PRED waitForCondition, long long millis) {
-			// std::cout << " millis:" << millis
-			//<< "   wakeup time:sec:" << wakeup_time.tv_sec << "  nsec:" << wakeup_time.tv_nsec << std::endl;
-			return _mutex.makeLockWithWait(waitForCondition, millis);
-		}
-#else
-		int wait(long millis)
-		{
-			struct timeval now
-			{
-			};
-			struct timespec wakeup_time
-			{
-			};
-
-			TimeUtils::getCurrentTimeInStruct(now);
-			now.tv_usec = now.tv_usec + millis * 1000;
-			now.tv_sec = now.tv_sec + now.tv_usec / 1000000;
-			now.tv_usec = now.tv_usec % 1000000;
-
-			wakeup_time.tv_nsec = now.tv_usec * 1000;
-			wakeup_time.tv_sec = now.tv_sec;
-			// std::cout << " millis:" << millis
-			//<< "   wakeup time:sec:" << wakeup_time.tv_sec << "  nsec:" << wakeup_time.tv_nsec << std::endl;
-			_mutex.unassignHolder();
-			return pthread_cond_timedwait(&_cond, _mutex.getPthreadMutex(), &wakeup_time);
-		}
-#endif
-
-		void notify()
-		{
-
-#if defined(_WIN32) || defined(_MSC_VER)
-			_mutex.d_combined.notify_one();;
-#else
-			pthread_cond_signal(&_cond);
-#endif
-		}
-
-		void notifyAll()
-		{
-
-#if defined(_WIN32) || defined(_MSC_VER)
-			_mutex.d_combined.notify_all();
-#else
-			pthread_cond_broadcast(&_cond);
-#endif
-		}
-	};
-
-	class LockGuard
-	{
-		Mutex& mutex_;
-#if defined(_WIN32) || defined(_MSC_VER)
-#endif
-
-
-	public:
-		explicit LockGuard(Mutex& mutex) : mutex_(mutex)
-		{
-#if defined(_WIN32) || defined(_MSC_VER)
-			const auto&& aa = mutex_.makeLockWithNotify();
-#else
-			mutex_.lock();
-#endif
-		};
-
-		~LockGuard()
-		{
-
-#if defined(_WIN32) || defined(_MSC_VER)
-#else
-			mutex_.unlock();
-#endif
-		};
-	};
 } // namespace nacos
 
 #endif

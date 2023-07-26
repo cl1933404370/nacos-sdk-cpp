@@ -22,8 +22,8 @@ void BeatTask::run() {
         delete this;
         return;
     }
-    uint64_t now_ms = TimeUtils::getCurrentTimeInMs();
-    _objectConfigData->_beatReactor->_delayedThreadPool->schedule(this, static_cast<long>(now_ms + _interval));
+    const uint64_t now_ms = TimeUtils::getCurrentTimeInMs();
+    _objectConfigData->_beatReactor->_delayedThreadPool->schedule(this, now_ms + _interval);
     _interval = _objectConfigData->_serverProxy->sendBeat(_beatInfo);
 }
 

@@ -71,7 +71,7 @@ public:
                         _container._lockForScheduleTasks.unlock();
                         return;
                     }
-                    _container._delayTaskNotEmpty.wait([/*it,now_time*/]{/*return it->first <= now_time;*/return true;},it->first - now_time);
+                    _container._delayTaskNotEmpty.wait([&it,&now_time]{return it->first <= now_time;},it->first - now_time);
                 }
             }
 

@@ -22,23 +22,20 @@ void BeatReactor::stop() {
 }
 
 void BeatReactor::addBeatInfo(const NacosString &serviceName, BeatInfo &beatInfo) {
+    WriteGuard _lockguard(_beatInfoLock);
     NacosString beatInfoStr = beatInfo.toString();
     log_info("[BEAT] adding beat: %s to beat map.\n", beatInfoStr.c_str());
     NacosString beatKey = buildKey(serviceName, beatInfo.ip, beatInfo.port);
-    BeatTask *newBeatTask;
-    {
-        WriteGuard _lockguard(_beatInfoLock);
-        //The specified beatInfo is already in the list
-        if (_beatInfoList.count(beatKey) != 0) {
-            log_warn("Adding already-exist key:%s\n", beatKey.c_str());
-            return;
-        }
-        newBeatTask = new BeatTask(beatInfo, _objectConfigData);
-        newBeatTask->setScheduled(true);
-        newBeatTask->setTaskName(beatKey);
-        newBeatTask->setInterval(_clientBeatInterval);
-        _beatInfoList[beatKey] = newBeatTask;
+    //The specified beatInfo is already in the list
+    if (_beatInfoList.count(beatKey) != 0) {
+        log_warn("Adding already-exist key:%s\n", beatKey.c_str());
+        return;
     }
+    BeatTask* newBeatTask = new BeatTask(beatInfo, _objectConfigData);
+    newBeatTask->setScheduled(true);
+    newBeatTask->setTaskName(beatKey);
+    newBeatTask->setInterval(_clientBeatInterval);
+    _beatInfoList[beatKey] = newBeatTask;
     _delayedThreadPool->schedule(newBeatTask, TimeUtils::getCurrentTimeInMs() + _clientBeatInterval);
     //TODO:MetricsMonitor.getDom2BeatSizeMonitor().set(dom2Beat.size());
 }

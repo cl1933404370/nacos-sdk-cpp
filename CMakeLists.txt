@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.4.1)
+cmake_minimum_required(VERSION 3.6.1)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_C_STANDARD 17)
@@ -26,6 +26,7 @@ if(WIN32)
 	add_definitions(-DEIGEN_FORCE_INLINING)
 	add_definitions(-DGLOG_NO_ABBREVIATED_SEVERITIES)
 	add_definitions(-D_SILENCE_ALL_CXX23_DEPRECATION_WARNINGS)
+	add_definitions(-DLEVELDB_PLATFORM_WINDOWS)
 
 	# add_definitions(-D_CRT_SECURE_NO_WARNINGS)
 	# add_definitions(-D_SCL_SECURE_NO_WARNINGS)
@@ -93,14 +94,15 @@ add_library(nacos-cli SHARED ${SRCS_DIRS})
 add_library(nacos-cli-static STATIC ${SRCS_DIRS})
 
 set(THREADS_PREFER_PTHREAD_FLAG ON)
-target_link_libraries(nacos-cli PRIVATE Threads::Threads ZLIB::ZLIB Folly::folly Folly::folly_deps Folly::follybenchmark Folly::folly_test_util CURL::libcurl rapidjson)
-target_link_libraries(nacos-cli-static PRIVATE Threads::Threads ZLIB::ZLIB Folly::folly Folly::folly_deps Folly::follybenchmark Folly::folly_test_util CURL::libcurl rapidjson)
-target_link_libraries(nacos-cli.out PRIVATE Threads::Threads ZLIB::ZLIB Folly::folly Folly::folly_deps Folly::follybenchmark Folly::folly_test_util CURL::libcurl rapidjson)
+target_link_libraries(nacos-cli PRIVATE Threads::Threads ZLIB::ZLIB Folly::folly Folly::folly_deps Folly::follybenchmark Folly::folly_test_util CURL::libcurl rapidjson absl::any absl::log absl::base absl::bits)
+target_link_libraries(nacos-cli-static PRIVATE Threads::Threads ZLIB::ZLIB Folly::folly Folly::folly_deps Folly::follybenchmark Folly::folly_test_util CURL::libcurl rapidjson absl::any absl::log absl::base absl::bits)
+target_link_libraries(nacos-cli.out PRIVATE Threads::Threads ZLIB::ZLIB Folly::folly Folly::folly_deps Folly::follybenchmark Folly::folly_test_util CURL::libcurl rapidjson absl::any absl::log absl::base absl::bits)
 find_package(Threads REQUIRED)
 find_package(CURL REQUIRED)
 find_package(ZLIB REQUIRED)
 find_package(folly REQUIRED)
 find_package(RapidJSON CONFIG REQUIRED)
+find_package(absl CONFIG REQUIRED)
 
 install(TARGETS nacos-cli
 	LIBRARY DESTINATION lib)
