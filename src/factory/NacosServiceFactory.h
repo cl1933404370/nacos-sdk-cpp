@@ -22,7 +22,7 @@ private:
     bool propsIsSet;
 
     Mutex logSysInitLock;
-    static volatile bool logSystemInitialized;
+    static std::atomic_bool logSystemInitialized;
     void initializeRuntimeLogSettings(AppConfigManager *_appConfigManager);
 
     void checkConfig() NACOS_THROW(InvalidFactoryConfigException);

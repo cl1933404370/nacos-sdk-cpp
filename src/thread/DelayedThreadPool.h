@@ -18,7 +18,7 @@ private:
     std::vector< std::pair<uint64_t, Task*> > _scheduledTasks;
     DelayedThreadPool();
     DelayedWorker **delayTasks;
-    volatile bool _stop_delayed_tp;
+    std::atomic_bool _stop_delayed_tp;
 public:
     DelayedThreadPool(const NacosString &poolName, size_t poolSize) ;
     ~DelayedThreadPool();

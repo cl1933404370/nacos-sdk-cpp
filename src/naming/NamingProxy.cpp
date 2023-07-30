@@ -98,9 +98,9 @@ NamingProxy::reqAPI(const NacosString &api, list <NacosString> &params, int meth
 
     NacosString errmsg;
     if (!servers.empty()) {
-        size_t maxSvrSlot = servers.size();
+        int maxSvrSlot = servers.size();
         log_debug("nr_servers:%d\n", maxSvrSlot);
-        size_t selectedServer = RandomUtils::random(0, static_cast<int>(maxSvrSlot)) % maxSvrSlot;
+        int selectedServer = RandomUtils::random(0, maxSvrSlot) % maxSvrSlot;
         log_debug("selected_server:%d\n", selectedServer);
 
         for (size_t i = 0; i < servers.size(); i++) {

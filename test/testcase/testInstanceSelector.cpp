@@ -114,9 +114,9 @@ bool testRandomByWeightSelector()
     {
         list<Instance> res = namingSvc->getInstanceWithPredicate("TestNamingService0", &randomByWeightSelector);
 
-        for (list<Instance>::const_iterator it = res.begin();
-             it != res.end(); it++) {
-            cout << "service:" << it->toString() << endl;
+        for (const auto& re : res)
+        {
+            cout << "service:" << re.toString() << endl;
         }
     }
 

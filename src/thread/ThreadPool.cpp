@@ -38,10 +38,7 @@ Task* ThreadPool::take()
 {
 
 	LockGuard _lockGuard(&_lock);
-    while (_taskList.empty() && !_stop)
-    {
-        _NotEmpty.wait();
-    }
+    _NotEmpty.wait([this]{return !(_taskList.empty() && !_stop);});
 
     if (!_taskList.empty())
     {
@@ -62,10 +59,7 @@ void ThreadPool::put(Task* t)
 {
     LockGuard _lockGuard(&_lock);
     log_debug("ThreadPool:::::taskList:%d poolSize:%d stop:%d\n", _taskList.size(), _poolSize, _stop);
-    while (_taskList.size() >= _poolSize && !_stop)
-    {
-        _NotFull.wait();
-    }
+    _NotFull.wait([this]{return !(_taskList.size() >= _poolSize && !_stop);});
     if (!_stop)
     {
         _taskList.push_back(t);
@@ -98,9 +92,9 @@ void ThreadPool::stop() {
         return;
     }
 
-        _stop = true;
-        _NotEmpty.notifyAll();
-        _NotFull.notifyAll();
+    _stop = true;
+    _NotEmpty.notifyAll();
+    _NotFull.notifyAll();
 
     for (const auto& thread : _threads)
     {

@@ -26,7 +26,7 @@
 //Unlike Java, in cpp, there's no container, no spring to do the ORM job, so I have to handle it myself
 namespace nacos{
 
-volatile bool NacosServiceFactory::logSystemInitialized = false;
+std::atomic_bool NacosServiceFactory::logSystemInitialized = false;
 
 void buildSecurityManagerAndHttpDelegate(ObjectConfigData *objectConfigData) {
     AppConfigManager *appConfigManager = objectConfigData->_appConfigManager;

@@ -6,7 +6,7 @@
 struct sigaction Thread::old_action
 #endif
 
-void nacos::Thread::Init()
+    void nacos::Thread::Init()
 {
 #if defined(_MSC_VER) || defined(__WIN32__) || defined(WIN32)
     signal(SIGINT, empty_signal_handler);
@@ -92,24 +92,24 @@ void nacos::Thread::kill()
     bool aa = GetExitCodeThread(_thread->handle, &exciteCode);
     DWORD error = GetLastError();
     QueueUserAPC([](ULONG_PTR a)
-    {
-    }, _thread->handle, THREAD_STOP_SIGNAL);
+        {
+        }, _thread->handle, THREAD_STOP_SIGNAL);
     QueueUserAPC([](ULONG_PTR a)
-    {
-    }, _thread->handle, SIGTERM);
+        {
+        }, _thread->handle, SIGTERM);
     QueueUserAPC([](ULONG_PTR a)
-    {
-    }, _thread->handle, exciteCode);
+        {
+        }, _thread->handle, exciteCode);
     QueueUserAPC([](ULONG_PTR a)
+        {
+        }, _thread->handle, error);
+    if (exciteCode == STILL_ACTIVE)
     {
-    }, _thread->handle, error);
-   //if (exciteCode == STILL_ACTIVE)
-   //{
-   //    TerminateThread(_thread->handle, exciteCode);
-   //}
-    ExitThread(exciteCode);
-    //todo how to kill a thread
+        //TerminateThread(_thread->handle, THREAD_STOP_SIGNAL);
+        TerminateThread(_thread->handle, exciteCode);
+    }
+    //ExitThread(exciteCode);
 #else
     pthread_kill(_thread, THREAD_STOP_SIGNAL);
 #endif
-}
+    }

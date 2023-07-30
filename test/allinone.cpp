@@ -230,7 +230,7 @@ TestData
         bool pass = testfunction();
         if (!pass)
         {
-            cout << "FAILED" << endl;
+            cout << "\033[31mFAILED\033[0m" << endl;
             failed_list.push_back(curtest);
             nr_fail++;
         }

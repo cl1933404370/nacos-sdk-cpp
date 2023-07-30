@@ -18,8 +18,8 @@ private:
 	Condition _notFull;
 	std::deque<T> _queue;
 	size_t _maxSize;
-	volatile bool _full;
-	volatile bool _empty;
+	std::atomic_bool _full;
+	std::atomic_bool _empty;
 public:
 
     bool full() {

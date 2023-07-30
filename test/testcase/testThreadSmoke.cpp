@@ -18,12 +18,13 @@ using namespace nacos;
 class ThreadPoolLongRunTask : public Task {
 
 public:
-    ThreadPoolLongRunTask(int taskId) {
+    ThreadPoolLongRunTask(const int taskId) {
         NacosString taskName = "ThreadPoolLongRunTask" + NacosStringOps::valueOf(taskId);
         setTaskName(taskName);
-    };
+    }
 
-    void run() {
+    void run() override
+    {
         NacosString taskName = getTaskName();
         log_info("Hello world from %s\n", taskName.c_str());
         log_info("Run for 10 secs\n");
@@ -35,7 +36,7 @@ public:
         #endif
 
         log_info("ok\n");
-    };
+    }
 };
 
 void *threadFunc(void *param) {
@@ -109,7 +110,8 @@ public:
         setTaskName(taskName);
     };
 
-    void run() {
+    void run() override
+    {
         NacosString taskName = getTaskName();
         int currentTotal = 0;
         for (int i = 0; i < 100000; i++) {

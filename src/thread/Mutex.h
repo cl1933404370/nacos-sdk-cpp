@@ -9,9 +9,7 @@
 #include <condition_variable>
 #include <memory>
 #include "port.h"
-
 #endif
-
 
 /*
  * Mutex.h
@@ -33,18 +31,24 @@ namespace nacos
     class LOCKABLE Mutex {
     public:
         Mutex() = default;
-        ~Mutex() = default;
+        ~Mutex()
+        {
+            unassignHolder();
+
+        }
 
         Mutex(const Mutex&) = delete;
         Mutex& operator=(const Mutex&) = delete;
 
-        void lock() EXCLUSIVE_LOCK_FUNCTION() { mu_.lock(); }
-        void unlock() UNLOCK_FUNCTION() { mu_.unlock(); }
+        void lock() EXCLUSIVE_LOCK_FUNCTION() { mu_.lock(); assignHolder(); }
+        void unlock() UNLOCK_FUNCTION() { unassignHolder();  mu_.unlock(); }
         void AssertHeld() ASSERT_EXCLUSIVE_LOCK() {}
-
+        void assignHolder() { _holder = gettidv1(); };
+        void unassignHolder() { _holder = nullptr; };
     private:
         friend class Condition;
-        std::mutex mu_;
+        TID_T _holder{};
+        mutable std::mutex mu_;
     };
 
     // Thinly wraps std::condition_variable.
@@ -56,39 +60,40 @@ namespace nacos
         Condition(const Condition&) = delete;
         Condition& operator=(const Condition&) = delete;
 
-         void wait() {
-            std::unique_lock<std::mutex> lock(mu_->mu_, std::adopt_lock);
-            cv_.wait(lock);
-            lock.release();
+        void wait() {
+            wait([] {return 1; });
         }
 
         void wait(uint64_t millis)
         {
-            std::unique_lock<std::mutex> lock(mu_->mu_, std::adopt_lock);
-            cv_.wait_for(lock, std::chrono::milliseconds(millis));
-            lock.release();
+            wait([] {return 1; }, millis);
         }
 
+        //[this] { return !d_numberQueue.empty(); }
         template <typename Predicate>
-        void wait(Predicate pred) const {                 // (10)
+        void wait(Predicate pred) {
             std::unique_lock<std::mutex> lock(mu_->mu_, std::adopt_lock);
             cv_.wait(lock, pred);
             lock.release();
         }
 
         template <typename Predicate>
-        void wait(Predicate pred, long millis) const {  // (11)
+        void wait(Predicate pred, uint64_t millis) {
             std::unique_lock<std::mutex> lock(mu_->mu_, std::adopt_lock);
-            cv_.wait_for(lock, std::chrono::milliseconds(millis), pred);
+            if (millis == 0) {
+                cv_.wait(lock, pred);
+            }
+            else {
+                cv_.wait_for(lock, std::chrono::milliseconds(millis), pred);
+            }
             lock.release();
         }
-
 
         void notify() { cv_.notify_one(); }
         void notifyAll() { cv_.notify_all(); }
 
     private:
-        std::condition_variable cv_;
+        mutable  std::condition_variable cv_;
         Mutex* const mu_;
     };
 

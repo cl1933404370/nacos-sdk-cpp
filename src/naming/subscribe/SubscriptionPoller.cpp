@@ -91,7 +91,7 @@ void *SubscriptionPoller::pollingThreadFunc(void *parm)
         log_debug("SubscriptionPoller::pollingThreadFunc start polling, interval = %d\n", thisObj->_pollingInterval);
         map<NacosString, PollingData> copiedList;
         {
-            ReadGuard __readGuard(thisObj->rwLock);
+            ReadGuard _readGuard(thisObj->rwLock);
             copiedList = thisObj->pollingList;
             log_debug("Copied polling list, size = %d\n", copiedList.size());
         }

@@ -11,7 +11,7 @@ class DelayedWorker : public Task {
 private:
     DelayedThreadPool &_container;
 public:
-    volatile bool _start;
+    std::atomic_bool _start;
     DelayedWorker(DelayedThreadPool &container) : _container(container) {
         _start = false;
     }
@@ -29,7 +29,7 @@ public:
                     _container._lockForScheduleTasks.unlock();
                     return;
                 }
-                _container._delayTaskNotEmpty.wait();
+                _container._delayTaskNotEmpty.wait([&]{return !_container._scheduledTasks.empty();});
                 log_debug("[DelayedWorker] wake up due to incoming event\n");
             }
 
@@ -105,12 +105,20 @@ DelayedThreadPool::~DelayedThreadPool() {
         delete [] delayTasks;
         delayTasks = nullptr;
     }
+
+    /*for (size_t i = 0; i < _scheduledTasks.size(); i++)
+    {
+        auto cc = _scheduledTasks[i].first;
+        auto dd = _scheduledTasks[i].second;
+        auto ee = 0;
+    }*/
 }
 
 struct tagAscOrdFunctor{
-    bool operator ()(const std::pair<long, Task*> &lhs, const std::pair<long, Task*> &rhs) {
+    bool operator ()(const std::pair<long, Task*> &lhs, const std::pair<long, Task*> &rhs) const
+    {
         return lhs.first < rhs.first;
-    };
+    }
 } ascOrdFunctor = {};
 
 //futureTimeToRun: time in MS
@@ -119,13 +127,13 @@ void DelayedThreadPool::schedule(Task *t, uint64_t futureTimeToRun) {
         return;
     }
     log_debug("DelayedThreadPool::schedule() name=%s future = %ld\n", t->getTaskName().c_str(), futureTimeToRun);
-    {
-	    const std::pair<uint64_t, Task*> scheduledTask = std::make_pair (futureTimeToRun, t);
+    const std::pair<uint64_t, Task*> scheduledTask = std::make_pair (futureTimeToRun, t);
+	{
 	    LockGuard lockSchedTasks(&_lockForScheduleTasks);
         _scheduledTasks.push_back(scheduledTask);
         std::sort(_scheduledTasks.begin(), _scheduledTasks.end(), ascOrdFunctor);
-        _delayTaskNotEmpty.notifyAll();
-    }
+	}
+    _delayTaskNotEmpty.notifyAll();
 }
 
 void DelayedThreadPool::start() {
@@ -145,8 +153,9 @@ void DelayedThreadPool::stop() {
 
     _stop_delayed_tp = true;
     _delayTaskNotEmpty.notifyAll();
-    for (std::list<Thread *>::iterator it = _threads.begin(); it != _threads.end(); it++) {
-        (*it)->kill();
+    for (const auto& _thread : _threads)
+    {
+        _thread->kill();
     }
 
     ThreadPool::stop();

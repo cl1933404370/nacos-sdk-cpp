@@ -21,8 +21,8 @@ using namespace nacos;
 class DelayedTask : public Task
 {
 public:
-    DelayedThreadPool *executor;
-    uint64_t interval; // in MS
+    DelayedThreadPool *executor{};
+    uint64_t interval{}; // in MS
     uint64_t last_exec_time;
     DelayedTask()
     {
@@ -50,6 +50,12 @@ public:
 #else
         sleep(1);
 #endif
+    }
+
+    ~DelayedTask() override
+    {
+        delete executor;
+        printf(">>>>>>>>>>>>>>>>>>Task %s destroyed\n", getTaskName().c_str());
     }
 };
 

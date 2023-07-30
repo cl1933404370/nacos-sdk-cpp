@@ -14,8 +14,8 @@ std::list<Instance> RandomByWeightSelector::select(const std::list<Instance> &in
     std::list<Instance> result;
 
     int total_weight = 0;
-    for (std::list<Instance>::const_iterator it = instancesToSelect.begin();
-         it != instancesToSelect.end(); it++) {
+    for (auto&& it = instancesToSelect.begin();
+         it != instancesToSelect.end(); ++it) {
         if (it->weight < 1e-10) {
             //we consider a very small weight as 0
             continue;

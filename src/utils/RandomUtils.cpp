@@ -70,21 +70,18 @@ namespace nacos
 
     int RandomUtils::random_inner()
     {
+        static ThreadLocal<bool> initedForThisThread(false); // thread safety check with thread local
+        if (!initedForThisThread.get())
+        {
+            srand(time(nullptr) ^ pthread_self()->threadID);
+            initedForThisThread.set(true);
+        }
+        return rand();
 
-#ifndef _MSC_VER || __WIN32__ || WIN32
-    static ThreadLocal<bool> initedForThisThread(false); // thread safety check with thread local
-    if (!initedForThisThread.get())
-    {
-        srand(time(nullptr) ^ pthread_self()->threadID);
-        initedForThisThread.set(true);
-    }
-    return rand();
-#else
-    std::random_device rd; 
-    std::mt19937 gen(rd());
-    std::uniform_int_distribution<> distrib(INT_MIN, INT_MAX);
-    return distrib(gen);
-#endif
+        std::random_device rd; 
+        std::mt19937 gen(rd());
+        std::uniform_int_distribution<> distrib(INT_MIN, INT_MAX);
+        return distrib(gen);
     }
 
     int RandomUtils::random(int begin, int end) NACOS_THROW(NacosException)
@@ -97,7 +94,7 @@ namespace nacos
         {
             throw NacosException(NacosException::INVALID_PARAM, "end must be greater than begin");
         }
-        long offset = random_inner() % (end - begin + 1);
+        const int offset = random_inner() % (end - begin + 1);
         return begin + offset;
 #endif
     }
