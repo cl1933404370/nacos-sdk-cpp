@@ -49,7 +49,7 @@ public:
 	{
 		LockGuard lockguard(&_mutex);
 		_empty = true;
-		_notEmpty.wait([&]{return !_queue.empty()});
+		_notEmpty.wait([&]{return !_queue.empty();});
 		_empty = false;
 		T front = _queue.front();
 		_queue.pop_front();
