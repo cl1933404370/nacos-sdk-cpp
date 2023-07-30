@@ -36,27 +36,25 @@ public:
 	void enqueue(const T &data)
 	{
 		LockGuard lockguard(&_mutex);
-        _empty = false;
-		while (_queue.size() == _maxSize)
-		{
-		    _full = true;
-			_notFull.wait();
-		}
+		_full = true;
+		_notFull.wait([&]{return _queue.size() != _maxSize;});
+		_full = false;
 		_queue.push_back(data);
+		_full = _queue.size() == _maxSize;
+	    _empty = false;
 		_notEmpty.notify();
 	}
 
 	T dequeue()
 	{
 		LockGuard lockguard(&_mutex);
-        _full = false;
-		while (_queue.empty())
-		{
-		    _empty = true;
-			_notEmpty.wait();
-		}
+		_empty = true;
+		_notEmpty.wait([&]{return !_queue.empty()});
+		_empty = false;
 		T front = _queue.front();
 		_queue.pop_front();
+		_empty = _queue.empty();
+		_full = false;
 		_notFull.notify();
 		return front;
 	}

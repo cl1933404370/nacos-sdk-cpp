@@ -90,25 +90,18 @@ void nacos::Thread::kill()
 #if defined(_MSC_VER) || defined(__WIN32__) || defined(WIN32)
     DWORD exciteCode;
     bool aa = GetExitCodeThread(_thread->handle, &exciteCode);
-    DWORD error = GetLastError();
     QueueUserAPC([](ULONG_PTR a)
         {
         }, _thread->handle, THREAD_STOP_SIGNAL);
     QueueUserAPC([](ULONG_PTR a)
         {
-        }, _thread->handle, SIGTERM);
-    QueueUserAPC([](ULONG_PTR a)
-        {
         }, _thread->handle, exciteCode);
-    QueueUserAPC([](ULONG_PTR a)
-        {
-        }, _thread->handle, error);
-    if (exciteCode == STILL_ACTIVE)
+   /* if (exciteCode == STILL_ACTIVE)
     {
-        //TerminateThread(_thread->handle, THREAD_STOP_SIGNAL);
+        TerminateThread(_thread->handle, THREAD_STOP_SIGNAL);
         TerminateThread(_thread->handle, exciteCode);
-    }
-    //ExitThread(exciteCode);
+    }*/
+    ExitThread(exciteCode);
 #else
     pthread_kill(_thread, THREAD_STOP_SIGNAL);
 #endif
