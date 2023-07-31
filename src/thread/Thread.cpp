@@ -70,7 +70,20 @@ void* nacos::Thread::threadFunc(void* param)
 void nacos::Thread::start()
 {
     _start = true;
-    pthread_create(&_thread, nullptr, threadFunc, (void*)this);
+
+#if defined(_MSC_VER) || defined(__WIN32__) || defined(WIN32)
+    std::thread thread(
+        [&]
+        {
+            _tid = gettidv1();
+            this->threadFunc((void*)this);
+        }
+    );
+    _thread = std::move(thread);
+
+#else
+        pthread_create(&_thread, nullptr, threadFunc, (void*)this);
+#endif
 }
 
 void nacos::Thread::join()
@@ -82,13 +95,20 @@ void nacos::Thread::join()
         return;
     }
 
-    pthread_join(_thread, nullptr);
+#if defined(_MSC_VER) || defined(__WIN32__) || defined(WIN32)
+    if (_thread.joinable())
+    {
+        _thread.join();
+    }
+#else
+        pthread_join(_thread, nullptr);
+#endif
 }
 
 void nacos::Thread::kill()
 {
 #if defined(_MSC_VER) || defined(__WIN32__) || defined(WIN32)
-    DWORD exciteCode;
+    /* DWORD exciteCode;
     bool aa = GetExitCodeThread(_thread->handle, &exciteCode);
     QueueUserAPC([](ULONG_PTR a)
         {
@@ -96,13 +116,12 @@ void nacos::Thread::kill()
     QueueUserAPC([](ULONG_PTR a)
         {
         }, _thread->handle, exciteCode);
-   /* if (exciteCode == STILL_ACTIVE)
+    if (exciteCode == STILL_ACTIVE)
     {
-        TerminateThread(_thread->handle, THREAD_STOP_SIGNAL);
         TerminateThread(_thread->handle, exciteCode);
     }*/
-    ExitThread(exciteCode);
+    //ExitThread(exciteCode);
 #else
     pthread_kill(_thread, THREAD_STOP_SIGNAL);
 #endif
-    }
+}

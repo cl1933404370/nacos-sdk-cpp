@@ -40,14 +40,24 @@ typedef void *(*ThreadFn)(void *);
 class Thread {
 private:
     NacosString _threadName;
+
+#if defined(_MSC_VER) || defined(__WIN32__) || defined(WIN32)
+    std::thread& _thread;
+#else
     pthread_t _thread;
+#endif
+
     ThreadFn _function;
     //TODO:thread id
     TID_T _tid;
-    bool _start;
+    std::atomic_bool _start;
     void *_threadData;
 
-    Thread(): _threadName(""), _function(NULL), _threadData(NULL), _start(false), _tid(0), _thread(0)
+    Thread(): _threadName(""), _function(NULL), _threadData(NULL), _start(false), _tid(0), 
+#if defined(_MSC_VER) || defined(__WIN32__) || defined(WIN32)
+#else
+    _thread(0);
+#endif
     {};
 
     static void empty_signal_handler(int signum) {};
@@ -75,7 +85,8 @@ public:
             : _threadName(threadName), _function(fn), _threadData(threadData) {
         _start = false;
     };
-
+    Thread(Thread&) = delete;
+    Thread& operator=(Thread&) = delete;
     ~Thread() {
         _start = false;
     }

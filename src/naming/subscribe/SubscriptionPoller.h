@@ -26,7 +26,7 @@ private:
     Thread *_pollingThread;
     int _pollingInterval;//In ms
     int _udpPort;//udp receiver port
-    volatile bool _started;
+    std::atomic_bool _started;
     ObjectConfigData *_objectConfigData;
 
     SubscriptionPoller();
