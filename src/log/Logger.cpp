@@ -52,7 +52,7 @@ namespace nacos
         }
 
         _log_file = _log_base_dir + ConfigConstant::FILE_SEPARATOR + "nacos-sdk-cpp.log";
-        IOUtils::recursivelyCreate(_log_base_dir.c_str());
+        IOUtils::recursivelyCreate(_log_base_dir);
         _output_file = fopen(_log_file.c_str(), "a");
         if (_output_file == nullptr)
         {

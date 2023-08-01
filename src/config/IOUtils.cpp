@@ -106,13 +106,11 @@ namespace nacos
     bool IOUtils::checkNotExistOrNotDir(const NacosString& pathname)
     {
 #if defined(_MSC_VER) || defined(__WIN32__) || defined(WIN32)
-        struct stat info;
-        if (stat(pathname.c_str(), &info) != 0)
-        {
-            // Failed to get file info, assume it doesn't exist
+        WIN32_FILE_ATTRIBUTE_DATA fileInfo;
+        if (!GetFileAttributesEx(pathname.c_str(), GetFileExInfoStandard, &fileInfo)) {
             return true;
         }
-        return !S_ISDIR(info.st_mode);
+        return !(fileInfo.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY);
 #else
         struct stat thestat = { 0 };
         int res = stat(pathname.c_str(), &thestat);

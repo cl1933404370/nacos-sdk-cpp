@@ -29,7 +29,7 @@ public:
                     _container._lockForScheduleTasks.unlock();
                     return;
                 }
-                _container._delayTaskNotEmpty.wait([&]{return !_container._scheduledTasks.empty();});
+                _container._delayTaskNotEmpty.wait([&]{return !_container._scheduledTasks.empty() || _container._stop_delayed_tp;});
                 log_debug("[DelayedWorker] wake up due to incoming event\n");
             }
 
@@ -153,7 +153,7 @@ void DelayedThreadPool::stop() {
 
     _stop_delayed_tp = true;
     _delayTaskNotEmpty.notifyAll();
-    for (const auto& _thread : _threads)
+    for (auto&& _thread : _threads)
     {
         _thread->kill();
     }

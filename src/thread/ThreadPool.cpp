@@ -11,8 +11,8 @@ void *ThreadPool::runInThread(void *param) {
     ThreadPool *thisobj = static_cast<ThreadPool*>(param);
 
     log_debug("ThreadPool::runInThread()\n");
-    while (!thisobj->_stop) {
-        Task *t = thisobj->take();
+    Task * t = nullptr;
+    while ((t = thisobj->take())) {
         NacosString taskName = t->getTaskName();
         log_debug("Thread got task:%s\n", taskName.c_str());
         try {
@@ -38,7 +38,7 @@ Task* ThreadPool::take()
 {
 
 	LockGuard _lockGuard(&_lock);
-    _NotEmpty.wait([this]{return !_taskList.empty() || _stop;});
+    _NotEmpty.wait([&]{return !_taskList.empty() || _stop;});
 
     if (!_taskList.empty())
     {
@@ -59,7 +59,7 @@ void ThreadPool::put(Task* t)
 {
     LockGuard _lockGuard(&_lock);
     log_debug("ThreadPool:::::taskList:%d poolSize:%d stop:%d\n", _taskList.size(), _poolSize, _stop);
-    _NotFull.wait([this]{return _taskList.size() < _poolSize || _stop;});
+    _NotFull.wait([&]{return _taskList.size() < _poolSize || _stop;});
     if (!_stop)
     {
         _taskList.push_back(t);
@@ -96,7 +96,7 @@ void ThreadPool::stop() {
     _NotEmpty.notifyAll();
     _NotFull.notifyAll();
 
-    for (const auto& thread : _threads)
+    for (auto&& thread : _threads)
     {
         thread->join();
         delete thread;

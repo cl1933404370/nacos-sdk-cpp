@@ -78,11 +78,11 @@ void nacos::Thread::start()
             _tid = gettidv1();
             this->threadFunc((void*)this);
         }
-    );
+        );
     _thread = std::move(thread);
 
 #else
-        pthread_create(&_thread, nullptr, threadFunc, (void*)this);
+    pthread_create(&_thread, nullptr, threadFunc, (void*)this);
 #endif
 }
 
@@ -96,31 +96,28 @@ void nacos::Thread::join()
     }
 
 #if defined(_MSC_VER) || defined(__WIN32__) || defined(WIN32)
+    std::this_thread::yield();
     if (_thread.joinable())
     {
         _thread.join();
     }
 #else
-        pthread_join(_thread, nullptr);
+    pthread_join(_thread, nullptr);
 #endif
 }
 
 void nacos::Thread::kill()
 {
 #if defined(_MSC_VER) || defined(__WIN32__) || defined(WIN32)
-    /* DWORD exciteCode;
-    bool aa = GetExitCodeThread(_thread->handle, &exciteCode);
+    DWORD exciteCode;
+    bool aa = GetExitCodeThread(_thread.native_handle(), &exciteCode);
     QueueUserAPC([](ULONG_PTR a)
         {
-        }, _thread->handle, THREAD_STOP_SIGNAL);
+        }, _thread.native_handle(), THREAD_STOP_SIGNAL);
     QueueUserAPC([](ULONG_PTR a)
         {
-        }, _thread->handle, exciteCode);
-    if (exciteCode == STILL_ACTIVE)
-    {
-        TerminateThread(_thread->handle, exciteCode);
-    }*/
-    //ExitThread(exciteCode);
+        }, _thread.native_handle(), exciteCode);
+    std::this_thread::yield();
 #else
     pthread_kill(_thread, THREAD_STOP_SIGNAL);
 #endif

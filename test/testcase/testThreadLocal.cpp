@@ -102,9 +102,10 @@ bool testThreadLocalPtr() {
         threads[i]->start();
     }
 
-    for (int i = 0; i < 10; i++) {
-        threads[i]->join();
-        delete threads[i];
+    for (auto&& thread : threads)
+    {
+        thread->join();
+        delete thread;
     }
 
     cout << "test end..." << endl;
