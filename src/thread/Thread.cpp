@@ -76,7 +76,7 @@ void nacos::Thread::start()
         [&]
         {
             _tid = gettidv1();
-            this->threadFunc((void*)this);
+            this->threadFunc(this);
         }
         );
     _thread = std::move(thread);

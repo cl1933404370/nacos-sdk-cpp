@@ -32,7 +32,7 @@ void *ThreadLocalFuncs4Ptr(void *param) {
     NACOS_ASSERT(threadLocalPtr.get() == NULL);
 
     for (int i = 0; i < 100; i++) {
-        int* rndPtr = nullptr;
+        int* rndPtr = new int;
         *rndPtr = RandomUtils::random(0, 1000);
         threadLocalPtr.set(rndPtr);
 
@@ -47,7 +47,7 @@ void *ThreadLocalFuncs4PtrWithInitializer(void *param) {
     NACOS_ASSERT(threadLocalPtrWithInitializer.get() == reinterpret_cast<int*>(0xFFFF));
 
     for (int i = 0; i < 100; i++) {
-        int* rndPtr = nullptr;
+        int* rndPtr = new int;
         *rndPtr = RandomUtils::random(0, 1000);
         threadLocalPtrWithInitializer.set(rndPtr);
 
