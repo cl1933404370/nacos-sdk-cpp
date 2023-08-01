@@ -17,13 +17,12 @@
 namespace nacos {
     class DummyTask : public Task {
     public:
-        DummyTask() { setTaskName("DummyTask"); };
+        DummyTask() { setTaskName("DummyTask"); }
 
-        void run() {};
+        void run() override {}
     };
 
     class ThreadPool {
-    private:
         NacosString _poolName;
         std::deque<Task*> _taskList;
         mutable  Mutex _lock;
@@ -34,21 +33,21 @@ namespace nacos {
         static void* runInThread(void* param);
 
         ThreadPool() :
-            _poolName("CannotBeCreated"),_NotEmpty(&_lock), _NotFull(&_lock), _stop(true), _poolSize(0) {};
+            _poolName("CannotBeCreated"),_NotEmpty(&_lock), _NotFull(&_lock), _stop(true), _poolSize(0) {}
     protected:
         std::list<Thread*> _threads;
         volatile bool _stop;
         size_t _poolSize;
     public:
-        ThreadPool(const NacosString& poolName, size_t poolSize) :
-            _poolName(poolName), _NotEmpty(&_lock), _NotFull(&_lock), _stop(true), _poolSize(poolSize) {
-        };  
+        ThreadPool(NacosString poolName, size_t poolSize) :
+            _poolName(std::move(poolName)), _NotEmpty(&_lock), _NotFull(&_lock), _stop(true), _poolSize(poolSize) {
+        } 
 
         ThreadPool(size_t poolSize) :
             _poolName("NacosCliWorkerThread"), _NotEmpty(&_lock), _NotFull(&_lock), _stop(true), _poolSize(poolSize) {
-        };
+        }
 
-        virtual ~ThreadPool() {};
+        virtual ~ThreadPool() = default;
 
         Task* take();
 

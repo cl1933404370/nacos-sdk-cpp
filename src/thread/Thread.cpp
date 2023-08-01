@@ -99,6 +99,7 @@ void nacos::Thread::join()
     std::this_thread::yield();
     if (_thread.joinable())
     {
+        std::this_thread::yield();
         _thread.join();
     }
 #else
