@@ -16,12 +16,12 @@ private:
     Condition _delayTaskNotEmpty;
     Mutex _lockForScheduleTasks;//for _scheduledTasks
     std::vector< std::pair<uint64_t, Task*> > _scheduledTasks;
-    DelayedThreadPool();
     DelayedWorker **delayTasks;
     std::atomic_bool _stop_delayed_tp;
 public:
+    DelayedThreadPool() = delete;
     DelayedThreadPool(const NacosString &poolName, size_t poolSize) ;
-    ~DelayedThreadPool();
+    ~DelayedThreadPool() override;
 
     /**
     * schedule the execution for a task
@@ -32,9 +32,9 @@ public:
 
     friend class DelayedWorker;
 
-    virtual void start();
+    void start() override;
 
-    virtual void stop();
+    void stop() override;
 };
 
 }
