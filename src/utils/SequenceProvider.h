@@ -3,7 +3,6 @@
 #include <fcntl.h>
 #if defined(_MSC_VER) || defined(__WIN32__) || defined(WIN32)
 #include <io.h>
-#include <process.h>
 #else
 #include <unistd.h>
 #endif
@@ -23,15 +22,15 @@ private:
     NacosString _fileName;
     AtomicInt<T> _current;
     Mutex _acquireMutex;
-    T _nr_to_preserve;
+    T _nrToPreserve;
     T _initSequence;
     volatile T _hwm;//high water mark
 
-    void ensureWrite(int fd, T data) {
+    static void ensureWrite(int fd, T data) {
         size_t bytes_written = 0;
         while (bytes_written < sizeof(T)) {
             #if defined(_MSC_VER) || defined(__WIN32__) || defined(WIN32)
-            bytes_written += _write(fd, (char*)(&data) + bytes_written, sizeof(T) - bytes_written);
+            bytes_written += _write(fd, reinterpret_cast<char*>(&data) + bytes_written, sizeof(T) - bytes_written);
             #else
             bytes_written += write(fd, (char*)&data + bytes_written, sizeof(T) - bytes_written);
             #endif
@@ -40,7 +39,7 @@ private:
     
     T preserve() {
         #if defined(_MSC_VER) || defined(__WIN32__) || defined(WIN32)
-        T current;
+        T current{};
         bool newFile = false;
         if (IOUtils::checkNotExistOrNotFile(_fileName)) {
             newFile = true;
@@ -59,13 +58,13 @@ private:
         //todo dead lock
         while (bytes_read < sizeof(T))
         {
-            bytes_read += _read(fd, (char*)(&current) + bytes_read, sizeof(T) - bytes_read);
+            bytes_read += _read(fd, reinterpret_cast<char*>(&current) + bytes_read, sizeof(T) - bytes_read);
         }
 
         _lseek(fd, 0, SEEK_SET);//write from the beginning
-        ensureWrite(fd, current + _nr_to_preserve);
+        ensureWrite(fd, current + _nrToPreserve);
         _close(fd);
-        _hwm = current + _nr_to_preserve;
+        _hwm = current + _nrToPreserve;
         return current;
         #else
         T current;
@@ -102,7 +101,7 @@ public:
     SequenceProvider(const NacosString &fileName, T initSequence, T nr_to_preserve) {
         _fileName = fileName;
         _initSequence = initSequence;
-        _nr_to_preserve = nr_to_preserve;
+        _nrToPreserve = nr_to_preserve;
         _current.set(preserve());
     }
 
