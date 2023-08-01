@@ -12,7 +12,6 @@ namespace nacos {
 class DelayedWorker;
 
 class DelayedThreadPool : public ThreadPool {
-private:
     Condition _delayTaskNotEmpty;
     Mutex _lockForScheduleTasks;//for _scheduledTasks
     std::vector< std::pair<uint64_t, Task*> > _scheduledTasks;

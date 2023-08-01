@@ -9,27 +9,28 @@ namespace nacos {
 */
 class DelayedWorker : public Task {
 private:
-    DelayedThreadPool &_container;
+    DelayedThreadPool* _container;
 public:
     std::atomic_bool _start;
-    DelayedWorker(DelayedThreadPool &container) : _container(container) {
+    DelayedWorker(DelayedThreadPool &container) : _container(&container) {
         _start = false;
     }
 
-    void run() {
+    void run() override
+    {
         log_debug("DelayedWorker::run()\n");
-        while (!_container._stop_delayed_tp) {
-            _container._lockForScheduleTasks.lock();
+        while (!_container->_stop_delayed_tp) {
+            _container->_lockForScheduleTasks.lock();
 
             //no data, wait until data is available
-            log_debug("[DelayedWorker] start to wait for task stop=%d\n", _container._stop);
-            if (_container._scheduledTasks.empty()) {
+            log_debug("[DelayedWorker] start to wait for task stop=%d\n", _container->_stop);
+            if (_container->_scheduledTasks.empty()) {
                 log_debug("[DelayedWorker] empty, wait for task\n");
-                if (_container._stop_delayed_tp) {
-                    _container._lockForScheduleTasks.unlock();
+                if (_container->_stop_delayed_tp) {
+                    _container->_lockForScheduleTasks.unlock();
                     return;
                 }
-                _container._delayTaskNotEmpty.wait([&]{return !_container._scheduledTasks.empty() || _container._stop_delayed_tp;});
+                _container->_delayTaskNotEmpty.wait([&]{return !_container->_scheduledTasks.empty() || _container->_stop_delayed_tp;});
                 log_debug("[DelayedWorker] wake up due to incoming event\n");
             }
 
@@ -51,31 +52,31 @@ public:
 
             log_debug("[DelayedWorker] iterating on _scheduledTasks\n");
             std::vector< std::pair<uint64_t, Task*> >::iterator it;
-            while ((it = _container._scheduledTasks.begin()) != _container._scheduledTasks.end()) {
+            while ((it = _container->_scheduledTasks.begin()) != _container->_scheduledTasks.end()) {
 	            const uint64_t now_time = TimeUtils::getCurrentTimeInMs();
                 log_debug("[DelayedWorker] now = %ld wakeup time = %ld\n", now_time, it->first);
                 if (it->first <= now_time) {
                     Task *task = it->second;
-                    _container._scheduledTasks.erase(it);
-                    _container._lockForScheduleTasks.unlock();
+                    _container->_scheduledTasks.erase(it);
+                    _container->_lockForScheduleTasks.unlock();
                     //the task can also attempt to retrieve the lock
-                    if (_container._stop_delayed_tp) {
+                    if (_container->_stop_delayed_tp) {
                         return;
                     }
                     task->run();
-                    _container._lockForScheduleTasks.lock();
+                    _container->_lockForScheduleTasks.lock();
                     log_debug("[DelayedWorker] continue 2 next task\n");
                 } else {
                     //awake from sleep when a stop signal is sent
-                    if (_container._stop_delayed_tp) {
-                        _container._lockForScheduleTasks.unlock();
+                    if (_container->_stop_delayed_tp) {
+                        _container->_lockForScheduleTasks.unlock();
                         return; 
                     }
-                    _container._delayTaskNotEmpty.wait(it->first - now_time);
+                    _container->_delayTaskNotEmpty.wait(it->first - now_time);
                 }
             }
 
-            _container._lockForScheduleTasks.unlock();
+            _container->_lockForScheduleTasks.unlock();
         }
         _start = false;
     }
@@ -127,9 +128,9 @@ void DelayedThreadPool::schedule(Task *t, uint64_t futureTimeToRun) {
         return;
     }
     log_debug("DelayedThreadPool::schedule() name=%s future = %ld\n", t->getTaskName().c_str(), futureTimeToRun);
-    const std::pair<uint64_t, Task*> scheduledTask = std::make_pair (futureTimeToRun, t);
-	{
-	    LockGuard lockSchedTasks(&_lockForScheduleTasks);
+    {
+        const std::pair<uint64_t, Task*> scheduledTask = std::make_pair (futureTimeToRun, t);
+        LockGuard lockSchedTasks(&_lockForScheduleTasks);
         _scheduledTasks.push_back(scheduledTask);
         std::sort(_scheduledTasks.begin(), _scheduledTasks.end(), ascOrdFunctor);
 	}

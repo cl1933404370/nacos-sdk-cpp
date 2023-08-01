@@ -40,21 +40,21 @@ namespace nacos
         Mutex(const Mutex&) = delete;
         Mutex& operator=(const Mutex&) = delete;
 
-        void lock() EXCLUSIVE_LOCK_FUNCTION() { mu_.lock(); assignHolder(); }
-        void unlock() UNLOCK_FUNCTION() { unassignHolder();  mu_.unlock(); }
+        void lock() EXCLUSIVE_LOCK_FUNCTION() { _mu.lock(); assignHolder(); }
+        void unlock() UNLOCK_FUNCTION() { unassignHolder();  _mu.unlock(); }
         void AssertHeld() ASSERT_EXCLUSIVE_LOCK() {}
-        void assignHolder() { _holder = gettidv1(); };
-        void unassignHolder() { _holder = nullptr; };
+        void assignHolder() { _holder = gettidv1(); }
+        void unassignHolder() { _holder = nullptr; }
     private:
         friend class Condition;
         TID_T _holder{};
-        mutable std::mutex mu_;
+        mutable std::mutex _mu;
     };
 
     // Thinly wraps std::condition_variable.
     class Condition {
     public:
-        explicit Condition(Mutex* mu) : mu_(mu) { assert(mu != nullptr); }
+        explicit Condition(Mutex* mu) : _mu(mu) { assert(mu != nullptr); }
         ~Condition() = default;
 
         Condition(const Condition&) = delete;
@@ -72,43 +72,43 @@ namespace nacos
         //[this] { return !d_numberQueue.empty(); }
         template <typename Predicate>
         void wait(Predicate pred) {
-            std::unique_lock<std::mutex> lock(mu_->mu_, std::adopt_lock);
-            cv_.wait(lock, pred);
+            std::unique_lock<std::mutex> lock(_mu->_mu, std::adopt_lock);
+            _cv.wait(lock, pred);
             lock.release();
         }
 
         template <typename Predicate>
         void wait(Predicate pred, uint64_t millis) {
-            std::unique_lock<std::mutex> lock(mu_->mu_, std::adopt_lock);
+            std::unique_lock<std::mutex> lock(_mu->_mu, std::adopt_lock);
             if (millis == 0) {
-                cv_.wait(lock, pred);
+                _cv.wait(lock, pred);
             }
             else {
-                cv_.wait_for(lock, std::chrono::milliseconds(millis), pred);
+                _cv.wait_for(lock, std::chrono::milliseconds(millis), pred);
             }
             lock.release();
         }
 
-        void notify() { cv_.notify_one(); }
-        void notifyAll() { cv_.notify_all(); }
+        void notify() const { _cv.notify_one(); }
+        void notifyAll() const { _cv.notify_all(); }
 
     private:
-        mutable  std::condition_variable cv_;
-        Mutex* const mu_;
+        mutable  std::condition_variable _cv;
+        Mutex* _mu;
     };
 
     class SCOPED_LOCKABLE LockGuard {
     public:
-        explicit LockGuard(Mutex* mu) EXCLUSIVE_LOCK_FUNCTION(mu) : mu_(mu) {
-            this->mu_->lock();
+        explicit LockGuard(Mutex* mu) EXCLUSIVE_LOCK_FUNCTION(mu) : _mu(mu) {
+            this->_mu->lock();
         }
-        ~LockGuard() UNLOCK_FUNCTION() { this->mu_->unlock(); }
+        ~LockGuard() UNLOCK_FUNCTION() { this->_mu->unlock(); }
 
         LockGuard(const LockGuard&) = delete;
         LockGuard& operator=(const LockGuard&) = delete;
 
     private:
-        Mutex* const mu_;
+        Mutex* _mu;
     };
 #elif
 

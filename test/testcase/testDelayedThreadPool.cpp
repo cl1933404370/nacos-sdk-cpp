@@ -10,7 +10,7 @@
 #include <unistd.h>
 #endif 
 
-#include <stdio.h>
+#include <cstdio>
 #include "src/thread/DelayedThreadPool.h"
 #include "src/debug/DebugAssertion.h"
 #include "NacosExceptions.h"
@@ -21,10 +21,10 @@ using namespace nacos;
 class DelayedTask : public Task
 {
 public:
-    DelayedThreadPool *executor{};
-    uint64_t interval{}; // in MS
+    DelayedThreadPool *executor;
+    uint64_t interval; // in MS
     uint64_t last_exec_time;
-    DelayedTask()
+    DelayedTask(): executor(nullptr), interval(0)
     {
         last_exec_time = 0;
     }
