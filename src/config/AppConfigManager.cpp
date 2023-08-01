@@ -54,8 +54,8 @@ const NacosString &AppConfigManager::get(const NacosString &key) {
         return NULLSTR;
     }
 
-    if (key.compare(PropertyKeyConst::NAMESPACE) == 0
-        && appConfig[PropertyKeyConst::NAMESPACE].compare("Public") == 0)
+    if (key == PropertyKeyConst::NAMESPACE
+        && appConfig[PropertyKeyConst::NAMESPACE] == "Public")
     {
         return NULLSTR;
     }
@@ -64,9 +64,10 @@ const NacosString &AppConfigManager::get(const NacosString &key) {
 
 void AppConfigManager::set(const NacosString &key, const NacosString &value) {
     //Special case handle
-    if (key.compare(PropertyKeyConst::SERVER_REQ_TIMEOUT) == 0) {
-        _serverReqTimeout = atoi(value.c_str());
-    } else if (key.compare(PropertyKeyConst::CONTEXT_PATH) == 0) {
+    if (key == PropertyKeyConst::SERVER_REQ_TIMEOUT) {
+        char* endptr;
+        _serverReqTimeout = strtol(value.c_str(),&endptr, 10);
+    } else if (key == PropertyKeyConst::CONTEXT_PATH) {
         _contextPath = value;
     }
     appConfig[key] = value;
