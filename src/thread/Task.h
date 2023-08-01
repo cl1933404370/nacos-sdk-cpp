@@ -10,11 +10,11 @@ private:
 public:
     virtual void run() = 0;
 
-    virtual ~Task() {};
+    virtual ~Task() = default;
 
-    void setTaskName(const NacosString &taskName) { _taskName = taskName; };
+    void setTaskName(const NacosString &taskName) { _taskName = taskName; }
 
-    const NacosString &getTaskName() const { return _taskName; };
+    const NacosString &getTaskName() const { return _taskName; }
 };
 
 }//namespace nacos

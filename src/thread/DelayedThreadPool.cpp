@@ -12,7 +12,8 @@ private:
     DelayedThreadPool* _container;
 public:
     std::atomic_bool _start;
-    DelayedWorker(DelayedThreadPool* container) : _container(container) {
+
+    explicit DelayedWorker(DelayedThreadPool* container) : _container(container) {
         _start = false;
     }
 
@@ -82,6 +83,12 @@ public:
     }
 };
 
+    
+//int ** p;
+//p = new int*[m];  
+//for (int i = 0; i < m; i++)
+//	p[i] = new int[n];  
+
 DelayedThreadPool::DelayedThreadPool(const NacosString &poolName, size_t poolSize)
 :ThreadPool(poolName, poolSize),_delayTaskNotEmpty(&_lockForScheduleTasks), _stop_delayed_tp(true) {
     log_debug("DelayedThreadPool::DelayedThreadPool() name = %s size = %d\n", poolName.c_str(), poolSize);
@@ -91,7 +98,8 @@ DelayedThreadPool::DelayedThreadPool(const NacosString &poolName, size_t poolSiz
     _delayTasks = new DelayedWorker*[poolSize];
     log_debug("DelayedThreadPool::DelayedThreadPool initializing tasks\n");
     for (size_t i = 0; i < poolSize; ++i) {
-        _delayTasks[i] = new DelayedWorker(this);
+        _delayTasks[i]  = new DelayedWorker[1]{};
+        _delayTasks[i] = (new DelayedWorker(this));
     }
 }
 
@@ -100,7 +108,7 @@ DelayedThreadPool::~DelayedThreadPool() {
     log_debug("DelayedThreadPool::~DelayedThreadPool\n");
     if (_delayTasks != nullptr) {
         for (size_t i = 0; i < _poolSize; i++) {
-            delete _delayTasks[i];
+            delete []_delayTasks[i];
             _delayTasks[i] = nullptr;
         }
         delete [] _delayTasks;

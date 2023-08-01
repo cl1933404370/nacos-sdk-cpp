@@ -1,9 +1,6 @@
 #include <iostream>
-#include <stdlib.h>
 
 #ifdef _WIN32
-#include <io.h>
-#include <process.h>
 #include <thread>
 #include <chrono>
 #else
@@ -29,13 +26,13 @@ public:
         last_exec_time = 0;
     }
 
-    void run()
+    void run() override
     {
-        uint64_t now_ms = TimeUtils::getCurrentTimeInMs();
-        uint64_t interval_calc = 0;
+        const uint64_t now_ms = TimeUtils::getCurrentTimeInMs();
+        uint64_t intervalCalc = 0;
         if (last_exec_time != 0)
         {
-            interval_calc = now_ms - last_exec_time;
+            intervalCalc = now_ms - last_exec_time;
         }
         last_exec_time = now_ms;
         executor->schedule(this, now_ms + interval); // interval/1000 secs later
@@ -43,7 +40,7 @@ public:
         {
             throw NacosException(NacosException::INVALID_CONFIG_PARAM, "no executor");
         }
-        printf(">>>>>>>>>>>>>>>>>>Task %s triggered, time =%ld (%ld), interval = %ld\n", getTaskName().c_str(), now_ms / 1000, now_ms, interval_calc);
+        printf(">>>>>>>>>>>>>>>>>>Task %s triggered, time =%llu (%llu), interval = %llu\n", getTaskName().c_str(), now_ms / 1000, now_ms, intervalCalc);
 
 #ifdef _WIN32
         std::this_thread::sleep_for(std::chrono::milliseconds(1));
@@ -102,14 +99,14 @@ bool testDelayedThread2()
 
     DelayedTask delayedTasks[10];
 
-    uint64_t now_ms = TimeUtils::getCurrentTimeInMs();
+    const uint64_t nowMs = TimeUtils::getCurrentTimeInMs();
     for (size_t i = 0; i < sizeof(delayedTasks) / sizeof(DelayedTask); i++)
     {
         delayedTasks[i].executor = &dtp;
         delayedTasks[i].interval = 1000;
         delayedTasks[i].setTaskName("DelayedTask-" + NacosStringOps::valueOf(i));
 
-        dtp.schedule(&delayedTasks[i], now_ms);
+        dtp.schedule(&delayedTasks[i], nowMs);
     }
 
 #ifdef _WIN32
