@@ -88,23 +88,23 @@ DelayedThreadPool::DelayedThreadPool(const NacosString &poolName, size_t poolSiz
     if (poolSize <= 0) {
         throw NacosException(NacosException::INVALID_PARAM, "Poll size cannot be lesser than 0");
     }
-    delayTasks = new DelayedWorker*[poolSize];
+    _delayTasks = new DelayedWorker*[poolSize];
     log_debug("DelayedThreadPool::DelayedThreadPool initializing tasks\n");
     for (size_t i = 0; i < poolSize; ++i) {
-        delayTasks[i] = new DelayedWorker(this);
+        _delayTasks[i] = new DelayedWorker(this);
     }
 }
 
 
 DelayedThreadPool::~DelayedThreadPool() {
     log_debug("DelayedThreadPool::~DelayedThreadPool\n");
-    if (delayTasks != nullptr) {
+    if (_delayTasks != nullptr) {
         for (size_t i = 0; i < _poolSize; i++) {
-            delete delayTasks[i];
-            delayTasks[i] = nullptr;
+            delete _delayTasks[i];
+            _delayTasks[i] = nullptr;
         }
-        delete [] delayTasks;
-        delayTasks = nullptr;
+        delete [] _delayTasks;
+        _delayTasks = nullptr;
     }
 
     /*for (size_t i = 0; i < _scheduledTasks.size(); i++)
@@ -142,8 +142,8 @@ void DelayedThreadPool::start() {
     ThreadPool::start();
     log_debug("DelayedThreadPool::start()\n");
     for (size_t i = 0; i < _poolSize; i++) {
-        delayTasks[i]->_start = true;
-        put((Task*)delayTasks[i]);
+        _delayTasks[i]->_start = true;
+        put((Task*)_delayTasks[i]);
     }
 }
 

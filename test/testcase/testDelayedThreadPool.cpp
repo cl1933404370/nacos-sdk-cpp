@@ -69,18 +69,18 @@ bool testDelayedThread()
 
     DelayedTask delayedTasks[10];
 
-    uint64_t now_ms = TimeUtils::getCurrentTimeInMs();
+    const uint64_t nowMs = TimeUtils::getCurrentTimeInMs();
     for (size_t i = 0; i < sizeof(delayedTasks) / sizeof(DelayedTask); i++)
     {
         delayedTasks[i].executor = &dtp;
         delayedTasks[i].interval = (i + 1) * 1000;
         delayedTasks[i].setTaskName("DelayedTask-" + NacosStringOps::valueOf(i));
 
-        dtp.schedule(&delayedTasks[i], now_ms);
+        dtp.schedule(&delayedTasks[i], nowMs);
     }
 
 #ifdef _WIN32
-    std::this_thread::sleep_for(std::chrono::milliseconds(30));
+    std::this_thread::sleep_for(std::chrono::seconds(20));
 #else
     sleep(20);
 #endif
