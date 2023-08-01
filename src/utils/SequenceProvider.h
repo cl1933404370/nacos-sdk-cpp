@@ -37,7 +37,7 @@ private:
             #endif
         }
     }
-
+    
     T preserve() {
         #if defined(_MSC_VER) || defined(__WIN32__) || defined(WIN32)
         T current;
@@ -56,6 +56,7 @@ private:
         }
 
         size_t bytes_read = 0;
+        //todo dead lock
         while (bytes_read < sizeof(T))
         {
             bytes_read += _read(fd, (char*)(&current) + bytes_read, sizeof(T) - bytes_read);
