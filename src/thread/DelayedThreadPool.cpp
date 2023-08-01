@@ -12,7 +12,7 @@ private:
     DelayedThreadPool* _container;
 public:
     std::atomic_bool _start;
-    DelayedWorker(DelayedThreadPool &container) : _container(&container) {
+    DelayedWorker(DelayedThreadPool* container) : _container(container) {
         _start = false;
     }
 
@@ -90,8 +90,8 @@ DelayedThreadPool::DelayedThreadPool(const NacosString &poolName, size_t poolSiz
     }
     delayTasks = new DelayedWorker*[poolSize];
     log_debug("DelayedThreadPool::DelayedThreadPool initializing tasks\n");
-    for (size_t i = 0; i < poolSize; i++) {
-        delayTasks[i] = new DelayedWorker(*this);
+    for (size_t i = 0; i < poolSize; ++i) {
+        delayTasks[i] = new DelayedWorker(this);
     }
 }
 
