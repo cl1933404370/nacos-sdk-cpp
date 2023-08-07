@@ -31,10 +31,7 @@ namespace nacos
     class LOCKABLE Mutex {
     public:
         Mutex() = default;
-        ~Mutex()
-        {
-            unassignHolder();
-        }
+        ~Mutex() = default;
 
         Mutex(const Mutex&) = delete;
         Mutex& operator=(const Mutex&) = delete;

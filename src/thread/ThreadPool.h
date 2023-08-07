@@ -20,6 +20,8 @@ namespace nacos {
         DummyTask() { setTaskName("DummyTask"); }
 
         void run() override {}
+
+        ~DummyTask() override = default;
     };
 
     class ThreadPool {
