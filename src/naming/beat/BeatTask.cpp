@@ -5,7 +5,7 @@
 using namespace std;
 
 namespace nacos{
-BeatTask::BeatTask(BeatInfo &beatInfo, ObjectConfigData *objectConfigData)
+BeatTask::BeatTask(const BeatInfo &beatInfo, ObjectConfigData *objectConfigData)
         : _beatInfo(beatInfo), _objectConfigData(objectConfigData), _scheduled(false) {
 };
 

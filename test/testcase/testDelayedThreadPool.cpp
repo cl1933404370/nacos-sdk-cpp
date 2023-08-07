@@ -51,7 +51,8 @@ public:
 
     ~DelayedTask() override
     {
-        delete executor;
+        //todo : why does this cause a crash?
+        //delete executor;
         printf(">>>>>>>>>>>>>>>>>>Task %s destroyed\n", getTaskName().c_str());
     }
 };
