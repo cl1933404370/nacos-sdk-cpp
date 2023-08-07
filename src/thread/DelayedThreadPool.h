@@ -12,10 +12,10 @@ namespace nacos {
 class DelayedWorker;
 
 class DelayedThreadPool : public ThreadPool {
-    Condition _delayTaskNotEmpty;
     Mutex _lockForScheduleTasks;//for _scheduledTasks
+    Condition _delayTaskNotEmpty;
     std::vector< std::pair<uint64_t, Task*> > _scheduledTasks;
-    std::vector<std::unique_ptr<DelayedWorker>> _delayTasks;
+    DelayedWorker** _delayTasks;
     std::atomic_bool _stop_delayed_tp;
 public:
     DelayedThreadPool() = delete;

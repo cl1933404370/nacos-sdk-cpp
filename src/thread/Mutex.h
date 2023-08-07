@@ -34,7 +34,6 @@ namespace nacos
         ~Mutex()
         {
             unassignHolder();
-
         }
 
         Mutex(const Mutex&) = delete;
@@ -73,7 +72,7 @@ namespace nacos
         template <typename Predicate>
         void wait(Predicate pred) {
             std::unique_lock<std::mutex> lock(_mu->_mu, std::adopt_lock);
-            _cv.wait(lock, pred);
+            _cv.wait(lock, std::move(pred));
             lock.release();
         }
 
@@ -84,7 +83,7 @@ namespace nacos
                 _cv.wait(lock, pred);
             }
             else {
-                _cv.wait_for(lock, std::chrono::milliseconds(millis), pred);
+                _cv.wait_for(lock, std::chrono::milliseconds(millis), std::move(pred));
             }
             lock.release();
         }

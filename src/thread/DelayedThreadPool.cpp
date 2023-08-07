@@ -81,6 +81,11 @@ public:
         }
         _start = false;
     }
+
+    ~DelayedWorker() override
+    {
+        log_debug("DelayedWorker::~DelayedWorker()\n");
+    }
 };
 
     
@@ -95,22 +100,23 @@ DelayedThreadPool::DelayedThreadPool(const NacosString &poolName, size_t poolSiz
     if (poolSize <= 0) {
         throw NacosException(NacosException::INVALID_PARAM, "Poll size cannot be lesser than 0");
     }
-    _delayTasks = std::vector<std::unique_ptr<DelayedWorker>>(poolSize);
+    _delayTasks = new DelayedWorker*[poolSize];
     log_debug("DelayedThreadPool::DelayedThreadPool initializing tasks\n");
     for (size_t i = 0; i < poolSize; ++i) {
-        _delayTasks[i]  = std::make_unique<DelayedWorker>(this);
+        _delayTasks[i]  = new DelayedWorker(this);
     }
 }
 
 
 DelayedThreadPool::~DelayedThreadPool() {
     log_debug("DelayedThreadPool::~DelayedThreadPool\n");
-    if (!_delayTasks.empty()) {
+    if (_delayTasks) {
         for (size_t i = 0; i < _poolSize; i++) {
-            _delayTasks[i].reset();
+            delete _delayTasks[i];
+            _delayTasks[i] = nullptr;
         }
-        std::vector<std::unique_ptr<DelayedWorker>> aa{};
-        _delayTasks.swap(aa);
+        delete[] _delayTasks;
+        _delayTasks = nullptr;
     }
 }
 
@@ -142,7 +148,7 @@ void DelayedThreadPool::start() {
     log_debug("DelayedThreadPool::start()\n");
     for (size_t i = 0; i < _poolSize; i++) {
         _delayTasks[i]->_start = true;
-        put(_delayTasks[i].get());
+        put(_delayTasks[i]);
     }
 }
 

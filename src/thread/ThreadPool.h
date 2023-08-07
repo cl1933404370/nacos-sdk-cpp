@@ -25,9 +25,9 @@ namespace nacos {
     class ThreadPool {
         NacosString _poolName;
         std::deque<Task*> _taskList;
-        mutable  Mutex _lock;
-        mutable  Condition _NotEmpty;
-        mutable Condition _NotFull;
+        Mutex _lock;
+        Condition _NotEmpty;
+        Condition _NotFull;
         static DummyTask _dummyTask;
 
         static void* runInThread(void* param);

@@ -210,52 +210,70 @@ TestData
                                                                                                                                                                                                                                                                             TEST_ITEM("Test subscribe a lot of services, bugfix #101", testSubscribeAlotOfServices)
                                                                                                                                                                                                                                                                                 TEST_ITEM_END
 
-    int
-    main()
+#include <memory>
+#include <vector>
+
+struct T {
+    T() : v(100) {}
+    std::vector<int> v;
+};
+
+#include <stdio.h>
+
+int x[100];
+
+int main()
 {
-    Init::doInit();
-    list<TestData *> failed_list;
-    cout << "Please start a nacos server listening on port 8848 in this machine first." << endl;
-    cout << "And when the server is ready, press any key to start the test." << endl;
-    getchar();
-    int nr_succ = 0, nr_fail = 0;
-    Logger::setLogLevel(DEBUG);
-    cout << "BEGIN OF TESTS" << endl;
-    cout << "===========================" << endl;
-    for (size_t i = 0; i < sizeof(testList) / sizeof(TestData); i++)
-    {
-        TestData *curtest = &testList[i];
-        TESTFN testfunction = curtest->testFn;
-        cout << "Testing " << curtest->testName << " ..." << endl;
-        bool pass = testfunction();
-        if (!pass)
-        {
-            cout << "\033[31mFAILED\033[0m" << endl;
-            failed_list.push_back(curtest);
-            nr_fail++;
-        }
-        else
-        {
-            cout << "PASSED!" << endl;
-            nr_succ++;
-        }
-        cout << "===========================" << endl;
-    }
-
-    if (!failed_list.empty())
-    {
-        cout << "List of failed cases:" << endl;
-        for (list<TestData *>::iterator it = failed_list.begin(); it != failed_list.end(); it++)
-        {
-            cout << (*it)->testName << endl;
-        }
-        cout << "===========================" << endl;
-    }
-
-    cout << "SUMMARY" << endl;
-    cout << "Total:" << nr_succ + nr_fail << endl;
-    cout << "Succ:" << nr_succ << endl;
-    cout << "Fail:" << nr_fail << endl;
-    cout << "===========================" << endl;
+    printf("Hello!\n");
+    x[100] = 5; // Boom!
     return 0;
 }
+//    int
+//    main()
+//{
+//    Init::doInit();
+//    list<TestData *> failed_list;
+//    cout << "Please start a nacos server listening on port 8848 in this machine first." << endl;
+//    cout << "And when the server is ready, press any key to start the test." << endl;
+//    getchar();
+//    int nr_succ = 0, nr_fail = 0;
+//    Logger::setLogLevel(DEBUG);
+//    cout << "BEGIN OF TESTS" << endl;
+//    cout << "===========================" << endl;
+//    for (size_t i = 0; i < sizeof(testList) / sizeof(TestData); i++)
+//    {
+//        TestData *curtest = &testList[i];
+//        TESTFN testfunction = curtest->testFn;
+//        cout << "Testing " << curtest->testName << " ..." << endl;
+//        bool pass = testfunction();
+//        if (!pass)
+//        {
+//            cout << "\033[31mFAILED\033[0m" << endl;
+//            failed_list.push_back(curtest);
+//            nr_fail++;
+//        }
+//        else
+//        {
+//            cout << "PASSED!" << endl;
+//            nr_succ++;
+//        }
+//        cout << "===========================" << endl;
+//    }
+//
+//    if (!failed_list.empty())
+//    {
+//        cout << "List of failed cases:" << endl;
+//        for (list<TestData *>::iterator it = failed_list.begin(); it != failed_list.end(); it++)
+//        {
+//            cout << (*it)->testName << endl;
+//        }
+//        cout << "===========================" << endl;
+//    }
+//
+//    cout << "SUMMARY" << endl;
+//    cout << "Total:" << nr_succ + nr_fail << endl;
+//    cout << "Succ:" << nr_succ << endl;
+//    cout << "Fail:" << nr_fail << endl;
+//    cout << "===========================" << endl;
+//    return 0;
+//}
