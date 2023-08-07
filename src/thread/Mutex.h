@@ -1,7 +1,6 @@
 #ifndef MUTEX_H_
 #define MUTEX_H_
 
-#include <iostream>
 #include "Tid.h"
 #include "src/utils/TimeUtils.h"
 #if defined(_WIN32) || defined(_MSC_VER)
@@ -23,7 +22,7 @@ namespace nacos
     typedef pthread_t TID_T;
 
 #ifdef _WIN32
-    static const bool kLittleEndian = !LEVELDB_IS_BIG_ENDIAN;
+    static constexpr bool kLittleEndian = !LEVELDB_IS_BIG_ENDIAN;
 
     class Condition;
 
@@ -38,7 +37,7 @@ namespace nacos
 
         void lock() EXCLUSIVE_LOCK_FUNCTION() { _mu.lock(); assignHolder(); }
         void unlock() UNLOCK_FUNCTION() { unassignHolder();  _mu.unlock(); }
-        void AssertHeld() ASSERT_EXCLUSIVE_LOCK() {}
+        static void assertHeld() ASSERT_EXCLUSIVE_LOCK() {}
         void assignHolder() { _holder = gettidv1(); }
         void unassignHolder() { _holder = nullptr; }
     private:
