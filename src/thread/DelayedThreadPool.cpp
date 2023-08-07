@@ -95,32 +95,23 @@ DelayedThreadPool::DelayedThreadPool(const NacosString &poolName, size_t poolSiz
     if (poolSize <= 0) {
         throw NacosException(NacosException::INVALID_PARAM, "Poll size cannot be lesser than 0");
     }
-    _delayTasks = new DelayedWorker*[poolSize];
+    _delayTasks = std::vector<std::unique_ptr<DelayedWorker>>(poolSize);
     log_debug("DelayedThreadPool::DelayedThreadPool initializing tasks\n");
     for (size_t i = 0; i < poolSize; ++i) {
-        _delayTasks[i]  = new DelayedWorker[1]{this};
-        //_delayTasks[i] = new DelayedWorker(this);
+        _delayTasks[i]  = std::make_unique<DelayedWorker>(this);
     }
 }
 
 
 DelayedThreadPool::~DelayedThreadPool() {
     log_debug("DelayedThreadPool::~DelayedThreadPool\n");
-    if (_delayTasks != nullptr) {
+    if (!_delayTasks.empty()) {
         for (size_t i = 0; i < _poolSize; i++) {
-            delete []_delayTasks[i];
-            _delayTasks[i] = nullptr;
+            _delayTasks[i].reset();
         }
-        delete [] _delayTasks;
-        _delayTasks = nullptr;
+        std::vector<std::unique_ptr<DelayedWorker>> aa{};
+        _delayTasks.swap(aa);
     }
-
-    /*for (size_t i = 0; i < _scheduledTasks.size(); i++)
-    {
-        auto cc = _scheduledTasks[i].first;
-        auto dd = _scheduledTasks[i].second;
-        auto ee = 0;
-    }*/
 }
 
 struct tagAscOrdFunctor{
@@ -151,7 +142,7 @@ void DelayedThreadPool::start() {
     log_debug("DelayedThreadPool::start()\n");
     for (size_t i = 0; i < _poolSize; i++) {
         _delayTasks[i]->_start = true;
-        put((Task*)_delayTasks[i]);
+        put(_delayTasks[i].get());
     }
 }
 

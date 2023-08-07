@@ -15,7 +15,7 @@ class DelayedThreadPool : public ThreadPool {
     Condition _delayTaskNotEmpty;
     Mutex _lockForScheduleTasks;//for _scheduledTasks
     std::vector< std::pair<uint64_t, Task*> > _scheduledTasks;
-    DelayedWorker **_delayTasks;
+    std::vector<std::unique_ptr<DelayedWorker>> _delayTasks;
     std::atomic_bool _stop_delayed_tp;
 public:
     DelayedThreadPool() = delete;

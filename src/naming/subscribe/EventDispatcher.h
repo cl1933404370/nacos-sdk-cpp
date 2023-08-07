@@ -21,7 +21,7 @@ struct NotifyData
 //2. non-blocking mode(async), dispatcher has a blocking queue and send notify in that thread asynchronously
 class EventDispatcher {
 private:
-    volatile bool _started;
+    std::atomic_bool _started;
     RWLock rwLock;//for observerMap
     std::map<NacosString, std::list<EventListener*> > observerMap;
     BlockingQueue<NotifyData> notifyDataList;
