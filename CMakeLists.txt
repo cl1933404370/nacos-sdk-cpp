@@ -1,22 +1,13 @@
-cmake_minimum_required(VERSION 3.6.1)
+cmake_minimum_required(VERSION 3.26.1)
 #set(CMAKE_MSVC_DEBUG_INFORMATION_FORMAT "$<IF:$<AND:$<C_COMPILER_ID:MSVC>,$<CXX_COMPILER_ID:MSVC>>,$<$<CONFIG:Debug,RelWithDebInfo>:EditAndContinue>,$<$<CONFIG:Debug,RelWithDebInfo>:ProgramDatabase>>")
 
-option(ASAN_ENABLED "Build this target with AddressSanitizer" ON)
-
-if(ASAN_ENABLED)
-  if(MSVC)
-	add_compile_options(/Zi /GR /EHsc /MP /Gy /fsanitize=address) 
-    target_compile_options(nacos-cli PUBLIC  /Zi /fsanitize=address )
-	target_compile_options(nacos-cli-static PUBLIC /Zi /fsanitize=address)
-	target_compile_options(nacos-cli.out PUBLIC /Zi /fsanitize=address)
-  endif()
-endif()
-
-set(CMAKE_CXX_STANDARD 20)
-set(CMAKE_C_STANDARD 17)
+if(MSVC)
+	add_compile_options(/Zi /GR /EHsc /MP /Gy /JMC /fsanitize=address) 
+	add_link_options(/INCREMENTAL:NO /DEBUG:FULL)
+ endif()
 
 # 设置C++版本
-set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS ON)
 

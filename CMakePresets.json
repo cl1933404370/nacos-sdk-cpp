@@ -92,12 +92,12 @@
         "rhs": "Windows"
       },
       "architecture": {
-        "value": "v142,host=x64",
+        "value": "v143,host=x64",
         "strategy": "external"
       },
       "cacheVariables": {
-        "ENABLE_CPPCHECK_DEFAULT": "FALSE",
-        "ENABLE_CLANG_TIDY_DEFAULT": "FALSE",
+        "ENABLE_CPPCHECK_DEFAULT": "TRUE",
+        "ENABLE_CLANG_TIDY_DEFAULT": "TRUE",
         "CMAKE_TOOLCHAIN_FILE": {
           "value": "D:\\dev\\vcpkg\\scripts/buildsystems/vcpkg.cmake",
           "type": "FILEPATH"
@@ -130,7 +130,6 @@
         "strategy": "external"
       },
       "generator": "Visual Studio 17 2022",
-      "binaryDir": "${sourceDir}/out/build/${presetName}",
       "cacheVariables": {
         "CMAKE_C_COMPILER": "cl",
         "CMAKE_CXX_COMPILER": "cl",
@@ -156,7 +155,6 @@
       "description": "Target Windows with the msvc compiler, release build type",
       "generator": "Visual Studio 17 2022",
       "inherits": "conf-windows-common",
-      "binaryDir": "${sourceDir}/out/build/${presetName}",
       "architecture": {
         "value": "x64",
         "strategy": "external"
