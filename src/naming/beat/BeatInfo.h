@@ -32,9 +32,8 @@ public:
     NacosString serviceName;
     NacosString cluster;
     std::map <NacosString, NacosString> metadata;
-    std::atomic_bool scheduled;
-    std::atomic_long nextHbTime;
-    BeatInfo() = default;
+    volatile bool scheduled;
+    volatile long nextHbTime;
     NacosString toString();
 };
 }//namespace nacos

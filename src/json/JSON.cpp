@@ -85,7 +85,7 @@ NacosString JSON::toJSONString(BeatInfo &beatInfo) {
     AddKV(d, "weight", NacosStringOps::valueOf(beatInfo.weight));
     AddKV(d, "serviceName", beatInfo.serviceName);
     AddKV(d, "cluster", beatInfo.cluster);
-    AddKV(d, "scheduled", NacosStringOps::valueOf(beatInfo.scheduled.load()));
+    AddKV(d, "scheduled", NacosStringOps::valueOf(beatInfo.scheduled));
     Value metadata;
     Map2JSONObject(d, metadata, beatInfo.metadata);
     AddKO(d, "metadata", metadata);
