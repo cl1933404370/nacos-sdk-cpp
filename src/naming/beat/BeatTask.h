@@ -17,7 +17,7 @@ class BeatTask : public Task {
 private:
     BeatInfo _beatInfo;
     ObjectConfigData *_objectConfigData;
-    bool _scheduled;
+    std::atomic_bool _scheduled;
     uint64_t _interval;//interval for heartbeat got from the server
 public:
     BeatTask(BeatInfo &beatInfo, ObjectConfigData *objectConfigData);
