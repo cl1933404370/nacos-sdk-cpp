@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.26.1)
 #set(CMAKE_MSVC_DEBUG_INFORMATION_FORMAT "$<IF:$<AND:$<C_COMPILER_ID:MSVC>,$<CXX_COMPILER_ID:MSVC>>,$<$<CONFIG:Debug,RelWithDebInfo>:EditAndContinue>,$<$<CONFIG:Debug,RelWithDebInfo>:ProgramDatabase>>")
 
 if(MSVC)
-	add_compile_options(/Zi /GR /EHsc /MP /Gy /JMC /fsanitize=address) 
+	add_compile_options(/Zi /GR /EHsc /MDd /MP /Gy /JMC /fsanitize=address) 
 	add_link_options(/INCREMENTAL:NO /DEBUG:FULL)
  endif()
 
