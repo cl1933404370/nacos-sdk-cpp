@@ -5,8 +5,8 @@
 #include <pthread.h>
 #include <unistd.h>
 #elif defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#include <folly/Portability.h>
-#include <folly/portability/pthread.h>
+//#include <folly/Portability.h>
+//#include <folly/portability/pthread.h>
 #endif
 
 /*

@@ -28,9 +28,9 @@ TID_T gettidv1();
 #define gettidv1() syscall(__NR_gettid)
 
 #elif defined(_WIN32) || defined(_WIN64) || defined(__WIN32__) || defined(__TOS_WIN__) || defined(__WINDOWS__) || defined(_MSC_VER)
-#include <folly/portability/PThread.h>
-#define TID_T pthread_t
-#define gettidv1() pthread_self()
+//#include <folly/portability/PThread.h>
+//#define TID_T pthread_t
+//#define gettidv1() pthread_self()
 
 #endif // HEADER_GUARD
 
