@@ -8,6 +8,7 @@
 #include <condition_variable>
 #include <memory>
 #include "port.h"
+#include <src/thread/PthreadWaraper.h>
 #endif
 
 /*
@@ -19,7 +20,7 @@
 
 namespace nacos
 {
-    using pthread_t = pthread_t;
+    using pthread_t = tSpthread::pthread_t;
 
 #ifdef _WIN32
     static constexpr bool kLittleEndian = !LEVELDB_IS_BIG_ENDIAN;

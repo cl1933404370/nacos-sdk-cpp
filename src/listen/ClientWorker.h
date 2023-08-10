@@ -20,7 +20,7 @@
 #include "NacosExceptions.h"
 #include "src/factory/ObjectConfigData.h"
 #include "Compatibility.h"
-
+#include <src/thread/PthreadWaraper.h>
 /**
  * ClientWorker
  *

@@ -4,7 +4,7 @@
 #include <stdint.h>
 #include <xstring>
 #if defined(_WIN32) || defined(_MSC_VER)
-#include <folly/portability/SysTime.h>
+#include <src/thread/PthreadWaraper.h>
 #include <WinSock2.h>
 #pragma comment(lib, "Ws2_32.lib")
 #pragma comment(lib, "wsock32.lib")

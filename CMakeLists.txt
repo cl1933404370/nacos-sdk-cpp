@@ -1,15 +1,15 @@
 cmake_minimum_required(VERSION 3.26.1)
-#set(CMAKE_MSVC_DEBUG_INFORMATION_FORMAT "$<IF:$<AND:$<C_COMPILER_ID:MSVC>,$<CXX_COMPILER_ID:MSVC>>,$<$<CONFIG:Debug,RelWithDebInfo>:EditAndContinue>,$<$<CONFIG:Debug,RelWithDebInfo>:ProgramDatabase>>")
 
+# set(CMAKE_MSVC_DEBUG_INFORMATION_FORMAT "$<IF:$<AND:$<C_COMPILER_ID:MSVC>,$<CXX_COMPILER_ID:MSVC>>,$<$<CONFIG:Debug,RelWithDebInfo>:EditAndContinue>,$<$<CONFIG:Debug,RelWithDebInfo>:ProgramDatabase>>")
 if(MSVC)
 	if(CMAKE_BUILD_TYPE MATCHES "Debug")
-		add_compile_options(/Zi /GR /EHsc /MDd /MP /Gy /JMC /fsanitize=address) 
+		add_compile_options(/Zi /GR /EHsc /MDd /MP /Gy /JMC /fsanitize=address)
 		add_link_options(/INCREMENTAL:NO /DEBUG:FULL)
 	else()
-		add_compile_options(/Zi /GR /EHsc /MD /MP /Gy /JMC /fsanitize=address) 
+		add_compile_options(/Zi /GR /EHsc /MD /MP /Gy /JMC /fsanitize=address)
 		add_link_options(/INCREMENTAL:NO /DEBUG:FULL)
 	endif()
- endif()
+endif()
 
 # 设置C++版本
 set(CMAKE_CXX_STANDARD 23)
@@ -108,10 +108,11 @@ target_link_libraries(nacos-cli.out PRIVATE Threads::Threads ZLIB::ZLIB CURL::li
 find_package(Threads REQUIRED)
 find_package(CURL REQUIRED)
 find_package(ZLIB REQUIRED)
-#find_package(folly REQUIRED)
-find_package(RapidJSON CONFIG REQUIRED)
-#find_package(absl CONFIG REQUIRED)
 
+# find_package(folly REQUIRED)
+find_package(RapidJSON CONFIG REQUIRED)
+
+# find_package(absl CONFIG REQUIRED)
 install(TARGETS nacos-cli
 	LIBRARY DESTINATION lib)
 

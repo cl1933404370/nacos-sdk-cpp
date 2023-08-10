@@ -13,7 +13,7 @@
 #include "NacosExceptions.h"
 #include "IHttpCli.h"
 #include "Compatibility.h"
-
+#include <src/thread/PthreadWaraper.h>
 namespace nacos{
 
 class HTTPCli : public IHttpCli {

@@ -5,7 +5,7 @@
 #include <time.h>
 
 #if defined(_MSC_VER) || defined(__WIN32__) || defined(WIN32)
-#include <folly/portability/PThread.h>
+#include <src/thread/PthreadWaraper.h>
 #include <wincrypt.h>
 #include <random>
 #else
