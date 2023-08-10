@@ -1,5 +1,5 @@
-#ifndef __PthreadWaraper_H_
-#define __PthreadWaraper_H_
+#ifndef PTHREAD_WRAPPER_H_
+#define PTHREAD_WRAPPER_H_
 
 #ifndef FOLLY_NO_CONFIG
 /*
@@ -32,8 +32,8 @@
 #endif
 #endif // FOLLY_MOBILE
 
- /* #undef FOLLY_HAVE_PTHREAD */
- /* #undef FOLLY_HAVE_PTHREAD_ATFORK */
+/* #undef FOLLY_HAVE_PTHREAD */
+/* #undef FOLLY_HAVE_PTHREAD_ATFORK */
 
 #define FOLLY_HAVE_LIBGFLAGS 1
 /* #undef FOLLY_UNUSUAL_GFLAGS_NAMESPACE */
@@ -125,7 +125,7 @@
 #define __GNUC_PREREQ(maj, min) \
 		  ((__GNUC__ << 16) + __GNUC_MINOR__ >= ((maj) << 16) + (min))
 #else
- /* nolint */
+/* nolint */
 #define __GNUC_PREREQ(maj, min) 0
 #endif
 #endif
@@ -137,7 +137,7 @@
 #define __CLANG_PREREQ(maj, min) \
 		  ((__clang_major__ << 16) + __clang_minor__ >= ((maj) << 16) + (min))
 #else
-	/* nolint */
+/* nolint */
 #define __CLANG_PREREQ(maj, min) 0
 #endif
 #endif
@@ -172,9 +172,9 @@
 #endif
 #endif
 
- /* Define attribute wrapper for function attribute used to disable
-  * address sanitizer instrumentation. Unfortunately, this attribute
-  * has issues when inlining is used, so disable that as well. */
+/* Define attribute wrapper for function attribute used to disable
+ * address sanitizer instrumentation. Unfortunately, this attribute
+ * has issues when inlining is used, so disable that as well. */
 #ifdef FOLLY_SANITIZE_ADDRESS
 #if defined(__clang__)
 #if __has_attribute(__no_sanitize__)
@@ -196,8 +196,8 @@
 #define FOLLY_DISABLE_ADDRESS_SANITIZER
 #endif
 
-  /* Define a convenience macro to test when thread sanitizer is being used
-   * across the different compilers (e.g. clang, gcc) */
+/* Define a convenience macro to test when thread sanitizer is being used
+ * across the different compilers (e.g. clang, gcc) */
 #ifndef FOLLY_SANITIZE_THREAD
 #if FOLLY_HAS_FEATURE(thread_sanitizer) || defined(__SANITIZE_THREAD__)
 #define FOLLY_SANITIZE_THREAD 1
@@ -211,10 +211,10 @@
 #define FOLLY_DISABLE_THREAD_SANITIZER
 #endif
 
-   /**
-	* Define a convenience macro to test when memory sanitizer is being used
-	* across the different compilers (e.g. clang, gcc)
-	*/
+/**
+ * Define a convenience macro to test when memory sanitizer is being used
+ * across the different compilers (e.g. clang, gcc)
+ */
 #ifndef FOLLY_SANITIZE_MEMORY
 #if FOLLY_HAS_FEATURE(memory_sanitizer) || defined(__SANITIZE_MEMORY__)
 #define FOLLY_SANITIZE_MEMORY 1
@@ -228,10 +228,10 @@
 #define FOLLY_DISABLE_MEMORY_SANITIZER
 #endif
 
-	/**
-	 * Define a convenience macro to test when dataflow sanitizer is being used
-	 * across the different compilers (e.g. clang, gcc)
-	 */
+/**
+ * Define a convenience macro to test when dataflow sanitizer is being used
+ * across the different compilers (e.g. clang, gcc)
+ */
 #ifndef FOLLY_SANITIZE_DATAFLOW
 #if FOLLY_HAS_FEATURE(dataflow_sanitizer) || defined(__SANITIZE_DATAFLOW__)
 #define FOLLY_SANITIZE_DATAFLOW 1
@@ -245,10 +245,10 @@
 #define FOLLY_DISABLE_DATAFLOW_SANITIZER
 #endif
 
-	 /**
-	  * Define a convenience macro to test when ASAN, UBSAN, TSAN or MSAN sanitizer
-	  * are being used
-	  */
+/**
+ * Define a convenience macro to test when ASAN, UBSAN, TSAN or MSAN sanitizer
+ * are being used
+ */
 #ifndef FOLLY_SANITIZE
 #if defined(FOLLY_SANITIZE_ADDRESS) || defined(FOLLY_SANITIZE_THREAD) || \
     defined(FOLLY_SANITIZE_MEMORY) || defined(FOLLY_SANITIZE_DATAFLOW)
@@ -269,16 +269,16 @@
   FOLLY_DISABLE_MEMORY_SANITIZER  \
   FOLLY_DISABLE_UNDEFINED_BEHAVIOR_SANITIZER("undefined")
 
-	  /**
-	   * Macro for marking functions as having public visibility.
-	   */
+/**
+ * Macro for marking functions as having public visibility.
+ */
 #if defined(__GNUC__)
 #define FOLLY_EXPORT __attribute__((__visibility__("default")))
 #else
 #define FOLLY_EXPORT
 #endif
 
-	   // noinline
+// noinline
 #ifdef _MSC_VER
 #define FOLLY_NOINLINE __declspec(noinline)
 #elif defined(__HIP_PLATFORM_HCC__)
@@ -637,7 +637,7 @@ using mode_t = unsigned int;
 
 // Define FOLLY_HAS_EXCEPTIONS
 #if (defined(__cpp_exceptions) && __cpp_exceptions >= 199711) || \
-    FOLLY_HAS_FEATURE(cxx_exceptions)
+FOLLY_HAS_FEATURE(cxx_exceptions)
 #define FOLLY_HAS_EXCEPTIONS 1
 #elif __GNUC__
 #if defined(__EXCEPTIONS) && __EXCEPTIONS
@@ -671,7 +671,7 @@ constexpr auto kHasExceptions = false;
 
 // Endianness
 #ifdef _MSC_VER
-	// It's MSVC, so we just have to guess ... and allow an override
+// It's MSVC, so we just have to guess ... and allow an override
 #ifdef FOLLY_ENDIAN_BE
 constexpr auto kIsLittleEndian = false;
 #else
@@ -723,7 +723,7 @@ constexpr auto kHasWeakSymbols = false;
 #endif
 
 #define FOLLY_SSE_PREREQ(major, minor) \
-  (FOLLY_SSE > major || FOLLY_SSE == major && FOLLY_SSE_MINOR >= minor)
+  (FOLLY_SSE > (major) || FOLLY_SSE == (major) && FOLLY_SSE_MINOR >= (minor))
 
 #ifndef FOLLY_NEON
 #if (defined(__ARM_NEON) || defined(__ARM_NEON__)) && !defined(__CUDACC__)
@@ -749,7 +749,7 @@ constexpr auto kHasWeakSymbols = false;
 #define FOLLY_HAS_RTTI 0
 #endif
 
-constexpr bool const kHasRtti = FOLLY_HAS_RTTI;
+constexpr const bool kHasRtti = FOLLY_HAS_RTTI;
 
 #if defined(__APPLE__) || defined(_MSC_VER)
 #define FOLLY_STATIC_CTOR_PRIORITY_MAX
@@ -1011,21 +1011,24 @@ constexpr auto kCpplibVer = 0;
 #define SCHED_RR 2
 
 
-namespace tssched {
-	struct sched_param {
-		int sched_priority;
-	};
-	int sched_yield();
-	int sched_get_priority_min(int policy);
-	int sched_get_priority_max(int policy);
+namespace tssched
+{
+    struct sched_param
+    {
+        int sched_priority;
+    };
+
+    int sched_yield();
+    int sched_get_priority_min(int policy);
+    int sched_get_priority_max(int policy);
 } // namespace sched
 
 FOLLY_PUSH_WARNING
 FOLLY_CLANG_DISABLE_WARNING("-Wheader-hygiene")
-/* using override */ using namespace tssched;
+/* using override */
+using namespace tssched;
 FOLLY_POP_WARNING
 #endif
-
 
 
 #if !defined(_WIN32)
@@ -1050,100 +1053,107 @@ FOLLY_POP_WARNING
 
 #define _POSIX_TIMEOUTS 200112L
 
-namespace tSpthread {
-	struct pthread_attr_t {
-		size_t stackSize;
-		bool detached;
-	};
+namespace tSpthread
+{
+    struct pthread_attr_t
+    {
+        size_t stackSize;
+        bool detached;
+    };
 
-	int pthread_attr_init(pthread_attr_t* attr);
-	int pthread_attr_setdetachstate(pthread_attr_t* attr, int state);
-	int pthread_attr_setstacksize(pthread_attr_t* attr, size_t kb);
+    int pthread_attr_init(pthread_attr_t* attr);
+    int pthread_attr_setdetachstate(pthread_attr_t* attr, int state);
+    int pthread_attr_setstacksize(pthread_attr_t* attr, size_t kb);
 
-	namespace pthread_detail {
-		struct pthread_t {
-			HANDLE handle{ INVALID_HANDLE_VALUE };
-			DWORD threadID{ 0 };
-			bool detached{ false };
+    namespace pthread_detail
+    {
+        struct pthread_t
+        {
+            HANDLE handle{INVALID_HANDLE_VALUE};
+            DWORD threadID{0};
+            bool detached{false};
 
-			~pthread_t() noexcept;
-		};
-	} // namespace pthread_detail
-	using pthread_t = std::shared_ptr<pthread_detail::pthread_t>;
+            ~pthread_t() noexcept;
+        };
+    } // namespace pthread_detail
+    using pthread_t = std::shared_ptr<pthread_detail::pthread_t>;
 
-	int pthread_equal(pthread_t threadA, pthread_t threadB);
-	int pthread_create(
-		pthread_t* thread,
-		const pthread_attr_t* attr,
-		void* (*start_routine)(void*),
-		void* arg);
-	pthread_t pthread_self();
-	int pthread_join(pthread_t thread, void** exitCode);
+    int pthread_equal(const pthread_t& threadA, const pthread_t& threadB);
+    int pthread_create(
+        pthread_t* thread,
+        const pthread_attr_t* attr,
+        void* (*start_routine)(void*),
+        void* arg);
+    pthread_t pthread_self();
+    int pthread_join(const pthread_t& thread, void** exitCode);
 
-	HANDLE pthread_getw32threadhandle_np(pthread_t thread);
-	DWORD pthread_getw32threadid_np(pthread_t thread);
+    HANDLE pthread_getw32threadhandle_np(const pthread_t& thread);
+    DWORD pthread_getw32threadid_np(const pthread_t& thread);
 
-	int pthread_setschedparam(
-		pthread_t thread, int policy, const sched_param* param);
+    int pthread_setschedparam(
+        const pthread_t& thread, int policy, const sched_param* param);
 
-	struct pthread_mutexattr_t {
-		int type;
-	};
-	int pthread_mutexattr_init(pthread_mutexattr_t* attr);
-	int pthread_mutexattr_destroy(pthread_mutexattr_t* attr);
-	int pthread_mutexattr_settype(pthread_mutexattr_t* attr, int type);
+    struct pthread_mutexattr_t
+    {
+        int type;
+    };
 
-	using pthread_mutex_t = struct pthread_mutex_t_*;
-	int pthread_mutex_init(pthread_mutex_t* mutex, const pthread_mutexattr_t* attr);
-	int pthread_mutex_destroy(pthread_mutex_t* mutex);
-	int pthread_mutex_lock(pthread_mutex_t* mutex);
-	int pthread_mutex_trylock(pthread_mutex_t* mutex);
-	int pthread_mutex_unlock(pthread_mutex_t* mutex);
-	int pthread_mutex_timedlock(
-		pthread_mutex_t* mutex, const timespec* abs_timeout);
+    int pthread_mutexattr_init(pthread_mutexattr_t* attr);
+    int pthread_mutexattr_destroy(const pthread_mutexattr_t* attr);
+    int pthread_mutexattr_settype(pthread_mutexattr_t* attr, int type);
 
-	using pthread_rwlock_t = struct pthread_rwlock_t_*;
-	// Technically the second argument here is supposed to be a
-	// const pthread_rwlockattr_t* but we don support it, so we
-	// simply don't define pthread_rwlockattr_t at all to cause
-	// a build-break if anyone tries to use it.
-	int pthread_rwlock_init(pthread_rwlock_t* rwlock, const void* attr);
-	int pthread_rwlock_destroy(pthread_rwlock_t* rwlock);
-	int pthread_rwlock_rdlock(pthread_rwlock_t* rwlock);
-	int pthread_rwlock_tryrdlock(pthread_rwlock_t* rwlock);
-	int pthread_rwlock_timedrdlock(
-		pthread_rwlock_t* rwlock, const timespec* abs_timeout);
-	int pthread_rwlock_wrlock(pthread_rwlock_t* rwlock);
-	int pthread_rwlock_trywrlock(pthread_rwlock_t* rwlock);
-	int pthread_rwlock_timedwrlock(
-		pthread_rwlock_t* rwlock, const timespec* abs_timeout);
-	int pthread_rwlock_unlock(pthread_rwlock_t* rwlock);
+    using pthread_mutex_t = struct pthread_mutex_t_*;
+    int pthread_mutex_init(pthread_mutex_t* mutex, const pthread_mutexattr_t* attr);
+    int pthread_mutex_destroy(pthread_mutex_t* mutex);
+    int pthread_mutex_lock(const pthread_mutex_t* mutex);
+    int pthread_mutex_trylock(const pthread_mutex_t* mutex);
+    int pthread_mutex_unlock(const pthread_mutex_t* mutex);
+    int pthread_mutex_timedlock(
+        const pthread_mutex_t* mutex, const timespec* abs_timeout);
 
-	using pthread_cond_t = struct pthread_cond_t_*;
-	// Once again, technically the second argument should be a
-	// pthread_condattr_t, but we don't implement it, so void*
-	// it is.
-	int pthread_cond_init(pthread_cond_t* cond, const void* attr);
-	int pthread_cond_destroy(pthread_cond_t* cond);
-	int pthread_cond_wait(pthread_cond_t* cond, pthread_mutex_t* mutex);
-	int pthread_cond_timedwait(
-		pthread_cond_t* cond, pthread_mutex_t* mutex, const timespec* abstime);
-	int pthread_cond_signal(pthread_cond_t* cond);
-	int pthread_cond_broadcast(pthread_cond_t* cond);
+    using pthread_rwlock_t = struct pthread_rwlock_t_*;
+    // Technically the second argument here is supposed to be a
+    // const pthread_rwlockattr_t* but we don support it, so we
+    // simply don't define pthread_rwlockattr_t at all to cause
+    // a build-break if anyone tries to use it.
+    int pthread_rwlock_init(pthread_rwlock_t* rwlock, const void* attr);
+    int pthread_rwlock_destroy(pthread_rwlock_t* rwlock);
+    int pthread_rwlock_rdlock(const pthread_rwlock_t* rwlock);
+    int pthread_rwlock_tryrdlock(const pthread_rwlock_t* rwlock);
+    int pthread_rwlock_timedrdlock(
+        const pthread_rwlock_t* rwlock, const timespec* abs_timeout);
+    int pthread_rwlock_wrlock(const pthread_rwlock_t* rwlock);
+    int pthread_rwlock_trywrlock(const pthread_rwlock_t* rwlock);
+    int pthread_rwlock_timedwrlock(
+        const pthread_rwlock_t* rwlock, const timespec* abs_timeout);
+    int pthread_rwlock_unlock(const pthread_rwlock_t* rwlock);
 
-	// In reality, this is boost::thread_specific_ptr*, but we're attempting
-	// to avoid introducing boost into a portability header.
-	using pthread_key_t = void*;
+    using pthread_cond_t = struct pthread_cond_t_*;
+    // Once again, technically the second argument should be a
+    // pthread_condattr_t, but we don't implement it, so void*
+    // it is.
+    int pthread_cond_init(pthread_cond_t* cond, const void* attr);
+    int pthread_cond_destroy(pthread_cond_t* cond);
+    int pthread_cond_wait(const pthread_cond_t* cond, const pthread_mutex_t* mutex);
+    int pthread_cond_timedwait(
+        const pthread_cond_t* cond, const pthread_mutex_t* mutex, const timespec* abstime);
+    int pthread_cond_signal(const pthread_cond_t* cond);
+    int pthread_cond_broadcast(const pthread_cond_t* cond);
 
-	int pthread_key_create(pthread_key_t* key, void (*destructor)(void*));
-	int pthread_key_delete(pthread_key_t key);
-	void* pthread_getspecific(pthread_key_t key);
-	int pthread_setspecific(pthread_key_t key, const void* value);
+    // In reality, this is boost::thread_specific_ptr*, but we're attempting
+    // to avoid introducing boost into a portability header.
+    using pthread_key_t = void*;
+
+    int pthread_key_create(pthread_key_t* key, void (*destructor)(void*));
+    int pthread_key_delete(pthread_key_t key);
+    void* pthread_getspecific(pthread_key_t key);
+    int pthread_setspecific(pthread_key_t key, const void* value);
 } // namespace pthread
 
 FOLLY_PUSH_WARNING
 FOLLY_CLANG_DISABLE_WARNING("-Wheader-hygiene")
-/* using override */ using namespace tSpthread;
+/* using override */
+using namespace tSpthread;
 FOLLY_POP_WARNING
 
 #endif
@@ -1160,30 +1170,28 @@ using folly_port_struct_timezone = struct timezone;
 // Someone decided this was a good place to define timeval.....
 #include <folly/portability/Windows.h>
 
-struct folly_port_struct_timezone_ {
-	int tz_minuteswest;
-	int tz_dsttime;
+struct folly_port_struct_timezone_
+{
+    int tz_minuteswest;
+    int tz_dsttime;
 };
+
 using folly_port_struct_timezone = struct folly_port_struct_timezone_;
 
 extern "C" {
-
-	// We use folly_port_struct_timezone due to issues with #defines on Windows
-	// platforms.
-	// The python 3 headers `#define timezone _timezone` on Windows. `_timezone` is
-	// a global field that contains information on the current timezone.
-	// As such "timezone" is not a good name to use inside of C/C++ code on
-	// Windows.  Instead users should use folly_port_struct_timezone instead.
-	int gettimeofday(timeval* tv, folly_port_struct_timezone*);
-	void timeradd(timeval* a, timeval* b, timeval* res);
-	void timersub(timeval* a, timeval* b, timeval* res);
+// We use folly_port_struct_timezone due to issues with #defines on Windows
+// platforms.
+// The python 3 headers `#define timezone _timezone` on Windows. `_timezone` is
+// a global field that contains information on the current timezone.
+// As such "timezone" is not a good name to use inside of C/C++ code on
+// Windows.  Instead users should use folly_port_struct_timezone instead.
+int gettimeofday(timeval* tv, folly_port_struct_timezone*);
+void timeradd(const timeval* a, const timeval* b, timeval* res);
+void timersub(const timeval* a, const timeval* b, timeval* res);
 }
-
-
-
 
 tm* localtime_r(const time_t* t, tm* o);
 
-
+#endif
 
 #endif
