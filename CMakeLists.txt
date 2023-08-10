@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.26.1)
 
 # set(CMAKE_MSVC_DEBUG_INFORMATION_FORMAT "$<IF:$<AND:$<C_COMPILER_ID:MSVC>,$<CXX_COMPILER_ID:MSVC>>,$<$<CONFIG:Debug,RelWithDebInfo>:EditAndContinue>,$<$<CONFIG:Debug,RelWithDebInfo>:ProgramDatabase>>")
+
+
 if(MSVC)
 	if(CMAKE_BUILD_TYPE MATCHES "Debug")
 		add_compile_options(/Zi /GR /EHsc /MDd /MP /Gy /JMC /fsanitize=address)
@@ -21,6 +23,17 @@ set(CMAKE_CXX_EXTENSIONS ON)
 set(CMAKE_C_STANDARD 17)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_C_EXTENSIONS ON)
+
+option(ASAN_ENABLED "Build this target with AddressSanitizer" ON)
+
+#if(ASAN_ENABLED)
+#  if(MSVC)
+#    target_compile_options(<target> PUBLIC /fsanitize=address)
+#  else()
+#    target_compile_options(<target> PUBLIC -fsanitize=address <additional-options>)
+#    target_link_options(<target> PUBLIC -fsanitize=address)
+#  endif()
+#endif()
 
 # win32下添加宏定义
 if(WIN32)
