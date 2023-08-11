@@ -2,38 +2,26 @@ cmake_minimum_required(VERSION 3.26.1)
 
 # set(CMAKE_MSVC_DEBUG_INFORMATION_FORMAT "$<IF:$<AND:$<C_COMPILER_ID:MSVC>,$<CXX_COMPILER_ID:MSVC>>,$<$<CONFIG:Debug,RelWithDebInfo>:EditAndContinue>,$<$<CONFIG:Debug,RelWithDebInfo>:ProgramDatabase>>")
 
+# MSVC设置编译选项
+option(MSVC "Build this target with AddressSanitizer" ON)
 
 if(MSVC)
+	# 判断是否为debug模式
 	if(CMAKE_BUILD_TYPE MATCHES "Debug")
-		add_compile_options(/Zi /GR /EHsc /MDd /MP /Gy /JMC /fsanitize=address)
-		set(CMAKE_CXX_FLAGS "/Zi /GR /EHsc /MDd /MP /Gy /JMC /fsanitize=address ${CMAKE_CXX_FLAGS}")
-		add_link_options(/INCREMENTAL:NO /DEBUG:FULL)
-	else()
-		add_compile_options(/Zi /GR /EHsc /MD /MP /Gy /JMC /fsanitize=address)
-		set(CMAKE_CXX_FLAGS "/Zi /GR /EHsc /MD /MP /Gy /JMC /fsanitize=address ${CMAKE_CXX_FLAGS}")
+		add_compile_options(/JMC /MP /GS- /W3 /Zc:wchar_t /Zi /Od /Ob0 /Zc:__cplusplus /Zc:inline /external:W0 /fsanitize=address /RTC1 /std:c17 /MDd /std:c++latest /EHsc)
 		add_link_options(/INCREMENTAL:NO /DEBUG:FULL)
 	endif()
 endif()
-# 设置C++版本
-set(CMAKE_CXX_STANDARD 23)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_EXTENSIONS ON)
 
-# 设置C版本
-set(CMAKE_C_STANDARD 17)
-set(CMAKE_C_STANDARD_REQUIRED ON)
-set(CMAKE_C_EXTENSIONS ON)
-
-option(ASAN_ENABLED "Build this target with AddressSanitizer" ON)
-
-#if(ASAN_ENABLED)
-#  if(MSVC)
-#    target_compile_options(<target> PUBLIC /fsanitize=address)
-#  else()
-#    target_compile_options(<target> PUBLIC -fsanitize=address <additional-options>)
-#    target_link_options(<target> PUBLIC -fsanitize=address)
-#  endif()
-#endif()
+# option(ASAN_ENABLED "Build this target with AddressSanitizer" ON)
+#
+# if(ASAN_ENABLED)
+# if(MSVC)
+# target_compile_options(nacos-cli.out PUBLIC /fsanitize=address)
+# target_compile_options(nacos-cli-static PUBLIC /fsanitize=address)
+# target_compile_options(nacos-cli PUBLIC /fsanitize=address)
+# endif()
+# endif()
 
 # win32下添加宏定义
 if(WIN32)
@@ -49,7 +37,8 @@ if(WIN32)
 	add_definitions(-DGLOG_NO_ABBREVIATED_SEVERITIES)
 	add_definitions(-D_SILENCE_ALL_CXX23_DEPRECATION_WARNINGS)
 	add_definitions(-DLEVELDB_PLATFORM_WINDOWS)
-	#add_definitions(-DBOOST_ALL_DYN_LINK)
+
+	# add_definitions(-DBOOST_ALL_DYN_LINK)
 
 	# add_definitions(-D_CRT_SECURE_NO_WARNINGS)
 	# add_definitions(-D_SCL_SECURE_NO_WARNINGS)
@@ -123,8 +112,9 @@ target_link_libraries(nacos-cli.out PRIVATE Threads::Threads ZLIB::ZLIB CURL::li
 find_package(Threads REQUIRED)
 find_package(CURL REQUIRED)
 find_package(ZLIB REQUIRED)
- find_package(Boost REQUIRED COMPONENTS program_options system thread)
-#find_package(folly REQUIRED)
+find_package(Boost REQUIRED COMPONENTS program_options system thread)
+
+# find_package(folly REQUIRED)
 find_package(RapidJSON CONFIG REQUIRED)
 
 # find_package(absl CONFIG REQUIRED)
