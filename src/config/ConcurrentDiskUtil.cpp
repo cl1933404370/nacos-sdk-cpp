@@ -46,8 +46,9 @@ namespace nacos
             // TODO:add errorcode
             throw IOException(NacosException::UNABLE_TO_OPEN_FILE, errbuf);
         }
+
 #if defined(_MSC_VER) || defined(__WIN32__) || defined(WIN32)
-        
+      //todo
 #else
         flock(fileno(fp), LOCK_SH);
         char buf[toRead + 1];

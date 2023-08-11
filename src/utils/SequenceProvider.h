@@ -30,7 +30,7 @@ private:
         size_t bytes_written = 0;
         while (bytes_written < sizeof(T)) {
             #if defined(_MSC_VER) || defined(__WIN32__) || defined(WIN32)
-            bytes_written += _write(fd, reinterpret_cast<char*>(&data) + bytes_written, sizeof(T) - bytes_written);
+            bytes_written += _write(fd, reinterpret_cast<char*>(&data) + bytes_written, sizeof(T) - static_cast<unsigned long long>(bytes_written));
             #else
             bytes_written += write(fd, (char*)&data + bytes_written, sizeof(T) - bytes_written);
             #endif
@@ -58,7 +58,7 @@ private:
         //todo dead lock
         while (bytes_read < sizeof(T))
         {
-            bytes_read += _read(fd, reinterpret_cast<char*>(&current) + bytes_read, sizeof(T) - bytes_read);
+            bytes_read += _read(fd, reinterpret_cast<char*>(&current) + bytes_read, sizeof(T) - static_cast<unsigned long long>(bytes_read));
         }
 
         _lseek(fd, 0, SEEK_SET);//write from the beginning
