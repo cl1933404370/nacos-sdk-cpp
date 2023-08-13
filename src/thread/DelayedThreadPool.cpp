@@ -59,14 +59,17 @@ public:
                 if (it->first <= now_time) {
                     Task *task = it->second;
                     _container->_scheduledTasks.erase(it);
-                    _container->_lockForScheduleTasks.unlock();
+
+                    //todo
+                    //_container->_lockForScheduleTasks.unlock();
+
                     //the task can also attempt to retrieve the lock
                     if (_container->_stop_delayed_tp) {
                         return;
                     }
                     task->run();
 
-                    _container->_lockForScheduleTasks.lock(); 
+                    //_container->_lockForScheduleTasks.lock(); 
                     log_debug("[DelayedWorker] continue 2 next task\n");
                 } else {
                     //awake from sleep when a stop signal is sent

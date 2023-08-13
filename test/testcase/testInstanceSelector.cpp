@@ -83,9 +83,9 @@ bool testRandomByWeightSelector()
     configProps[PropertyKeyConst::SUBSCRIPTION_POLL_INTERVAL] = "3000";
 
     INacosServiceFactory *factory = NacosFactoryFactory::getNacosFactory(configProps);
-    ResourceGuard <INacosServiceFactory> _guardFactory(factory);
+    ResourceGuard _guardFactory(factory);
     NamingService *namingSvc = factory->CreateNamingService();
-    ResourceGuard <NamingService> _guardService(namingSvc);
+    ResourceGuard _guardService(namingSvc);
 
     Instance instance;
     instance.clusterName = "DefaultCluster";

@@ -29,7 +29,7 @@ void BeatTask::run() {
 }
 
 BeatTask::~BeatTask() {
-    const NacosString taskName = getTaskName();
+    NacosString taskName = getTaskName();
     log_debug("[BeatTask]Removing taskObject:%s\n", taskName.c_str());
 }
 }//namespace nacos

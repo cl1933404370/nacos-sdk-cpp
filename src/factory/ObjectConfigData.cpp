@@ -15,24 +15,24 @@
 
 namespace nacos
 {
-    ObjectConfigData::ObjectConfigData([[maybe_unused]] FactoryType theFactoryType): factoryType(),
-                                                                                     objectId(
-                                                                                         UuidUtils::generateUuid()),
-                                                                                     _httpDelegate(nullptr),
-                                                                                     _httpCli(nullptr),
-                                                                                     _serverProxy(nullptr),
-                                                                                     _beatReactor(nullptr),
-                                                                                     _eventDispatcher(nullptr),
-                                                                                     _subscriptionPoller(nullptr),
-                                                                                     _appConfigManager(nullptr),
-                                                                                     _serverListManager(nullptr),
-                                                                                     _clientWorker(nullptr),
-                                                                                     _localSnapshotManager(nullptr),
-                                                                                     _securityManager(nullptr),
-                                                                                     _udpNamingServiceListener(nullptr),
-                                                                                     _hostReactor(nullptr),
-                                                                                     _sequenceProvider(nullptr),
-                                                                                     _configProxy(nullptr)
+    ObjectConfigData::ObjectConfigData([[maybe_unused]] const FactoryType theFactoryType): factoryType(theFactoryType),
+                                                                                           objectId(
+                                                                                               UuidUtils::generateUuid()),
+                                                                                           _httpDelegate(nullptr),
+                                                                                           _httpCli(nullptr),
+                                                                                           _serverProxy(nullptr),
+                                                                                           _beatReactor(nullptr),
+                                                                                           _eventDispatcher(nullptr),
+                                                                                           _subscriptionPoller(nullptr),
+                                                                                           _appConfigManager(nullptr),
+                                                                                           _serverListManager(nullptr),
+                                                                                           _clientWorker(nullptr),
+                                                                                           _localSnapshotManager(nullptr),
+                                                                                           _securityManager(nullptr),
+                                                                                           _udpNamingServiceListener(nullptr),
+                                                                                           _hostReactor(nullptr),
+                                                                                           _sequenceProvider(nullptr),
+                                                                                           _configProxy(nullptr)
     {
     }
 
