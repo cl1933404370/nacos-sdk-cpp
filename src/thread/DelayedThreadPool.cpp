@@ -67,7 +67,7 @@ public:
                     }
                     task->run();
 
-                    _container->_lockForScheduleTasks.lock(); 
+                   _container->_lockForScheduleTasks.lock(); 
                     log_debug("[DelayedWorker] continue 2 next task\n");
                 } else {
                     //awake from sleep when a stop signal is sent
