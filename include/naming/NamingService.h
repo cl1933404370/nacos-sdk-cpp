@@ -550,7 +550,7 @@ public:
      */
     //virtual NacosString getServerStatus() = 0;
 
-    virtual ~NamingService() {};
+    virtual ~NamingService() = default;
 };
 }//namespace nacos
 

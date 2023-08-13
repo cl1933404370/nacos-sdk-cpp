@@ -38,14 +38,14 @@ private:
     void destroyMaintainService();
     //These functions are designed to prevent coding problems
     //(i.e.: forget to initialize HttpDelegate for a ConfigService) rather than run-time errors
-    void checkConfigService() NACOS_THROW(NacosException);
-    void checkNamingService() NACOS_THROW(NacosException);
-    void checkMaintainService() NACOS_THROW(NacosException);
+    void checkConfigService() const NACOS_THROW(NacosException);
+    void checkNamingService() const NACOS_THROW(NacosException);
+    void checkMaintainService() const NACOS_THROW(NacosException);
     NacosString objectId;
 public:
-    const NacosString &getObjectId() const { return objectId; };
+    const NacosString &getObjectId() const { return objectId; }
     ObjectConfigData(FactoryType theFactoryType);
-    void checkAssembledObject() NACOS_THROW(NacosException);
+    void checkAssembledObject() const NACOS_THROW(NacosException);
     ~ObjectConfigData();
     NacosString name;
     NacosString encoding;

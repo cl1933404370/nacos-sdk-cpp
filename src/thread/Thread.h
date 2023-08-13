@@ -55,7 +55,7 @@ private:
 
     Thread(): _threadName(""), _function(NULL), _threadData(NULL), _start(false), _tid(0) 
 #if defined(_MSC_VER) || defined(__WIN32__) || defined(WIN32)
-#else
+#else   
     ,_thread(0)
 #endif
     {};

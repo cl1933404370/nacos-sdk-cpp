@@ -19,30 +19,28 @@
  */
 namespace nacos{
     class NacosAuthHttpDelegate : public HttpDelegate {
-    private:
         ObjectConfigData *_objectConfigData;
         NacosString encoding;
     public:
         NacosAuthHttpDelegate(ObjectConfigData *objectConfigData);
 
         HttpResult httpGet(const NacosString &path, std::list <NacosString> &headers, std::list <NacosString> &paramValues,
-                           const NacosString &encoding, long readTimeoutMs) NACOS_THROW(NetworkException);
+                           const NacosString &encoding, long readTimeoutMs) override NACOS_THROW(NetworkException);
 
         HttpResult httpPost(const NacosString &path, std::list <NacosString> &headers, std::list <NacosString> &paramValues,
-                            const NacosString &encoding, long readTimeoutMs) NACOS_THROW(NetworkException);
+                            const NacosString &encoding, long readTimeoutMs) override NACOS_THROW(NetworkException);
 
-        virtual HttpResult
+        HttpResult
         httpPut(const NacosString &path, std::list <NacosString> &headers, std::list <NacosString> &paramValues,
-                const NacosString &encoding, long readTimeoutMs) NACOS_THROW(NetworkException);
+                const NacosString &encoding, long readTimeoutMs) override NACOS_THROW(NetworkException);
 
         HttpResult
         httpDelete(const NacosString &path, std::list <NacosString> &headers, std::list <NacosString> &paramValues,
-                   const NacosString &encoding, long readTimeoutMs) NACOS_THROW(NetworkException);
+                   const NacosString &encoding, long readTimeoutMs) override NACOS_THROW(NetworkException);
 
-        NacosString getEncode() const;
+        NacosString getEncode() const override;
 
-        virtual ~NacosAuthHttpDelegate() {
-        };
+        ~NacosAuthHttpDelegate() override = default;
     };
 }//namespace nacos
 

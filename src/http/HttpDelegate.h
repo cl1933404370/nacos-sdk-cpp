@@ -16,7 +16,7 @@ class HttpDelegate {
 protected:
     HttpDelegate *_next;
 public:
-    HttpDelegate() { _next = NULL; };
+    HttpDelegate(): _next(nullptr) {}
 
     /**
     * invoke http get method
@@ -81,7 +81,7 @@ public:
     */
     virtual NacosString getEncode() const = 0;
 
-    virtual ~HttpDelegate() {};
+    virtual ~HttpDelegate() = default;
 };
 }//namespace nacos
 

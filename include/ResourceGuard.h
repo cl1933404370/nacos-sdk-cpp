@@ -16,10 +16,8 @@ public:
     ResourceGuard(T *obj) { _obj = obj; };
 
     ~ResourceGuard() {
-        if (_obj != NULL) {
-            delete _obj;
-            _obj = NULL;
-        }
+        delete _obj;
+        _obj = NULL;
     };
 };
 }//namespace nacos

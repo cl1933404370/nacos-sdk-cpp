@@ -33,9 +33,6 @@ NamingProxy::NamingProxy(ObjectConfigData *objectConfigData) {
     _hb_fail_wait = atoi(objectConfigData->_appConfigManager->get(PropertyKeyConst::HB_FAIL_WAIT_TIME).c_str());
 }
 
-NamingProxy::~NamingProxy() {
-}
-
 void NamingProxy::registerService(const NacosString &serviceName, const NacosString &groupName,
                                   Instance &instance) NACOS_THROW(NacosException) {
     log_info("[REGISTER-SERVICE] %s registering service %s with instance: %s\n",

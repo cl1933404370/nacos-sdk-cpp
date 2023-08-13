@@ -1,13 +1,14 @@
 #include "src/naming/NacosNamingService.h"
+
+#include "constant/PropertyKeyConst.h"
+#include "constant/UtilAndComs.h"
+#include "src/json/JSON.h"
+#include "src/naming/beat/BeatReactor.h"
 #include "src/naming/subscribe/SubscriptionPoller.h"
 #include "src/naming/subscribe/UdpNamingServiceListener.h"
-#include "src/naming/beat/BeatReactor.h"
-#include "src/utils/SequenceProvider.h"
 #include "src/utils/NamingUtils.h"
-#include "constant/UtilAndComs.h"
 #include "src/utils/ParamUtils.h"
-#include "constant/PropertyKeyConst.h"
-#include "src/json/JSON.h"
+#include "src/utils/SequenceProvider.h"
 
 using namespace std;
 using nacos::naming::selectors::Selector;

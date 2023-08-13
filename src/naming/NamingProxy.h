@@ -14,71 +14,73 @@
 #include "src/factory/ObjectConfigData.h"
 #include "Compatibility.h"
 
-namespace nacos{
-class NamingProxy {
-private:
-    NacosString serverPort;
-    ObjectConfigData *_objectConfigData;
+namespace nacos
+{
+    class NamingProxy
+    {
+        NacosString serverPort;
+        ObjectConfigData* _objectConfigData;
+        NacosString nacosDomain;
 
-    NacosString nacosDomain;
+        NacosString reqAPI(const NacosString& api, std::list<NacosString>& params, int method) NACOS_THROW(NacosException);
 
-    NamingProxy();
+        NacosString callServer(const NacosString& api, std::list<NacosString>& params, const NacosString& curServer,
+                   int method) NACOS_THROW(NacosException);
 
-    NacosString
-    reqAPI(const NacosString &api, std::list <NacosString> &params, int method) NACOS_THROW(NacosException);
+        NacosString callServer(const NacosString& api, std::list<NacosString>& params,
+                               const NacosString& curServer) NACOS_THROW(NacosException);
 
-    NacosString
-    callServer(const NacosString &api, std::list <NacosString> &params, const NacosString &curServer,
-               int method) NACOS_THROW(NacosException);
+        std::list<NacosString> builderHeaders();
 
-    NacosString callServer(const NacosString &api, std::list <NacosString> &params,
-                           const NacosString &curServer) NACOS_THROW(NacosException);
+        long _hb_fail_wait; //Time to wait when a heartbeat request fails (in ms)
 
-    std::list <NacosString> builderHeaders();
+        static ListView<NacosString> nullResult;
 
-    long _hb_fail_wait;//Time to wait when a heartbeat request fails (in ms)
+        NacosString getDataToSign(const std::list<NacosString>& paramValues, NacosString& nowTimeMs);
 
-    static ListView<NacosString> nullResult;
+    public:
+        NamingProxy() = delete;
+        NamingProxy(ObjectConfigData* objectConfigData);
 
-    NacosString getDataToSign(const std::list <NacosString> &paramValues, NacosString &nowTimeMs);
+        ~NamingProxy() = default;
 
-public:
-    NamingProxy(ObjectConfigData *objectConfigData);
+        //instance CRUD
+        void registerService(const NacosString& serviceName, const NacosString& groupName,
+                             Instance& instance) NACOS_THROW(NacosException);
 
-    ~NamingProxy();
+        Instance getServiceInstance(const NacosString& serviceName,
+                                    const NacosString& ip, int port,
+                                    const std::map<NacosString, NacosString>& params) NACOS_THROW(NacosException);
 
-    //instance CRUD
-    void registerService(const NacosString &serviceName, const NacosString &groupName,
-                         Instance &instance) NACOS_THROW(NacosException);
+        bool updateServiceInstance(const Instance& instance) NACOS_THROW(NacosException);
 
-    Instance getServiceInstance(const NacosString &serviceName,
-                                const NacosString &ip, int port,
-                                const std::map<NacosString, NacosString> &params) NACOS_THROW(NacosException);
+        void deregisterService(const NacosString& serviceName, Instance& instance) NACOS_THROW(NacosException);
 
-    bool updateServiceInstance(const Instance &instance) NACOS_THROW(NacosException);
+        NacosString queryList(const NacosString& serviceName, const NacosString& groupName, const NacosString& clusters,
+                              int udpPort, bool healthyOnly) NACOS_THROW(NacosException);
 
-    void deregisterService(const NacosString &serviceName, Instance &instance) NACOS_THROW(NacosException);
+        //service CRUD
+        ListView<NacosString> getServiceList(int page, int pageSize, const NacosString& groupName) NACOS_THROW(
+            NacosException);
 
-    NacosString queryList(const NacosString &serviceName, const NacosString &groupName, const NacosString &clusters,
-                        int udpPort, bool healthyOnly) NACOS_THROW(NacosException);
+        ServiceInfo2 getServiceInfo(const NacosString& serviceName, const NacosString& groupName) NACOS_THROW(
+            NacosException);
 
-    //service CRUD
-    ListView<NacosString> getServiceList(int page, int pageSize, const NacosString &groupName) NACOS_THROW(NacosException);
+        bool deleteServiceInfo(const NacosString& serviceName, const NacosString& groupName) NACOS_THROW(NacosException)
+        ;
 
-    ServiceInfo2 getServiceInfo(const NacosString &serviceName, const NacosString &groupName) NACOS_THROW(NacosException);
+        bool createServiceInfo(const ServiceInfo2& serviceInfo2, naming::Selector* selector) NACOS_THROW(NacosException)
+        ;
 
-    bool deleteServiceInfo(const NacosString &serviceName, const NacosString &groupName) NACOS_THROW(NacosException);
+        bool updateServiceInfo(const ServiceInfo2& serviceInfo2, naming::Selector* selector) NACOS_THROW(NacosException)
+        ;
 
-    bool createServiceInfo(const ServiceInfo2 &serviceInfo2, naming::Selector *selector) NACOS_THROW(NacosException);
+        inline NacosString getNamespaceId();
 
-    bool updateServiceInfo(const ServiceInfo2 &serviceInfo2, naming::Selector *selector) NACOS_THROW(NacosException);
+        long sendBeat(BeatInfo& beatInfo);
 
-    inline NacosString getNamespaceId();
-
-    long sendBeat(BeatInfo &beatInfo);
-
-    bool serverHealthy();
-};
-}//namespace nacos
+        bool serverHealthy();
+    };
+} //namespace nacos
 
 #endif

@@ -42,9 +42,9 @@ bool testListenService() {
     ADD_AUTH_INFO(props);
     ADD_SPAS_INFO(props);
     INacosServiceFactory *factory = NacosFactoryFactory::getNacosFactory(props);
-    ResourceGuard <INacosServiceFactory> _guardFactory(factory);
+    ResourceGuard _guardFactory(factory);
     NamingService *n = factory->CreateNamingService();
-    ResourceGuard <NamingService> _serviceFactory(n);
+    ResourceGuard _serviceFactory(n);
 
     n->subscribe("ss", new MyServiceListener(1));
 
