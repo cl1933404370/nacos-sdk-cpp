@@ -1,7 +1,6 @@
 #ifndef MUTEX_H_
 #define MUTEX_H_
 
-#include "Tid.h"
 #include "src/utils/TimeUtils.h"
 #if defined(_WIN32) || defined(_MSC_VER)
 #include  <mutex>
@@ -28,7 +27,7 @@ namespace nacos
     class Condition;
 
     // Thinly wraps std::mutex.
-    class LOCKABLE Mutex
+    class CAPABILITY("mutex") Mutex
     {
     public:
         Mutex() = default;
@@ -37,12 +36,13 @@ namespace nacos
         Mutex(const Mutex&) = delete;
         Mutex& operator=(const Mutex&) = delete;
 
-        void lock() EXCLUSIVE_LOCK_FUNCTION() { _mu.lock(); }
-        void unlock() UNLOCK_FUNCTION() {
+        void lock() ACQUIRE() { _mu.lock(); }
+        void unlock() RELEASE() {
             _mu.unlock(); }
 
-        static void assertHeld() ASSERT_EXCLUSIVE_LOCK()
+        static void assertHeld() ASSERT_CAPABILITY()
         {
+            //assert(_mu._Mtx_trylock() == EBUSY);
         }
 
     private:
@@ -105,12 +105,12 @@ namespace nacos
     class SCOPED_LOCKABLE LockGuard
     {
     public:
-        explicit LockGuard(Mutex& mu) EXCLUSIVE_LOCK_FUNCTION(mu) : _mu(_STD addressof(mu))
+        explicit LockGuard(Mutex& mu) ACQUIRE(mu) : _mu(_STD addressof(mu))
         {
             this->_mu->lock();
         }
 
-        ~LockGuard() UNLOCK_FUNCTION() { this->_mu->unlock(); }
+        ~LockGuard() RELEASE() { this->_mu->unlock(); }
 
         LockGuard(const LockGuard&) = delete;
         LockGuard& operator=(const LockGuard&) = delete;
