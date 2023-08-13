@@ -44,7 +44,7 @@ void buildSecurityManagerAndHttpDelegate(ObjectConfigData *objectConfigData) {
 
 AppConfigManager *NacosServiceFactory::buildConfigManager(ObjectConfigData *objectConfigData) {
     //Create configuration data and load configs
-    AppConfigManager *appConfigManager = nullptr;
+    AppConfigManager *appConfigManager;
 
     if (configIsSet) {
         appConfigManager = new AppConfigManager(configFile);
@@ -138,8 +138,7 @@ ConfigService *NacosServiceFactory::CreateConfigService() NACOS_THROW(NacosExcep
     initializeRuntimeLogSettings(appConfigManager);
 
     //Create http client
-    IHttpCli *httpCli = nullptr;
-    httpCli = new HTTPCli();
+    IHttpCli* httpCli = new HTTPCli();
     objectConfigData->_httpCli = httpCli;
 
     buildSecurityManagerAndHttpDelegate(objectConfigData);

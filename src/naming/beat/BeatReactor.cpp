@@ -27,7 +27,7 @@ void BeatReactor::addBeatInfo(const NacosString &serviceName, BeatInfo &beatInfo
     log_info("[BEAT] adding beat: %s to beat map.\n", beatInfoStr.c_str());
     NacosString beatKey = buildKey(serviceName, beatInfo.ip, beatInfo.port);
     //The specified beatInfo is already in the list
-    if (_beatInfoList.count(beatKey) != 0) {
+    if (_beatInfoList.contains(beatKey)) {
         log_warn("Adding already-exist key:%s\n", beatKey.c_str());
         return;
     }
@@ -52,15 +52,13 @@ void BeatReactor::addBeatInfo(const NacosString &serviceName, BeatInfo &beatInfo
 */
 bool BeatReactor::getBeatInfo(const NacosString &serviceName, const NacosString &ip, int port, BeatInfo &beatInfo) {
     NacosString beatKey = buildKey(serviceName, ip, port);
-    {
-        ReadGuard _lockguard(_beatInfoLock);
-        if (_beatInfoList.count(beatKey) == 0) {
-            return false;
-        }
-
-        beatInfo = _beatInfoList[beatKey]->getBeatInfo();
-        return true;
+    ReadGuard _lockguard(_beatInfoLock);
+    if (!_beatInfoList.contains(beatKey)) {
+        return false;
     }
+
+    beatInfo = _beatInfoList[beatKey]->getBeatInfo();
+    return true;
 }
 
 /**
@@ -76,7 +74,7 @@ bool BeatReactor::modifyBeatInfo(const NacosString &serviceName, BeatInfo &beatI
     NacosString beatKey = buildKey(serviceName, beatInfo.ip, beatInfo.port);
     {
         WriteGuard _lockguard(_beatInfoLock);
-        if (_beatInfoList.count(beatKey) != 0) {
+        if (_beatInfoList.contains(beatKey)) {
             log_warn("Modifying non-existent key:%s\n", beatKey.c_str());
             return false;
         }
@@ -101,8 +99,7 @@ bool BeatReactor::modifyBeatInfo(const NacosString &serviceName, BeatInfo &beatI
 */
 bool BeatReactor::removeBeatInfo(const NacosString &serviceName, const NacosString &ip, int port) {
     log_info("[BEAT] removing beat: %s:%s:%d from beat map.", serviceName.c_str(), ip.c_str(), port);
-    NacosString beatKey = buildKey(serviceName, ip, port);
-    BeatTask *beatTaskToRemove = nullptr;
+    const NacosString beatKey = buildKey(serviceName, ip, port);
     {
         WriteGuard _lockguard(_beatInfoLock);
         //If we can't find the beatInfo in the list, just return
@@ -110,7 +107,7 @@ bool BeatReactor::removeBeatInfo(const NacosString &serviceName, const NacosStri
             log_warn("Removing non-existent key:%s\n", beatKey.c_str());
             return false;
         }
-        beatTaskToRemove = _beatInfoList[beatKey];
+        BeatTask* beatTaskToRemove = _beatInfoList[beatKey];
         beatTaskToRemove->setScheduled(false);
         _beatInfoList.erase(beatKey);
     }
@@ -122,9 +119,9 @@ bool BeatReactor::removeBeatInfo(const NacosString &serviceName, const NacosStri
 void BeatReactor::removeAllBeatInfo() {
     log_debug("BeatReactor::removeAllBeatInfo() start to remove\n");
     WriteGuard _lockguard(_beatInfoLock);
-    for (map<NacosString, BeatTask *>::iterator it = _beatInfoList.begin();
-         it != _beatInfoList.end(); it++) {
-        BeatTask *curTask = it->second;
+    for (auto&& it : _beatInfoList)
+    {
+        BeatTask *curTask = it.second;
         delete curTask;
         curTask = nullptr;
     }

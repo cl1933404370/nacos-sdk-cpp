@@ -75,7 +75,6 @@ void nacos::Thread::start()
     std::thread thread(
         [&]
         {
-            _tid = gettidv1();
             this->threadFunc(this);
         }
         );
@@ -96,10 +95,8 @@ void nacos::Thread::join()
     }
 
 #if defined(_MSC_VER) || defined(__WIN32__) || defined(WIN32)
-    std::this_thread::yield();
     if (_thread.joinable())
     {
-        std::this_thread::yield();
         _thread.join();
     }
 #else
@@ -118,7 +115,6 @@ void nacos::Thread::kill()
     QueueUserAPC([](ULONG_PTR a)
         {
         }, _thread.native_handle(), exciteCode);
-    std::this_thread::yield();
 #else
     pthread_kill(_thread, THREAD_STOP_SIGNAL);
 #endif

@@ -215,10 +215,9 @@ namespace nacos
         pthread_mutex_lock(&watchListMutex);
 
         // Check whether the listener being added to the list already exists
-        if (listeningKeys.find(key) != listeningKeys.end())
+        if (listeningKeys.contains(key))
         {
-            ListeningData *curListeningData = listeningKeys[key];
-            if (!curListeningData->addListener(listener))
+            if (ListeningData *curListeningData = listeningKeys[key]; !curListeningData->addListener(listener))
             {
                 log_warn("[ClientWorker]-addListener:Key %s is already in the watch list, leaving...\n", key.c_str());
             }

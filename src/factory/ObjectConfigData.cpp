@@ -80,7 +80,7 @@ void ObjectConfigData::checkMaintainService() NACOS_THROW(NacosException) {
 void ObjectConfigData::destroyConfigService() {
 
     if (_clientWorker != nullptr) {
-        _clientWorker->stopListening();
+        _clientWorker->stopListening();  
     }
 
     if (_securityManager != nullptr) {
@@ -93,7 +93,7 @@ void ObjectConfigData::destroyConfigService() {
 
     if (_clientWorker != nullptr) {
         _clientWorker->stopListening();
-        delete _clientWorker;
+        delete _clientWorker; 
         _clientWorker = nullptr;
     }
 

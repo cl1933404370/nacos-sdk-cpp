@@ -41,7 +41,7 @@ private:
     //Listener thread related info
     pthread_t threadId;
 
-    volatile bool stopThread;
+    std::atomic_bool stopThread;
     pthread_mutex_t stopThreadMutex;
 
     int _longPullingTimeout;

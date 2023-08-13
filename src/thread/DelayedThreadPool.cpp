@@ -65,7 +65,8 @@ public:
                         return;
                     }
                     task->run();
-                    _container->_lockForScheduleTasks.lock();
+
+                    _container->_lockForScheduleTasks.lock(); 
                     log_debug("[DelayedWorker] continue 2 next task\n");
                 } else {
                     //awake from sleep when a stop signal is sent
@@ -137,7 +138,7 @@ void DelayedThreadPool::schedule(Task *t, uint64_t futureTimeToRun) {
         const std::pair<uint64_t, Task*> scheduledTask = std::make_pair (futureTimeToRun, t);
         LockGuard lockSchedTasks(&_lockForScheduleTasks);
         _scheduledTasks.push_back(scheduledTask);
-        std::sort(_scheduledTasks.begin(), _scheduledTasks.end(), ascOrdFunctor);
+        std::ranges::sort(_scheduledTasks, ascOrdFunctor);
 	}
     _delayTaskNotEmpty.notifyAll();
 }

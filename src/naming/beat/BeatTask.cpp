@@ -6,7 +6,8 @@ using namespace std;
 
 namespace nacos{
 BeatTask::BeatTask(const BeatInfo &beatInfo, ObjectConfigData *objectConfigData)
-        : _beatInfo(beatInfo), _objectConfigData(objectConfigData), _scheduled(false) {
+    : _beatInfo(beatInfo), _objectConfigData(objectConfigData), _scheduled(false), _interval(0)
+{
 };
 
 BeatInfo BeatTask::getBeatInfo() const {
@@ -28,7 +29,7 @@ void BeatTask::run() {
 }
 
 BeatTask::~BeatTask() {
-    NacosString taskName = getTaskName();
+    const NacosString taskName = getTaskName();
     log_debug("[BeatTask]Removing taskObject:%s\n", taskName.c_str());
 }
 }//namespace nacos

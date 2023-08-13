@@ -276,15 +276,13 @@ long NamingProxy::sendBeat(BeatInfo &beatInfo) {
         ParamUtils::addKV(params, NamingConstant::BEAT, JSON::toJSONString(beatInfo));
         ParamUtils::addKV(params, NamingConstant::NAMESPACE_ID, getNamespaceId());
         ParamUtils::addKV(params, NamingConstant::SERVICE_NAME, beatInfo.serviceName);
-        NacosString result = reqAPI("/" + _objectConfigData->_appConfigManager->getContextPath() + UtilAndComs::NACOS_URL_BASE + "/instance/beat", params, IHttpCli::PUT);
         //JSONObject jsonObject = JSON.parseObject(result);
-
-        if (!isNull(result)) {
+        if (const NacosString result = reqAPI("/" + _objectConfigData->_appConfigManager->getContextPath() + UtilAndComs::NACOS_URL_BASE + "/instance/beat", params, IHttpCli::PUT); !isNull(result)) {
             return JSON::getLong(result, "clientBeatInterval");
         }
     }
     catch (NacosException &e) {
-        NacosString jsonBeatInfo = JSON::toJSONString(beatInfo);
+        const NacosString jsonBeatInfo = JSON::toJSONString(beatInfo);
         log_error("[CLIENT-BEAT] failed to send beat: %s e:%s\n", jsonBeatInfo.c_str(), e.what());
         return _hb_fail_wait;
     }
