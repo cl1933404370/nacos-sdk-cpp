@@ -22,7 +22,7 @@ void Init::doInit() {
         return;
     }
     {
-        LockGuard _initGuard(&initflagMutex);
+        LockGuard _initGuard(initflagMutex);
         if (inited) {
             return;
         }
@@ -45,7 +45,7 @@ void Init::doDeinit() {
     }
 
     {
-        LockGuard _initGuard(&initflagMutex);
+        LockGuard _initGuard(initflagMutex);
         if (!inited) {
             return;
         }

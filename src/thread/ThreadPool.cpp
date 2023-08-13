@@ -37,7 +37,7 @@ void *ThreadPool::runInThread(void *param) {
 Task* ThreadPool::take()
 {
 
-	LockGuard _lockGuard(&_lock);
+	LockGuard _lockGuard(_lock);
     _NotEmpty.wait([&]{return !_taskList.empty() || _stop;});
 
     if (!_taskList.empty())
@@ -57,7 +57,7 @@ Task* ThreadPool::take()
 
 void ThreadPool::put(Task* t)
 {
-    LockGuard _lockGuard(&_lock);
+    LockGuard _lockGuard(_lock);
     log_debug("ThreadPool:::::taskList:%d poolSize:%d stop:%d\n", _taskList.size(), _poolSize, _stop);
     _NotFull.wait([&]{return _taskList.size() < _poolSize || _stop;});
     if (!_stop)

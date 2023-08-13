@@ -63,7 +63,7 @@ void NacosServiceFactory::initializeRuntimeLogSettings(AppConfigManager *_appCon
     }
 
     {
-        LockGuard __lockLogSystem(&logSysInitLock);
+        LockGuard __lockLogSystem(logSysInitLock);
 
         if (logSystemInitialized) {
             return;

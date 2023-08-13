@@ -9,100 +9,139 @@
 // environments, the macros receive empty definitions.
 // Usage documentation: https://clang.llvm.org/docs/ThreadSafetyAnalysis.html
 
-#if !defined(THREAD_ANNOTATION_ATTRIBUTE__)
-
-#if defined(__clang__)
-
-#define THREAD_ANNOTATION_ATTRIBUTE__(x) __attribute__((x))
+// Enable thread safety attributes only with clang.
+// The attributes can be safely erased when compiling with other compilers.
+#if defined(__clang__) && (!defined(SWIG))
+#define THREAD_ANNOTATION_ATTRIBUTE__(x)   __attribute__((x))
 #else
-#define THREAD_ANNOTATION_ATTRIBUTE__(x)  // no-op
+#define THREAD_ANNOTATION_ATTRIBUTE__(x)   // no-op
 #endif
 
-#endif  // !defined(THREAD_ANNOTATION_ATTRIBUTE__)
+#define CAPABILITY(x) \
+  THREAD_ANNOTATION_ATTRIBUTE__(capability(x))
 
-#ifndef GUARDED_BY
-#define GUARDED_BY(x) THREAD_ANNOTATION_ATTRIBUTE__(guarded_by(x))
-#endif
+#define SCOPED_CAPABILITY \
+  THREAD_ANNOTATION_ATTRIBUTE__(scoped_lockable)
 
-#ifndef PT_GUARDED_BY
-#define PT_GUARDED_BY(x) THREAD_ANNOTATION_ATTRIBUTE__(pt_guarded_by(x))
-#endif
+#define GUARDED_BY(x) \
+  THREAD_ANNOTATION_ATTRIBUTE__(guarded_by(x))
 
-#ifndef ACQUIRED_AFTER
-#define ACQUIRED_AFTER(...) \
-  THREAD_ANNOTATION_ATTRIBUTE__(acquired_after(__VA_ARGS__))
-#endif
+#define PT_GUARDED_BY(x) \
+  THREAD_ANNOTATION_ATTRIBUTE__(pt_guarded_by(x))
 
-#ifndef ACQUIRED_BEFORE
 #define ACQUIRED_BEFORE(...) \
   THREAD_ANNOTATION_ATTRIBUTE__(acquired_before(__VA_ARGS__))
-#endif
 
-#ifndef EXCLUSIVE_LOCKS_REQUIRED
-#define EXCLUSIVE_LOCKS_REQUIRED(...) \
-  THREAD_ANNOTATION_ATTRIBUTE__(exclusive_locks_required(__VA_ARGS__))
-#endif
+#define ACQUIRED_AFTER(...) \
+  THREAD_ANNOTATION_ATTRIBUTE__(acquired_after(__VA_ARGS__))
 
-#ifndef SHARED_LOCKS_REQUIRED
-#define SHARED_LOCKS_REQUIRED(...) \
-  THREAD_ANNOTATION_ATTRIBUTE__(shared_locks_required(__VA_ARGS__))
-#endif
+#define REQUIRES(...) \
+  THREAD_ANNOTATION_ATTRIBUTE__(requires_capability(__VA_ARGS__))
 
-#ifndef LOCKS_EXCLUDED
-#define LOCKS_EXCLUDED(...) \
+#define REQUIRES_SHARED(...) \
+  THREAD_ANNOTATION_ATTRIBUTE__(requires_shared_capability(__VA_ARGS__))
+
+#define ACQUIRE(...) \
+  THREAD_ANNOTATION_ATTRIBUTE__(acquire_capability(__VA_ARGS__))
+
+#define ACQUIRE_SHARED(...) \
+  THREAD_ANNOTATION_ATTRIBUTE__(acquire_shared_capability(__VA_ARGS__))
+
+#define RELEASE(...) \
+  THREAD_ANNOTATION_ATTRIBUTE__(release_capability(__VA_ARGS__))
+
+#define RELEASE_SHARED(...) \
+  THREAD_ANNOTATION_ATTRIBUTE__(release_shared_capability(__VA_ARGS__))
+
+#define RELEASE_GENERIC(...) \
+  THREAD_ANNOTATION_ATTRIBUTE__(release_generic_capability(__VA_ARGS__))
+
+#define TRY_ACQUIRE(...) \
+  THREAD_ANNOTATION_ATTRIBUTE__(try_acquire_capability(__VA_ARGS__))
+
+#define TRY_ACQUIRE_SHARED(...) \
+  THREAD_ANNOTATION_ATTRIBUTE__(try_acquire_shared_capability(__VA_ARGS__))
+
+#define EXCLUDES(...) \
   THREAD_ANNOTATION_ATTRIBUTE__(locks_excluded(__VA_ARGS__))
-#endif
 
-#ifndef LOCK_RETURNED
-#define LOCK_RETURNED(x) THREAD_ANNOTATION_ATTRIBUTE__(lock_returned(x))
-#endif
+#define ASSERT_CAPABILITY(x) \
+  THREAD_ANNOTATION_ATTRIBUTE__(assert_capability(x))
 
-#ifndef LOCKABLE
-#define LOCKABLE THREAD_ANNOTATION_ATTRIBUTE__(lockable)
-#endif
+#define ASSERT_SHARED_CAPABILITY(x) \
+  THREAD_ANNOTATION_ATTRIBUTE__(assert_shared_capability(x))
 
-#ifndef SCOPED_LOCKABLE
-#define SCOPED_LOCKABLE THREAD_ANNOTATION_ATTRIBUTE__(scoped_lockable)
-#endif
+#define RETURN_CAPABILITY(x) \
+  THREAD_ANNOTATION_ATTRIBUTE__(lock_returned(x))
 
-#ifndef EXCLUSIVE_LOCK_FUNCTION
-#define EXCLUSIVE_LOCK_FUNCTION(...) \
-  THREAD_ANNOTATION_ATTRIBUTE__(exclusive_lock_function(__VA_ARGS__))
-#endif
-
-#ifndef SHARED_LOCK_FUNCTION
-#define SHARED_LOCK_FUNCTION(...) \
-  THREAD_ANNOTATION_ATTRIBUTE__(shared_lock_function(__VA_ARGS__))
-#endif
-
-#ifndef EXCLUSIVE_TRYLOCK_FUNCTION
-#define EXCLUSIVE_TRYLOCK_FUNCTION(...) \
-  THREAD_ANNOTATION_ATTRIBUTE__(exclusive_trylock_function(__VA_ARGS__))
-#endif
-
-#ifndef SHARED_TRYLOCK_FUNCTION
-#define SHARED_TRYLOCK_FUNCTION(...) \
-  THREAD_ANNOTATION_ATTRIBUTE__(shared_trylock_function(__VA_ARGS__))
-#endif
-
-#ifndef UNLOCK_FUNCTION
-#define UNLOCK_FUNCTION(...) \
-  THREAD_ANNOTATION_ATTRIBUTE__(unlock_function(__VA_ARGS__))
-#endif
-
-#ifndef NO_THREAD_SAFETY_ANALYSIS
 #define NO_THREAD_SAFETY_ANALYSIS \
   THREAD_ANNOTATION_ATTRIBUTE__(no_thread_safety_analysis)
-#endif
 
-#ifndef ASSERT_EXCLUSIVE_LOCK
+#ifdef USE_LOCK_STYLE_THREAD_SAFETY_ATTRIBUTES
+// The original version of thread safety analysis the following attribute
+// definitions.  These use a lock-based terminology.  They are still in use
+// by existing thread safety code, and will continue to be supported.
+
+// Deprecated.
+#define PT_GUARDED_VAR \
+  THREAD_ANNOTATION_ATTRIBUTE__(pt_guarded_var)
+
+// Deprecated.
+#define GUARDED_VAR \
+  THREAD_ANNOTATION_ATTRIBUTE__(guarded_var)
+
+// Replaced by REQUIRES
+#define EXCLUSIVE_LOCKS_REQUIRED(...) \
+  THREAD_ANNOTATION_ATTRIBUTE__(exclusive_locks_required(__VA_ARGS__))
+
+// Replaced by REQUIRES_SHARED
+#define SHARED_LOCKS_REQUIRED(...) \
+  THREAD_ANNOTATION_ATTRIBUTE__(shared_locks_required(__VA_ARGS__))
+
+// Replaced by CAPABILITY
+#define LOCKABLE \
+  THREAD_ANNOTATION_ATTRIBUTE__(lockable)
+
+// Replaced by SCOPED_CAPABILITY
+#define SCOPED_LOCKABLE \
+  THREAD_ANNOTATION_ATTRIBUTE__(scoped_lockable)
+
+// Replaced by ACQUIRE
+#define EXCLUSIVE_LOCK_FUNCTION(...) \
+  THREAD_ANNOTATION_ATTRIBUTE__(exclusive_lock_function(__VA_ARGS__))
+
+// Replaced by ACQUIRE_SHARED
+#define SHARED_LOCK_FUNCTION(...) \
+  THREAD_ANNOTATION_ATTRIBUTE__(shared_lock_function(__VA_ARGS__))
+
+// Replaced by RELEASE and RELEASE_SHARED
+#define UNLOCK_FUNCTION(...) \
+  THREAD_ANNOTATION_ATTRIBUTE__(unlock_function(__VA_ARGS__))
+
+// Replaced by TRY_ACQUIRE
+#define EXCLUSIVE_TRYLOCK_FUNCTION(...) \
+  THREAD_ANNOTATION_ATTRIBUTE__(exclusive_trylock_function(__VA_ARGS__))
+
+// Replaced by TRY_ACQUIRE_SHARED
+#define SHARED_TRYLOCK_FUNCTION(...) \
+  THREAD_ANNOTATION_ATTRIBUTE__(shared_trylock_function(__VA_ARGS__))
+
+// Replaced by ASSERT_CAPABILITY
 #define ASSERT_EXCLUSIVE_LOCK(...) \
   THREAD_ANNOTATION_ATTRIBUTE__(assert_exclusive_lock(__VA_ARGS__))
-#endif
 
-#ifndef ASSERT_SHARED_LOCK
+// Replaced by ASSERT_SHARED_CAPABILITY
 #define ASSERT_SHARED_LOCK(...) \
   THREAD_ANNOTATION_ATTRIBUTE__(assert_shared_lock(__VA_ARGS__))
-#endif
 
-#endif  // STORAGE_LEVELDB_PORT_THREAD_ANNOTATIONS_H_
+// Replaced by EXCLUDE_CAPABILITY.
+#define LOCKS_EXCLUDED(...) \
+  THREAD_ANNOTATION_ATTRIBUTE__(locks_excluded(__VA_ARGS__))
+
+// Replaced by RETURN_CAPABILITY
+#define LOCK_RETURNED(x) \
+  THREAD_ANNOTATION_ATTRIBUTE__(lock_returned(x))
+
+#endif  // USE_LOCK_STYLE_THREAD_SAFETY_ATTRIBUTES
+
+#endif 
