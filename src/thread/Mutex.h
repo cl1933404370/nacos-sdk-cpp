@@ -40,7 +40,7 @@ namespace nacos
         void unlock() RELEASE() {
             _mu.unlock(); }
 
-        static void assertHeld() ASSERT_CAPABILITY()
+        static void assertHeld() ASSERT_CAPABILITY(this)
         {
             //assert(_mu._Mtx_trylock() == EBUSY);
         }
@@ -102,7 +102,7 @@ namespace nacos
         Mutex* _mu;
     };
 
-    class SCOPED_LOCKABLE LockGuard
+    class SCOPED_CAPABILITY LockGuard
     {
     public:
         explicit LockGuard(Mutex& mu) ACQUIRE(mu) : _mu(_STD addressof(mu))

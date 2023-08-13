@@ -15,7 +15,7 @@ using nacos::naming::Selector;
 namespace nacos{
 NacosString documentToString(const Document &d) {
     StringBuffer buffer;
-    Writer <StringBuffer> writer(buffer);
+    Writer writer(buffer);
     d.Accept(writer);
     NacosString result = buffer.GetString();
     return result;
@@ -23,7 +23,7 @@ NacosString documentToString(const Document &d) {
 
 NacosString valueToString(const Value &d) {
     StringBuffer buffer;
-    Writer <StringBuffer> writer(buffer);
+    Writer writer(buffer);
     d.Accept(writer);
     NacosString result = buffer.GetString();
     return result;
@@ -32,11 +32,12 @@ NacosString valueToString(const Value &d) {
 NacosString JSON::toJSONString(const map <NacosString, NacosString> &mapinfo) {
     Document d;
     d.SetObject();
-    for (map<NacosString, NacosString>::const_iterator it = mapinfo.begin(); it != mapinfo.end(); it++) {
+    for (const auto& [fst, snd] : mapinfo)
+    {
         Value k;
-        k.SetString(it->first.c_str(), d.GetAllocator());
+        k.SetString(fst.c_str(), d.GetAllocator());
         Value v;
-        v.SetString(it->second.c_str(), d.GetAllocator());
+        v.SetString(snd.c_str(), d.GetAllocator());
         d.AddMember(k, v, d.GetAllocator());
     }
 
@@ -45,11 +46,12 @@ NacosString JSON::toJSONString(const map <NacosString, NacosString> &mapinfo) {
 
 void JSON::Map2JSONObject(Document &d, Value &jsonOb, map <NacosString, NacosString> &mapinfo) {
     jsonOb.SetObject();
-    for (map<NacosString, NacosString>::iterator it = mapinfo.begin(); it != mapinfo.end(); it++) {
+    for (auto& [fst, snd] : mapinfo)
+    {
         Value k;
-        k.SetString(it->first.c_str(), d.GetAllocator());
+        k.SetString(fst.c_str(), d.GetAllocator());
         Value v;
-        v.SetString(it->second.c_str(), d.GetAllocator());
+        v.SetString(snd.c_str(), d.GetAllocator());
         jsonOb.AddMember(k, v, d.GetAllocator());
     }
 }
@@ -57,7 +59,7 @@ void JSON::Map2JSONObject(Document &d, Value &jsonOb, map <NacosString, NacosStr
 void JSON::JSONObject2Map(std::map <NacosString, NacosString> &mapinfo, const Value &jsonOb) {
     for (Value::ConstMemberIterator iter = jsonOb.MemberBegin(); iter != jsonOb.MemberEnd(); ++iter) {
         NacosString name = iter->name.GetString();
-        NacosString value = iter->value.GetString();
+        const NacosString value = iter->value.GetString();
         mapinfo[name] = value;
     }
 }
@@ -103,60 +105,60 @@ NacosString JSON::toJSONString(BeatInfo &beatInfo) {
 long JSON::getLong(const NacosString &jsonString, const NacosString &fieldname) {
     Document d;
     d.Parse(jsonString.c_str());
-    Value &s = d[fieldname.c_str()];
-    return s.GetInt64();
+    const Value &s = d[fieldname.c_str()];
+    return static_cast<long>(s.GetInt64());
 }
 
-Instance JSON::Json2Instance(const Value &host) NACOS_THROW(NacosException) {
+Instance JSON::Json2Instance(const Value &jsonString) NACOS_THROW(NacosException) {
     Instance theinstance;
 
-    if (host.HasMember("instanceId")) {
-        const Value &instanceId = host["instanceId"];
+    if (jsonString.HasMember("instanceId")) {
+        const Value &instanceId = jsonString["instanceId"];
         theinstance.instanceId = instanceId.GetString();
     }
 
-    markRequired(host, "port");
-    const Value &port = host["port"];
+    markRequired(jsonString, "port");
+    const Value &port = jsonString["port"];
     if (!port.IsInt()) {
         throw NacosException(NacosException::INVALID_JSON_FORMAT, "Error while parsing port for Instance!");
     }
     theinstance.port = port.GetInt();
 
-    markRequired(host, "ip");
-    const Value &ip = host["ip"];
+    markRequired(jsonString, "ip");
+    const Value &ip = jsonString["ip"];
     theinstance.ip = ip.GetString();
 
-    markRequired(host, "weight");
-    const Value &weight = host["weight"];
+    markRequired(jsonString, "weight");
+    const Value &weight = jsonString["weight"];
     if (!weight.IsDouble()) {
         throw NacosException(NacosException::INVALID_JSON_FORMAT, "Error while parsing weight for Instance!");
     }
     theinstance.weight = weight.GetDouble();
 
-    markRequired(host, "metadata");
-    const Value &metadata = host["metadata"];
+    markRequired(jsonString, "metadata");
+    const Value &metadata = jsonString["metadata"];
 
     std::map <NacosString, NacosString> mtdata;
     JSONObject2Map(mtdata, metadata);
 
     theinstance.metadata = mtdata;
 
-    markRequired(host, "healthy");
-    const Value &healthy = host["healthy"];
+    markRequired(jsonString, "healthy");
+    const Value &healthy = jsonString["healthy"];
     if (!healthy.IsBool()) {
         throw NacosException(NacosException::INVALID_JSON_FORMAT, "Error while parsing healthy for Instance!");
     }
     theinstance.healthy = healthy.GetBool();
 
-    markRequired(host, "enabled");
-    const Value &enabled = host["enabled"];
+    markRequired(jsonString, "enabled");
+    const Value &enabled = jsonString["enabled"];
     if (!enabled.IsBool()) {
         throw NacosException(NacosException::INVALID_JSON_FORMAT, "Error while parsing enabled for Instance!");
     }
     theinstance.enabled = enabled.GetBool();
 
-    if (host.HasMember("clusterName")) {
-        const Value &clusterName = host["clusterName"];
+    if (jsonString.HasMember("clusterName")) {
+        const Value &clusterName = jsonString["clusterName"];
         theinstance.clusterName = clusterName.GetString();
     }
 
@@ -243,9 +245,9 @@ ServiceInfo JSON::JsonStr2ServiceInfo(const NacosString &jsonString) NACOS_THROW
         if (!lastRefTime.IsInt64()) {
             throw NacosException(NacosException::INVALID_JSON_FORMAT, "Error while parsing lastRefTime for ServiceInfo!");
         }
-        si.setLastRefTime(lastRefTime.GetInt64());
+        si.setLastRefTime(static_cast<long>(lastRefTime.GetInt64()));
     }
-
+    
     markRequired(d, "name");
     const Value &name = d["name"];
     ServiceInfo::fromKey(si, name.GetString());
@@ -259,7 +261,7 @@ ServiceInfo JSON::JsonStr2ServiceInfo(const NacosString &jsonString) NACOS_THROW
     if (!cacheMillis.IsInt64()) {
         throw NacosException(NacosException::INVALID_JSON_FORMAT, "Error while parsing cacheMillis for ServiceInfo!");
     }
-    si.setCacheMillis(cacheMillis.GetInt64());
+    si.setCacheMillis(static_cast<long>(cacheMillis.GetInt64()));
 
     markRequired(d, "hosts");
     const Value &hosts = d["hosts"];
@@ -291,7 +293,7 @@ NacosServerInfo parseOneNacosSvr(const Value &curSvr) {
     res.setWeight(curSvr["weight"].GetFloat());
     res.setAdWeight(curSvr["adWeight"].GetFloat());
     res.setAlive(curSvr["alive"].GetBool());
-    res.setLastRefTime(curSvr["lastRefTime"].GetInt64());
+    res.setLastRefTime(static_cast<long>(curSvr["lastRefTime"].GetInt64()));
     if (!curSvr["lastRefTimeStr"].IsNull()) {
         res.setLastRefTimeStr(curSvr["lastRefTimeStr"].GetString());
     }
@@ -454,7 +456,7 @@ PushPacket JSON::Json2PushPacket(const char *jsonString) NACOS_THROW(NacosExcept
 
     markRequired(d, "lastRefTime");
     const Value &lastRefTime = d["lastRefTime"];
-    pushPacket.lastRefTime = lastRefTime.GetInt64();
+    pushPacket.lastRefTime = static_cast<long>(lastRefTime.GetInt64());
 
     return pushPacket;
 }
