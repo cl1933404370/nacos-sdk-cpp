@@ -18,6 +18,7 @@ void BeatTask::setBeatInfo(const BeatInfo &beatInfo) {
     _beatInfo = beatInfo;
 }
 
+//todo 偶现delete错误 怀疑task被多次执行的问题
 void BeatTask::run() {
     if (!_scheduled) {
         delete this;

@@ -74,7 +74,7 @@ bool BeatReactor::modifyBeatInfo(const NacosString &serviceName, BeatInfo &beatI
     NacosString beatKey = buildKey(serviceName, beatInfo.ip, beatInfo.port);
     {
         WriteGuard _lockguard(_beatInfoLock);
-        if (_beatInfoList.contains(beatKey)) {
+        if (!_beatInfoList.contains(beatKey)) {
             log_warn("Modifying non-existent key:%s\n", beatKey.c_str());
             return false;
         }
@@ -103,13 +103,14 @@ bool BeatReactor::removeBeatInfo(const NacosString &serviceName, const NacosStri
     {
         WriteGuard _lockguard(_beatInfoLock);
         //If we can't find the beatInfo in the list, just return
-        if (_beatInfoList.count(beatKey) != 1) {
+        if (!_beatInfoList.contains(beatKey)) {
             log_warn("Removing non-existent key:%s\n", beatKey.c_str());
             return false;
         }
         BeatTask* beatTaskToRemove = _beatInfoList[beatKey];
         beatTaskToRemove->setScheduled(false);
         _beatInfoList.erase(beatKey);
+        delete beatTaskToRemove;
     }
     //TODO:MetricsMonitor.getDom2BeatSizeMonitor().set(dom2Beat.size());
 

@@ -34,25 +34,25 @@ public:
 
 class ReadGuard {
 private:
-    RWLock &_rwLock;
+    RWLock* _rwLock;
 public:
-    ReadGuard(RWLock &rwLock) : _rwLock(rwLock) {
-        _rwLock.readLock();
+    ReadGuard(RWLock &rwLock) : _rwLock(_STD addressof(rwLock)) {
+        _rwLock->readLock();
     }
 
-    ~ReadGuard() { _rwLock.unlock(); }
+    ~ReadGuard() { _rwLock->unlock(); }
 };
 
 class WriteGuard {
 private:
-    RWLock &_rwLock;
+    RWLock* _rwLock;
 public:
-    WriteGuard(RWLock &rwLock) : _rwLock(rwLock) {
-        _rwLock.writeLock();
+    WriteGuard(RWLock &rwLock) : _rwLock(_STD addressof(rwLock)) {
+        _rwLock->writeLock();
     }
 
-    ~WriteGuard() { _rwLock.unlock(); }
+    ~WriteGuard() { _rwLock->unlock(); }
 };
-}//namespace nacos
 
+}//namespace nacos
 #endif
