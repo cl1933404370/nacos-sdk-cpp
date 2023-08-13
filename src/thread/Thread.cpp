@@ -54,7 +54,7 @@ void* nacos::Thread::threadFunc(void* param)
     {
         currentThread->_function = nullptr;
         nacos::log_error("Exception happens when executing:\n");
-        nacos::log_error("Thread Name:%s Thread Id:%d\n", currentThread->_threadName.c_str(), currentThread->_tid);
+        nacos::log_error("Thread Name:%s Thread Id:%d\n", currentThread->_threadName.c_str(), currentThread->_tid->handle);
         nacos::log_error("Raison:%s", e.what());
         abort();
     }
@@ -62,7 +62,7 @@ void* nacos::Thread::threadFunc(void* param)
     {
         currentThread->_function = nullptr;
         nacos::log_error("Unknown exception happens when executing:\n");
-        nacos::log_error("Thread Name:%s Thread Id:%d\n", currentThread->_threadName.c_str(), currentThread->_tid);
+        nacos::log_error("Thread Name:%s Thread Id:%d\n", currentThread->_threadName.c_str(), currentThread->_tid->handle);
         throw;
     }
 }
@@ -71,21 +71,11 @@ void nacos::Thread::start()
 {
     _start = true;
 
-#if defined(_MSC_VER) || defined(__WIN32__) || defined(WIN32)
-    std::thread thread(
-        [&]
-        {
-            this->threadFunc(this);
-        }
-        );
-    _thread = std::move(thread);
-
-#else
     pthread_create(&_thread, nullptr, threadFunc, (void*)this);
-#endif
+
 }
 
-void nacos::Thread::join()
+void nacos::Thread::join() const
 {
     log_debug("Calling Thread::join() on %s\n", _threadName.c_str());
     if (!_start)
@@ -94,27 +84,22 @@ void nacos::Thread::join()
         return;
     }
 
-#if defined(_MSC_VER) || defined(__WIN32__) || defined(WIN32)
-    if (_thread.joinable())
-    {
-        _thread.join();
-    }
-#else
     pthread_join(_thread, nullptr);
-#endif
+
 }
 
-void nacos::Thread::kill()
+void nacos::Thread::kill() const
 {
 #if defined(_MSC_VER) || defined(__WIN32__) || defined(WIN32)
     DWORD exciteCode;
-    bool aa = GetExitCodeThread(_thread.native_handle(), &exciteCode);
+    
+    GetExitCodeThread(_thread->handle, &exciteCode);
     QueueUserAPC([](ULONG_PTR a)
         {
-        }, _thread.native_handle(), THREAD_STOP_SIGNAL);
+        }, _thread->handle, THREAD_STOP_SIGNAL);
     QueueUserAPC([](ULONG_PTR a)
         {
-        }, _thread.native_handle(), exciteCode);
+        }, _thread->handle, exciteCode);
 #else
     pthread_kill(_thread, THREAD_STOP_SIGNAL);
 #endif
