@@ -23,19 +23,19 @@ private:
 public:
 
     bool full() {
-        LockGuard lockguard(&_mutex);
+        LockGuard lockguard(_mutex);
         return _full;
     };
     bool empty() {
-        LockGuard lockguard(&_mutex);
+        LockGuard lockguard(_mutex);
         return _empty;
     };
 
-	BlockingQueue() : _mutex(), _notEmpty(&_mutex), _notFull(&_mutex), _maxSize(64), _full(false), _empty(true) {};
-	BlockingQueue(size_t queueSize) : _mutex(), _notEmpty(&_mutex), _notFull(&_mutex), _maxSize(queueSize), _full(false), _empty(true) {};
+	BlockingQueue() : _mutex(), _notEmpty(_mutex), _notFull(_mutex), _maxSize(64), _full(false), _empty(true) {};
+	BlockingQueue(size_t queueSize) : _mutex(), _notEmpty(_mutex), _notFull(_mutex), _maxSize(queueSize), _full(false), _empty(true) {};
 	void enqueue(const T &data)
 	{
-		LockGuard lockguard(&_mutex);
+		LockGuard lockguard(_mutex);
 		_full = true;
 		_notFull.wait([&]{return _queue.size() != _maxSize;});
 		_full = false;
@@ -47,7 +47,7 @@ public:
 
 	T dequeue()
 	{
-		LockGuard lockguard(&_mutex);
+		LockGuard lockguard(_mutex);
 		_empty = true;
 		_notEmpty.wait([&]{return !_queue.empty();});
 		_empty = false;

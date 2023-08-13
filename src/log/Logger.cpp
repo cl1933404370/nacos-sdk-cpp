@@ -43,7 +43,7 @@ namespace nacos
 
     void Logger::setBaseDir(const NacosString &baseDir)
     {
-        LockGuard _setFile(&setFileLock);
+        LockGuard _setFile(setFileLock);
         _log_base_dir = baseDir;
         if (_output_file != nullptr)
         {

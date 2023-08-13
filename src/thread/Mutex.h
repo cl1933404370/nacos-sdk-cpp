@@ -53,7 +53,7 @@ namespace nacos
     class Condition
     {
     public:
-        explicit Condition(Mutex* mu) : _mu(mu) { assert(mu != nullptr); }
+        explicit Condition(Mutex& mu) : _mu(_STD addressof(mu)) { assert(_mu != nullptr); }
         ~Condition() = default;
 
         Condition(const Condition&) = delete;
@@ -104,7 +104,7 @@ namespace nacos
     class SCOPED_LOCKABLE LockGuard
     {
     public:
-        explicit LockGuard(Mutex* mu) EXCLUSIVE_LOCK_FUNCTION(mu) : _mu(mu)
+        explicit LockGuard(Mutex& mu) EXCLUSIVE_LOCK_FUNCTION(mu) : _mu(_STD addressof(mu))
         {
             this->_mu->lock();
         }

@@ -59,9 +59,7 @@ public:
                 if (it->first <= now_time) {
                     Task *task = it->second;
                     _container->_scheduledTasks.erase(it);
-
-                    //todo
-                    //_container->_lockForScheduleTasks.unlock();
+                    _container->_lockForScheduleTasks.unlock();
 
                     //the task can also attempt to retrieve the lock
                     if (_container->_stop_delayed_tp) {
@@ -99,7 +97,7 @@ public:
 //	p[i] = new int[n];  
 
 DelayedThreadPool::DelayedThreadPool(const NacosString &poolName, size_t poolSize)
-:ThreadPool(poolName, poolSize),_delayTaskNotEmpty(&_lockForScheduleTasks), _stop_delayed_tp(true) {
+:ThreadPool(poolName, poolSize),_delayTaskNotEmpty(_lockForScheduleTasks), _stop_delayed_tp(true) {
     log_debug("DelayedThreadPool::DelayedThreadPool() name = %s size = %d\n", poolName.c_str(), poolSize);
     if (poolSize <= 0) {
         throw NacosException(NacosException::INVALID_PARAM, "Poll size cannot be lesser than 0");
@@ -139,7 +137,7 @@ void DelayedThreadPool::schedule(Task *t, uint64_t futureTimeToRun) {
     log_debug("DelayedThreadPool::schedule() name=%s future = %ld\n", t->getTaskName().c_str(), futureTimeToRun);
     {
         const std::pair<uint64_t, Task*> scheduledTask = std::make_pair (futureTimeToRun, t);
-        LockGuard lockSchedTasks(&_lockForScheduleTasks);
+        LockGuard lockSchedTasks(_lockForScheduleTasks);
         _scheduledTasks.push_back(scheduledTask);
         std::ranges::sort(_scheduledTasks, ascOrdFunctor);
 	}
