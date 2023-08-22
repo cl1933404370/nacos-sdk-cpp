@@ -569,7 +569,7 @@ namespace nacos
         curl_easy_setopt(curlHandle, CURLOPT_HEADERDATA, static_cast<void*>(&respheaders));
 
         // TODO:Time out in a more precise way
-        curl_easy_setopt(curlHandle, CURLOPT_TIMEOUT, readTimeoutMs / 1000);
+        curl_easy_setopt(curlHandle, CURLOPT_TIMEOUT, readTimeoutMs /*/ 1000*/);
 
         /*Add the request headers to the request*/
         struct curl_slist *headerlist = nullptr;

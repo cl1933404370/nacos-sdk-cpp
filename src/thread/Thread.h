@@ -1,10 +1,7 @@
-#ifndef __THREAD_H_
-#define __THREAD_H_
+#ifndef THREAD_H_
+#define THREAD_H_
 
-#include <exception>
-#include <stdlib.h>
 #include <signal.h>
-#include <sys/types.h>
 #include "NacosString.h"
 #include "src/log/Logger.h"
 #include "src/thread/Tid.h"
@@ -19,9 +16,8 @@
 // #define SIGBREAK        21  // Ctrl-Break sequence
 // #define SIGABRT         22  // abnormal termination triggered by abort call
 ///#define THREAD_STOP_SIGNAL SIGUSR1
-const DWORD THREAD_STOP_SIGNAL = 0x10;
+constexpr DWORD THREAD_STOP_SIGNAL = 0x10;
 #include <processthreadsapi.h>
-
 #else
     #define THREAD_STOP_SIGNAL SIGUSR1
 #endif
@@ -38,14 +34,9 @@ typedef void *(*ThreadFn)(void *);
  * a function pointer(ThreadFn) should be passed to the constructor so it will be used as the function pointer parameter for pthread_create
 */
 class Thread {
-private:
     NacosString _threadName;
 
-#if defined(_MSC_VER) || defined(__WIN32__) || defined(WIN32)
-    std::thread _thread;
-#else
     pthread_t _thread;
-#endif
 
     ThreadFn _function;
     //TODO:thread id
@@ -53,14 +44,13 @@ private:
     std::atomic_bool _start;
     void *_threadData;
 
-    Thread(): _threadName(""), _function(NULL), _threadData(NULL), _start(false), _tid(0) 
-#if defined(_MSC_VER) || defined(__WIN32__) || defined(WIN32)
-#else   
-    ,_thread(0)
-#endif
-    {};
+    Thread()
+    : 
+    _thread(nullptr), _function(nullptr), _tid(nullptr), _start(false)
+    ,_threadData(nullptr)
+    {}
 
-    static void empty_signal_handler(int signum) {};
+    static void empty_signal_handler([[maybe_unused]] int signum) {}
 
 #if defined(_MSC_VER) || defined(__WIN32__) || defined(WIN32)
 #else
@@ -70,21 +60,21 @@ public:
     static void Init();
     static void DeInit();
      
-    void setThreadName(const NacosString &threadName) { _threadName = threadName; };
+    void setThreadName(const NacosString &threadName) { _threadName = threadName; }
 
-    NacosString getThreadName() { return _threadName; };
+    NacosString getThreadName() { return _threadName; }
 
     static void *threadFunc(void *param);
 
-    Thread(const NacosString &threadName, ThreadFn fn)
-            : _threadName(threadName), _function(fn), _threadData(NULL) {
+    Thread(NacosString threadName, const ThreadFn fn)
+            : _threadName(std::move(threadName)), _function(fn), _threadData(nullptr) {
         _start = false;
-    };
+    }
 
-    Thread(const NacosString &threadName, ThreadFn fn, void *threadData)
-            : _threadName(threadName), _function(fn), _threadData(threadData) {
+    Thread(NacosString threadName, const ThreadFn fn, void *threadData)
+            : _threadName(std::move(threadName)), _function(fn), _threadData(threadData) {
         _start = false;
-    };
+    }
     Thread(Thread&) = delete;
     Thread& operator=(Thread&) = delete;
     ~Thread() {
@@ -93,9 +83,9 @@ public:
 
     void start();
 
-    void join();
+    void join() const;
 
-    void kill();
+    void kill() const;
 
     //int pthread_kill(pthread_t thread, int sig);
 };
