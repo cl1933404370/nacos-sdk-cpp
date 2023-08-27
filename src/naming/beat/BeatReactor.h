@@ -1,13 +1,11 @@
-#ifndef __BEAT_REACTOR_H_
-#define __BEAT_REACTOR_H_
+#ifndef BEAT_REACTOR_H_
+#define BEAT_REACTOR_H_
 
 #include <map>
+
 #include "BeatTask.h"
-#include "NacosExceptions.h"
 #include "NacosString.h"
-#include "constant/ConfigConstant.h"
 #include "constant/UtilAndComs.h"
-#include "naming/Instance.h"
 #include "src/factory/ObjectConfigData.h"
 #include "src/naming/NamingProxy.h"
 #include "src/thread/DelayedThreadPool.h"
@@ -16,7 +14,6 @@
 
 namespace nacos{
 class BeatReactor {
-private:
     ObjectConfigData *_objectConfigData;
     int _threadCount;
     RWLock _beatInfoLock;

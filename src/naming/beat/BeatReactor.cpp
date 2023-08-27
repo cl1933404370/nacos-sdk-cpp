@@ -1,5 +1,8 @@
 #include <map>
 #include "BeatReactor.h"
+
+#include <constant/ConfigConstant.h>
+
 #include "BeatTask.h"
 #include "NacosString.h"
 #include "src/debug/DebugAssertion.h"
@@ -23,9 +26,9 @@ void BeatReactor::stop() {
 
 void BeatReactor::addBeatInfo(const NacosString &serviceName, BeatInfo &beatInfo) {
     WriteGuard _lockguard(_beatInfoLock);
-    NacosString beatInfoStr = beatInfo.toString();
+    const NacosString beatInfoStr = beatInfo.toString();
     log_info("[BEAT] adding beat: %s to beat map.\n", beatInfoStr.c_str());
-    NacosString beatKey = buildKey(serviceName, beatInfo.ip, beatInfo.port);
+    const NacosString beatKey = buildKey(serviceName, beatInfo.ip, beatInfo.port);
     //The specified beatInfo is already in the list
     if (_beatInfoList.contains(beatKey)) {
         log_warn("Adding already-exist key:%s\n", beatKey.c_str());
@@ -51,8 +54,8 @@ void BeatReactor::addBeatInfo(const NacosString &serviceName, BeatInfo &beatInfo
  *        the BeatInfo is returned via beatInfo parameter
 */
 bool BeatReactor::getBeatInfo(const NacosString &serviceName, const NacosString &ip, int port, BeatInfo &beatInfo) {
-    NacosString beatKey = buildKey(serviceName, ip, port);
-    ReadGuard _lockguard(_beatInfoLock);
+    const NacosString beatKey = buildKey(serviceName, ip, port);
+    ReadGuard lockguard(_beatInfoLock);
     if (!_beatInfoList.contains(beatKey)) {
         return false;
     }
@@ -69,9 +72,9 @@ bool BeatReactor::getBeatInfo(const NacosString &serviceName, const NacosString 
 *         true if modification is performed
 */
 bool BeatReactor::modifyBeatInfo(const NacosString &serviceName, BeatInfo &beatInfo) {
-    NacosString beatInfoStr = beatInfo.toString();
+    const NacosString beatInfoStr = beatInfo.toString();
     log_info("[BEAT] modify beat: %s to beat map.\n", beatInfoStr.c_str());
-    NacosString beatKey = buildKey(serviceName, beatInfo.ip, beatInfo.port);
+    const NacosString beatKey = buildKey(serviceName, beatInfo.ip, beatInfo.port);
     {
         WriteGuard _lockguard(_beatInfoLock);
         if (!_beatInfoList.contains(beatKey)) {
@@ -97,7 +100,7 @@ bool BeatReactor::modifyBeatInfo(const NacosString &serviceName, BeatInfo &beatI
 * @return false if nothing is removed (e.g.: the beatInfo doesn't exist in BeatReactor)
 *         true if a beatInfo is removed
 */
-bool BeatReactor::removeBeatInfo(const NacosString &serviceName, const NacosString &ip, int port) {
+bool BeatReactor::removeBeatInfo(const NacosString &serviceName, const NacosString &ip, const int port) {
     log_info("[BEAT] removing beat: %s:%s:%d from beat map.", serviceName.c_str(), ip.c_str(), port);
     const NacosString beatKey = buildKey(serviceName, ip, port);
     {
@@ -110,7 +113,6 @@ bool BeatReactor::removeBeatInfo(const NacosString &serviceName, const NacosStri
         BeatTask* beatTaskToRemove = _beatInfoList[beatKey];
         beatTaskToRemove->setScheduled(false);
         _beatInfoList.erase(beatKey);
-        delete beatTaskToRemove;
     }
     //TODO:MetricsMonitor.getDom2BeatSizeMonitor().set(dom2Beat.size());
 
@@ -120,9 +122,9 @@ bool BeatReactor::removeBeatInfo(const NacosString &serviceName, const NacosStri
 void BeatReactor::removeAllBeatInfo() {
     log_debug("BeatReactor::removeAllBeatInfo() start to remove\n");
     WriteGuard _lockguard(_beatInfoLock);
-    for (auto&& it : _beatInfoList)
+    for (auto& [fst, snd] : _beatInfoList)
     {
-        BeatTask *curTask = it.second;
+        const BeatTask *curTask = snd;
         delete curTask;
         curTask = nullptr;
     }

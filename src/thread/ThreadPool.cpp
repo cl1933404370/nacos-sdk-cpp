@@ -11,7 +11,7 @@ void *ThreadPool::runInThread(void *param) {
     ThreadPool *thisobj = static_cast<ThreadPool*>(param);
 
     log_debug("ThreadPool::runInThread()\n");
-    Task * t = nullptr;
+    Task * t;
     while ((t = thisobj->take())) {
         NacosString taskName = t->getTaskName();
         log_debug("Thread got task:%s\n", taskName.c_str());
@@ -81,11 +81,11 @@ void ThreadPool::start() {
 
     _stop = false;
     for (size_t i = 0; i < _poolSize; i++) {
-        Thread *currentThread = new Thread(_poolName + "-poolthread-" + NacosStringOps::valueOf(i), runInThread, this);
+        auto currentThread = new Thread(_poolName + "-poolthread-" + NacosStringOps::valueOf(i), runInThread, this);
         _threads.push_back(currentThread);
         currentThread->start();
     }
-};
+}
 
 void ThreadPool::stop() {
     if (_stop) {

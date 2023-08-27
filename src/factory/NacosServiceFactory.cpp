@@ -3,6 +3,9 @@
 //
 
 #include "src/factory/NacosServiceFactory.h"
+
+#include <constant/ConfigConstant.h>
+
 #include "src/init/Init.h"
 #include "src/naming/NacosNamingService.h"
 #include "src/naming/NacosNamingMaintainService.h"

@@ -12,8 +12,8 @@ SubscriptionPoller::SubscriptionPoller(ObjectConfigData *objectConfigData)
 {
     _objectConfigData = objectConfigData;
     _pollingThread = new Thread("NamingServicePoller", pollingThreadFunc, static_cast<void*>(this));
-    _pollingInterval = atoi(_objectConfigData->_appConfigManager->get(PropertyKeyConst::SUBSCRIPTION_POLL_INTERVAL).c_str());
-    _udpPort = atoi(_objectConfigData->_appConfigManager->get(PropertyKeyConst::UDP_RECEIVER_PORT).c_str());
+    _pollingInterval = strtol(_objectConfigData->_appConfigManager->get(PropertyKeyConst::SUBSCRIPTION_POLL_INTERVAL).c_str(), nullptr, 10);
+    _udpPort = strtol(_objectConfigData->_appConfigManager->get(PropertyKeyConst::UDP_RECEIVER_PORT).c_str(), nullptr, 10);
     _started = false;
 }
 
@@ -40,7 +40,7 @@ bool SubscriptionPoller::addPollItem(const NacosString &serviceName, const Nacos
         const NacosString name = NamingUtils::getGroupedName(serviceName, groupName);
         const NacosString key = ServiceInfo::getKey(name, clusters);
         WriteGuard _writeGuard(rwLock);
-        if (pollingList.count(key) > 0) {
+        if (pollingList.contains(key)) {
             return false;
         }
         pollingList[key] = pd;
@@ -54,7 +54,7 @@ bool SubscriptionPoller::removePollItem(const NacosString &serviceName, const Na
         const NacosString name = NamingUtils::getGroupedName(serviceName, groupName);
         const NacosString key = ServiceInfo::getKey(name, clusters);
         WriteGuard write_guard(rwLock);
-        if (pollingList.count(key) == 0) {
+        if (!pollingList.contains(key)) {
             return false;
         }
         pollingList.erase(key);
@@ -86,7 +86,7 @@ void SubscriptionPoller::stop()
 
 void *SubscriptionPoller::pollingThreadFunc(void *parm)
 {
-    SubscriptionPoller *thisObj = static_cast<SubscriptionPoller*>(parm);
+    auto*thisObj = static_cast<SubscriptionPoller*>(parm);
     while (thisObj->_started) {
         log_debug("SubscriptionPoller::pollingThreadFunc start polling, interval = %d\n", thisObj->_pollingInterval);
         map<NacosString, PollingData> copiedList;
@@ -101,16 +101,16 @@ void *SubscriptionPoller::pollingThreadFunc(void *parm)
             continue;
         }
 
-        for (map<NacosString, PollingData>::iterator it = copiedList.begin();
-             it != copiedList.end(); it++) {
-            NacosString name = NamingUtils::getGroupedName(it->second.serviceName, it->second.groupName);
-            NacosString key = ServiceInfo::getKey(name, it->second.clusters);
+        for (auto& [fst, snd] : copiedList)
+        {
+            NacosString name = NamingUtils::getGroupedName(snd.serviceName, snd.groupName);
+            NacosString key = ServiceInfo::getKey(name, snd.clusters);
             log_debug("Polling data: name=%s, key=%s\n", name.c_str(), key.c_str());
 
             NacosString result;
             try {
                 result = thisObj->_objectConfigData->_serverProxy->queryList(
-                        it->second.serviceName, it->second.groupName, it->second.clusters, thisObj->_udpPort,false);
+                    snd.serviceName, snd.groupName, snd.clusters, thisObj->_udpPort,false);
             }
             catch (NacosException &e) {
                 //no server available or all servers tried but failed

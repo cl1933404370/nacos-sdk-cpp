@@ -43,7 +43,7 @@ public:
         printf(">>>>>>>>>>>>>>>>>>Task %s triggered, time =%llu (%llu), interval = %llu\n", getTaskName().c_str(), now_ms / 1000, now_ms, intervalCalc);
 
 #ifdef _WIN32
-        std::this_thread::sleep_for(std::chrono::milliseconds(1));
+        std::this_thread::sleep_for(std::chrono::seconds(1));
 #else
         sleep(1);
 #endif
