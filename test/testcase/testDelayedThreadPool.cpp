@@ -86,7 +86,6 @@ bool testDelayedThread()
     cout << "call stop()" << endl;
     dtp.stop();
     cout << "end of test" << endl;
-    delete []delayedTasks;
     return true;
 }
 

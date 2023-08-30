@@ -93,8 +93,8 @@ void *SubscriptionPoller::pollingThreadFunc(void *parm)
         {
             ReadGuard _readGuard(thisObj->rwLock);
             copiedList = thisObj->pollingList;
-            log_debug("Copied polling list, size = %d\n", copiedList.size());
         }
+        log_debug("Copied polling list, size = %d\n", copiedList.size());
         if (copiedList.empty()) {
             log_debug("PollingList is empty, hibernating...\n", copiedList.size());
             std::this_thread::sleep_for(std::chrono::milliseconds(thisObj->_pollingInterval));

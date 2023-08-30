@@ -18,19 +18,18 @@ void BeatTask::setBeatInfo(const BeatInfo &beatInfo) {
     _beatInfo = beatInfo;
 }
 
-//todo 偶现delete错误 怀疑task被多次执行的问题
 void BeatTask::run() {
     if (!_scheduled) {
-        delete this;
+        //delete this;
         return;
     }
-    const uint64_t now_ms = TimeUtils::getCurrentTimeInMs();
-    _objectConfigData->_beatReactor->_delayedThreadPool->schedule(this, now_ms + _interval);
+    const int64_t now_ms = TimeUtils::getCurrentTimeInMs();
+    _objectConfigData->_beatReactor->_delayedThreadPool->schedule(this, now_ms + static_cast<int64_t>(_interval));
     _interval = _objectConfigData->_serverProxy->sendBeat(_beatInfo);
 }
 
 BeatTask::~BeatTask() {
-    NacosString taskName = getTaskName();
+    const NacosString taskName = getTaskName();
     log_debug("[BeatTask]Removing taskObject:%s\n", taskName.c_str());
 }
 }//namespace nacos

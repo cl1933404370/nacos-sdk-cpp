@@ -5,7 +5,7 @@
 
 namespace nacos
 {
-    uint64_t TimeUtils::getCurrentTimeInMs()
+    int64_t TimeUtils::getCurrentTimeInMs()
     {
         /* timeval tv{};
          gettimeofday(&tv, nullptr);

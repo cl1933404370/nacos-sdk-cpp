@@ -14,7 +14,7 @@ class DelayedWorker;
 class DelayedThreadPool : public ThreadPool {
     Mutex _lockForScheduleTasks;//for _scheduledTasks
     Condition _delayTaskNotEmpty;
-    std::vector< std::pair<uint64_t, Task*> > _scheduledTasks;
+    std::vector< std::pair<int64_t, Task*> > _scheduledTasks;
     DelayedWorker** _delayTasks;
     std::atomic_bool _stop_delayed_tp;
 public:
@@ -27,7 +27,7 @@ public:
     * @param t the task to run
     * @param futureTimeToRun the time (in ms) for the task to run
     */
-    void schedule(Task *t, uint64_t futureTimeToRun);
+    void schedule(Task *t, int64_t futureTimeToRun);
 
     friend class DelayedWorker;
 
