@@ -18,9 +18,9 @@ using namespace nacos;
 class DelayedTask : public Task
 {
 public:
-    DelayedThreadPool *executor;
-    uint64_t interval; // in MS
-    uint64_t last_exec_time;
+    DelayedThreadPool *executor;  
+    int64_t interval; // in MS
+    int64_t last_exec_time;
     DelayedTask(): executor(nullptr), interval(0)
     {
         last_exec_time = 0;
@@ -28,8 +28,8 @@ public:
 
     void run() override
     {
-        const uint64_t now_ms = TimeUtils::getCurrentTimeInMs();
-        uint64_t intervalCalc = 0;
+        const int64_t now_ms = TimeUtils::getCurrentTimeInMs();
+        int64_t intervalCalc = 0;
         if (last_exec_time != 0)
         {
             intervalCalc = now_ms - last_exec_time;
@@ -51,7 +51,6 @@ public:
 
     ~DelayedTask() override
     {
-        //todo : why does this cause a crash?
         delete executor;
         printf(">>>>>>>>>>>>>>>>>>Task %s destroyed\n", getTaskName().c_str());
     }
@@ -67,11 +66,11 @@ bool testDelayedThread()
 
     DelayedTask delayedTasks[10];
 
-    const uint64_t nowMs = TimeUtils::getCurrentTimeInMs();
+    const int64_t nowMs = TimeUtils::getCurrentTimeInMs();
     for (size_t i = 0; i < sizeof(delayedTasks) / sizeof(DelayedTask); i++)
     {
         delayedTasks[i].executor = &dtp;
-        delayedTasks[i].interval = (i + 1) * 1000;
+        delayedTasks[i].interval = (static_cast<int64_t>(i) + 1) * 1000;
         delayedTasks[i].setTaskName("DelayedTask-" + NacosStringOps::valueOf(i));
 
         dtp.schedule(&delayedTasks[i], nowMs);
@@ -99,7 +98,7 @@ bool testDelayedThread2()
 
     DelayedTask delayedTasks[10];
 
-    const uint64_t nowMs = TimeUtils::getCurrentTimeInMs();
+    const int64_t nowMs = TimeUtils::getCurrentTimeInMs();
     for (size_t i = 0; i < sizeof(delayedTasks) / sizeof(DelayedTask); i++)
     {
         delayedTasks[i].executor = &dtp;
