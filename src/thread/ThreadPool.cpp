@@ -58,7 +58,7 @@ Task* ThreadPool::take()
 void ThreadPool::put(Task* t)
 {
     LockGuard _lockGuard(_lock);
-    log_debug("ThreadPool:::::taskList:%d poolSize:%d stop:%d\n", _taskList.size(), _poolSize, _stop);
+    log_debug("ThreadPool:::::taskList:%d poolSize:%d stop:%d\n", _taskList.size(), _poolSize, _stop.load());
     _NotFull.wait([&]{return _taskList.size() < _poolSize || _stop;});
     if (!_stop)
     {

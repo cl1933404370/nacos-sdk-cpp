@@ -38,7 +38,7 @@ namespace nacos {
             _poolName("CannotBeCreated"),_NotEmpty(_lock), _NotFull(_lock), _stop(true), _poolSize(0) {}
     protected:
         std::list<Thread*> _threads;
-        volatile bool _stop;
+        std::atomic_bool _stop;
         size_t _poolSize;
     public:
         ThreadPool(NacosString poolName, size_t poolSize) :

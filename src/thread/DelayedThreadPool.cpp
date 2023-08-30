@@ -24,14 +24,15 @@ public:
             _container->_lockForScheduleTasks.lock();
 
             //no data, wait until data is available
-            log_debug("[DelayedWorker] start to wait for task stop=%d\n", _container->_stop);
+            log_debug("[DelayedWorker] start to wait for task stop=%d\n", _container->_stop.load());
             if (_container->_scheduledTasks.empty()) {
                 log_debug("[DelayedWorker] empty, wait for task\n");
                 if (_container->_stop_delayed_tp) {
                     _container->_lockForScheduleTasks.unlock();
                     return;
                 }
-                _container->_delayTaskNotEmpty.wait([&]{return !_container->_scheduledTasks.empty() || _container->_stop_delayed_tp;});
+                _container->_delayTaskNotEmpty.wait();
+                //_container->_delayTaskNotEmpty.wait([&]{return !_container->_scheduledTasks.empty() || _container->_stop_delayed_tp;});
                 log_debug("[DelayedWorker] wake up due to incoming event\n");
             }
 
@@ -75,7 +76,8 @@ public:
                         _container->_lockForScheduleTasks.unlock();
                         return; 
                     }
-                    _container->_delayTaskNotEmpty.wait(it->first - now_time);
+                    //_container->_delayTaskNotEmpty.wait(it->first - now_time);
+                    _container->_delayTaskNotEmpty.wait();
                 }
             }
 
@@ -114,7 +116,7 @@ DelayedThreadPool::~DelayedThreadPool() {
     log_debug("DelayedThreadPool::~DelayedThreadPool\n");
     if (_delayTasks) {
         for (size_t i = 0; i < _poolSize; i++) {
-            delete _delayTasks[i];
+            delete []_delayTasks[i];
             _delayTasks[i] = nullptr;
         }
         delete[] _delayTasks;
@@ -135,12 +137,10 @@ void DelayedThreadPool::schedule(Task *t, uint64_t futureTimeToRun) {
         return;
     }
     log_debug("DelayedThreadPool::schedule() name=%s future = %ld\n", t->getTaskName().c_str(), futureTimeToRun);
-    {
-        const std::pair<uint64_t, Task*> scheduledTask = std::make_pair (futureTimeToRun, t);
-        LockGuard lockSchedTasks(_lockForScheduleTasks);
-        _scheduledTasks.push_back(scheduledTask);
-        std::ranges::sort(_scheduledTasks, ascOrdFunctor);
-	}
+    const std::pair<uint64_t, Task*> scheduledTask = std::make_pair(futureTimeToRun, t);
+    LockGuard lockSchedTasks(_lockForScheduleTasks);
+    _scheduledTasks.push_back(scheduledTask);
+    std::ranges::sort(_scheduledTasks, ascOrdFunctor);
     _delayTaskNotEmpty.notify();
 }
 
