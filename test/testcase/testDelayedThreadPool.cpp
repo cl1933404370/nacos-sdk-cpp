@@ -51,7 +51,7 @@ public:
 
     ~DelayedTask() override
     {
-        delete executor;
+        //delete executor;
         printf(">>>>>>>>>>>>>>>>>>Task %s destroyed\n", getTaskName().c_str());
     }
 };
