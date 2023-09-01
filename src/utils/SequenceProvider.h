@@ -27,10 +27,10 @@ private:
     volatile T _hwm;//high water mark
 
     static void ensureWrite(int fd, T data) {
-        size_t bytes_written = 0;
+    	unsigned int bytes_written = 0;
         while (bytes_written < sizeof(T)) {
             #if defined(_MSC_VER) || defined(__WIN32__) || defined(WIN32)
-            bytes_written += _write(fd, reinterpret_cast<char*>(&data) + bytes_written, sizeof(T) - static_cast<unsigned long long>(bytes_written));
+            bytes_written += _write(fd, reinterpret_cast<char*>(&data) + bytes_written, sizeof(T) - bytes_written);
             #else
             bytes_written += write(fd, (char*)&data + bytes_written, sizeof(T) - bytes_written);
             #endif
@@ -44,8 +44,10 @@ private:
         if (IOUtils::checkNotExistOrNotFile(_fileName)) {
             newFile = true;
         }
-        int fd = _open(_fileName.c_str(), _O_RDWR | _O_CREAT, _S_IREAD | _S_IWRITE);
-        if (fd <= 0) {
+        int fd = -1;
+        errno_t err = _sopen_s( &fd, _fileName.c_str(), _O_RDONLY, _SH_DENYNO,
+                          _S_IREAD | _S_IWRITE );
+        if (err != 0 ) {
             throw NacosException(NacosException::UNABLE_TO_OPEN_FILE, _fileName);
         }
 
@@ -54,11 +56,17 @@ private:
             _lseek(fd, 0, SEEK_SET);//read from the beginning
         }
 
-        size_t bytes_read = 0;
+        unsigned int bytes_read = 0;
         //todo dead lock
+        int bytes_reads = 0;
         while (bytes_read < sizeof(T))
         {
-            bytes_read += _read(fd, reinterpret_cast<char*>(&current) + bytes_read, sizeof(T) - static_cast<unsigned long long>(bytes_read));
+            if (( bytes_reads = _read( fd, &current + bytes_read, sizeof(T) - bytes_read )) <= 0 )
+            {
+	            perror( std::to_string(sizeof(T)).c_str() );
+                throw "Problem reading file";
+            }
+			bytes_read += bytes_reads;
         }
 
         _lseek(fd, 0, SEEK_SET);//write from the beginning
