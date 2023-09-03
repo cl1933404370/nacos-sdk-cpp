@@ -15,7 +15,7 @@
 #include "src/security/SecurityManager.h"
 #include "src/naming/subscribe/UdpNamingServiceListener.h"
 #include "Compatibility.h"
-#ifdef _WIN32 || _WIN64 || _MSC_VER
+#ifdef _WIN32 //|| _WIN64 || _MSC_VER
 #undef  GetObject
 #endif
 /**

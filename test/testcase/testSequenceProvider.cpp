@@ -19,7 +19,7 @@ void* SeqThreadFunc(void* param)
     const int* threadNo = static_cast<int*>(param);
     for (int i = 0; i < GENERATION_PER_THREAD; i++)
     {
-        const uint64_t res = sequenceProvider->next();
+        const uint64_t res = sequenceProvider->next(); 
         sequences[(*threadNo) * GENERATION_PER_THREAD + i] = res;
     }
 
@@ -39,7 +39,7 @@ bool testSequenceProvider()
     {
         const NacosString threadName = "SEQThread-" + NacosStringOps::valueOf(i);
         tid[i] = i;
-        threads[i] = new Thread(threadName, SeqThreadFunc, &tid[i]);
+        threads[i] = new Thread(threadName, SeqThreadFunc, static_cast<void*>(&tid[i]));
         threads[i]->start();
     }
 
@@ -47,7 +47,6 @@ bool testSequenceProvider()
     {
         thread->join();
         delete thread;
-        thread = nullptr;
     }
     cout << "Generated." << endl;
     for (int i = 0; i < NR_THREADS; i++)
@@ -57,7 +56,8 @@ bool testSequenceProvider()
             cout << "Thread " << i << ": sequence =\t" << sequences[i * GENERATION_PER_THREAD + j] << endl;
         }
     }
+    delete sequenceProvider;
     cout << "test end..." << endl;
-
+    
     return true;
 }

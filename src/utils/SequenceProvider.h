@@ -60,16 +60,16 @@ private:
 
         unsigned int bytes_read = 0;
         //todo dead lock
-        int bytes_reads = 0;
+        int bytesReads;
         while (bytes_read < sizeof(T))
         {
-            if (( bytes_reads = _read( fd, &current + bytes_read, sizeof(T) - bytes_read )) <= 0 )
+            if (( bytesReads = _read( fd, reinterpret_cast<char*>(&current) + bytes_read, sizeof(T) - bytes_read )) <= 0 )
             {
 
 	            perror( std::to_string(sizeof(T)).c_str() );
                 throw std::exception("Problem reading file");
             }
-			bytes_read += bytes_reads;
+			bytes_read += bytesReads;
         }
 
         if(const auto pos = _lseek(fd, 0L, SEEK_SET); pos == -1L )
