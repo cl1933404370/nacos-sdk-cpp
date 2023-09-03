@@ -100,6 +100,7 @@ void nacos::Thread::kill() const
     QueueUserAPC([](ULONG_PTR a)
         {
         }, _thread->handle, exciteCode);
+    //ExitThread(exciteCode);
 #else
     pthread_kill(_thread, THREAD_STOP_SIGNAL);
 #endif

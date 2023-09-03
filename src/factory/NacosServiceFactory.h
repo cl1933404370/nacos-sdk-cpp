@@ -23,9 +23,9 @@ private:
 
     Mutex logSysInitLock;
     static std::atomic_bool logSystemInitialized;
-    void initializeRuntimeLogSettings(AppConfigManager *_appConfigManager);
+    void initializeRuntimeLogSettings(const AppConfigManager *appConfigManager);
 
-    void checkConfig() NACOS_THROW(InvalidFactoryConfigException);
+    void checkConfig() const NACOS_THROW(InvalidFactoryConfigException);
     AppConfigManager *buildConfigManager(ObjectConfigData *objectConfigData);
 
 public:

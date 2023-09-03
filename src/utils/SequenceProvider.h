@@ -7,6 +7,8 @@
 #include <unistd.h>
 #endif
 #include <errno.h>
+#include <execution>
+
 #include "NacosString.h"
 #include "NacosExceptions.h"
 #include "thread/AtomicInt.h"
@@ -30,7 +32,7 @@ private:
     	unsigned int bytes_written = 0;
         while (bytes_written < sizeof(T)) {
             #if defined(_MSC_VER) || defined(__WIN32__) || defined(WIN32)
-            bytes_written += _write(fd, reinterpret_cast<char*>(&data) + bytes_written, sizeof(T) - bytes_written);
+            bytes_written += _write(fd, &data + bytes_written, sizeof(T) - bytes_written);
             #else
             bytes_written += write(fd, (char*)&data + bytes_written, sizeof(T) - bytes_written);
             #endif
@@ -45,15 +47,15 @@ private:
             newFile = true;
         }
         int fd = -1;
-        errno_t err = _sopen_s( &fd, _fileName.c_str(), _O_RDONLY, _SH_DENYNO,
-                          _S_IREAD | _S_IWRITE );
-        if (err != 0 ) {
+        if (const errno_t err = _sopen_s( &fd, _fileName.c_str(), _O_RDWR|_O_CREAT, _SH_DENYNO,
+                                          _S_IREAD | _S_IWRITE ); err != 0 ) {
             throw NacosException(NacosException::UNABLE_TO_OPEN_FILE, _fileName);
         }
 
         if (newFile) {
             ensureWrite(fd, _initSequence);
-            _lseek(fd, 0, SEEK_SET);//read from the beginning
+            if(const auto pos = _lseek(fd, 0L, SEEK_SET); pos == -1L )
+                perror( "_lseek to end failed" );
         }
 
         unsigned int bytes_read = 0;
@@ -63,13 +65,15 @@ private:
         {
             if (( bytes_reads = _read( fd, &current + bytes_read, sizeof(T) - bytes_read )) <= 0 )
             {
+
 	            perror( std::to_string(sizeof(T)).c_str() );
-                throw "Problem reading file";
+                throw std::exception("Problem reading file");
             }
 			bytes_read += bytes_reads;
         }
 
-        _lseek(fd, 0, SEEK_SET);//write from the beginning
+        if(const auto pos = _lseek(fd, 0L, SEEK_SET); pos == -1L )
+            perror( "_lseek to end failed" );
         ensureWrite(fd, current + _nrToPreserve);
         _close(fd);
         _hwm = current + _nrToPreserve;

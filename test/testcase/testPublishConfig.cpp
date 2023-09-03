@@ -32,12 +32,12 @@ bool testPublishConfig() {
         char val_s[200];
         sprintf(key_s, "Key%d", i);
         sprintf(val_s, "v__%d", i);
-        NacosString ss = "";
 
         try {
+            NacosString ss;
             bSucc = n->publishConfig(key_s, NULLSTR, val_s);
             int retry = 0;
-            while (!(ss == val_s) && retry++ < 10) {
+            while (ss != val_s && retry++ < 10) {
                 
                 #if defined(_MSC_VER) || defined(__WIN32__) || defined(WIN32)
                 Sleep(1);
@@ -47,12 +47,12 @@ bool testPublishConfig() {
                 
                 try {
                     ss = n->getConfig(key_s, NULLSTR, 1000);
-                } catch (NacosException & ignore) {
+                } catch ([[maybe_unused]] NacosException & ignore) {
                     //getConfig may throw 404, but that doesn't matter
                 }
             }
 
-            if (!(ss == val_s)) {
+            if (ss != val_s) {
                 throw NacosException(0, "getConfig() failed.");
             }
         }

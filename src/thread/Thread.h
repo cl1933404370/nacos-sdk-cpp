@@ -44,11 +44,7 @@ class Thread {
     std::atomic_bool _start;
     void *_threadData;
 
-    Thread()
-    : 
-    _thread(nullptr), _function(nullptr), _tid(nullptr), _start(false)
-    ,_threadData(nullptr)
-    {}
+    
 
     static void empty_signal_handler([[maybe_unused]] int signum) {}
 
@@ -57,6 +53,7 @@ class Thread {
     static struct sigaction old_action;
 #endif
 public:
+    Thread() = delete;
     static void Init();
     static void DeInit();
      
@@ -77,6 +74,11 @@ public:
     }
     Thread(Thread&) = delete;
     Thread& operator=(Thread&) = delete;
+
+    //delete move constructor and move assignment operator
+    Thread(Thread&&) = delete;
+    Thread& operator=(Thread&&) = delete;
+
     ~Thread() {
         _start = false;
     }

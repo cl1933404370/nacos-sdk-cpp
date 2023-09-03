@@ -6,52 +6,57 @@
 using namespace std;
 using namespace nacos;
 
-#define NR_THREADS 200
-#define GENERATION_PER_THREAD 1000
+constexpr auto NR_THREADS = 200;
+constexpr auto GENERATION_PER_THREAD = 1000;
 
-int64_t sequences[GENERATION_PER_THREAD * NR_THREADS];
+uint64_t sequences[GENERATION_PER_THREAD * NR_THREADS];
 int tid[NR_THREADS];
 
-SequenceProvider<uint64_t> *sequenceProvider;
+SequenceProvider<uint64_t>* sequenceProvider;
 
-void *SeqThreadFunc(void *param) {
-    int *thread_no = static_cast<int*>(param);
-    for (int i = 0; i < GENERATION_PER_THREAD; i++) {
-        int64_t res = sequenceProvider->next();
-        sequences[(*thread_no) * GENERATION_PER_THREAD + i] = res;
+void* SeqThreadFunc(void* param)
+{
+    const int* threadNo = static_cast<int*>(param);
+    for (int i = 0; i < GENERATION_PER_THREAD; i++)
+    {
+        const uint64_t res = sequenceProvider->next();
+        sequences[(*threadNo) * GENERATION_PER_THREAD + i] = res;
     }
 
     return nullptr;
 }
 
-bool testSequenceProvider() {
+bool testSequenceProvider()
+{
     cout << "in function testSequenceProvider" << endl;
 
     cout << "Generating SEQ..." << endl;
 
-    sequenceProvider = new SequenceProvider<uint64_t> (DirUtils::getCwd() + "/test_seq.dat", 20000, 100);
+    sequenceProvider = new SequenceProvider<uint64_t>(DirUtils::getCwd() + "/test_seq.dat", 20000, 100);
 
-    Thread *threads[NR_THREADS] = {nullptr};
-    for (int i = 0; i < NR_THREADS; i++) {
-        NacosString threadName = "SEQThread-" + NacosStringOps::valueOf(i);
+    Thread* threads[NR_THREADS] = {nullptr};
+    for (int i = 0; i < NR_THREADS; i++)
+    {
+        const NacosString threadName = "SEQThread-" + NacosStringOps::valueOf(i);
         tid[i] = i;
-        threads[i] = new Thread(threadName, SeqThreadFunc, static_cast<void*>(&tid[i]));
+        threads[i] = new Thread(threadName, SeqThreadFunc, &tid[i]);
         threads[i]->start();
     }
 
-    for (int i = 0; i < NR_THREADS; i++) {
-        threads[i]->join();
-        delete threads[i];
+    for (auto& thread : threads)
+    {
+        thread->join();
+        delete thread;
+        thread = nullptr;
     }
-
     cout << "Generated." << endl;
-
-    for (int i = 0; i < NR_THREADS; i++) {
-        for (int j = 0; j < GENERATION_PER_THREAD; j++) {
+    for (int i = 0; i < NR_THREADS; i++)
+    {
+        for (int j = 0; j < GENERATION_PER_THREAD; j++)
+        {
             cout << "Thread " << i << ": sequence =\t" << sequences[i * GENERATION_PER_THREAD + j] << endl;
         }
     }
-
     cout << "test end..." << endl;
 
     return true;

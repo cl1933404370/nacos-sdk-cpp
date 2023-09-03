@@ -9,7 +9,7 @@ using namespace nacos;
 bool testAppConfigManager() {
     cout << "in function testAppConfigManager" << endl;
 
-    NacosString configFile = DirUtils::getCwd() + ConfigConstant::FILE_SEPARATOR + ConfigConstant::DEFAULT_CONFIG_FILE;
+     NacosString configFile = DirUtils::getCwd() + ConfigConstant::FILE_SEPARATOR + ConfigConstant::DEFAULT_CONFIG_FILE;
     AppConfigManager appConfigManager(configFile);
     appConfigManager.loadConfig(configFile);
     Properties configs = appConfigManager.getAllConfig();

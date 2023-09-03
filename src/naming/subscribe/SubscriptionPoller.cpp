@@ -5,6 +5,7 @@
 #include "HostReactor.h"
 #include <thread> // Add this line to include the <thread> header
 #include <chrono>
+#include <ranges>
 using namespace std;
 
 namespace nacos{
@@ -101,16 +102,16 @@ void *SubscriptionPoller::pollingThreadFunc(void *parm)
             continue;
         }
 
-        for (auto& [fst, snd] : copiedList)
+        for (auto& [serviceName, groupName, clusters, nextPollTime] : copiedList | views::values)
         {
-            NacosString name = NamingUtils::getGroupedName(snd.serviceName, snd.groupName);
-            NacosString key = ServiceInfo::getKey(name, snd.clusters);
+            NacosString name = NamingUtils::getGroupedName(serviceName, groupName);
+            NacosString key = ServiceInfo::getKey(name, clusters);
             log_debug("Polling data: name=%s, key=%s\n", name.c_str(), key.c_str());
 
             NacosString result;
             try {
                 result = thisObj->_objectConfigData->_serverProxy->queryList(
-                    snd.serviceName, snd.groupName, snd.clusters, thisObj->_udpPort,false);
+                    serviceName, groupName, clusters, thisObj->_udpPort,false);
             }
             catch (NacosException &e) {
                 //no server available or all servers tried but failed

@@ -1,5 +1,5 @@
-#ifndef __ATOMIC_INT_H_
-#define __ATOMIC_INT_H_
+#ifndef ATOMIC_INT_H_
+#define ATOMIC_INT_H_
 
 namespace nacos
 {
@@ -7,19 +7,18 @@ namespace nacos
     template <typename T>
     class AtomicInt
     {
-    private:
-        volatile std::atomic<T> _curval;
+        std::atomic<T> _curval;
 
     public:
-        AtomicInt(T curval = 0) : _curval(curval){};
+        AtomicInt(T curval = 0) : _curval(curval){}
 
-        void set(T val) { _curval = val; };
+        void set(T val) { _curval = val; }
 
         T inc(T incval = 1)
         {
             T oldValue = getAndInc(incval);
             return oldValue + incval;
-        };
+        }
 
         T getAndInc(T incval = 1)
         {
@@ -27,12 +26,12 @@ namespace nacos
             return oldValue;
         }
 
-        T dec(int decval = 1)
+        T dec(const int decval = 1)
         {
             return inc(-decval);
-        };
+        }
 
-        T get() const { return _curval; };
+        T get() const { return _curval; }
     };
 } // namespace nacos
 

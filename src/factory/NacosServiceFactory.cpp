@@ -6,25 +6,24 @@
 
 #include <constant/ConfigConstant.h>
 
-#include "src/init/Init.h"
-#include "src/naming/NacosNamingService.h"
-#include "src/naming/NacosNamingMaintainService.h"
 #include "ObjectConfigData.h"
-#include "src/config/NacosConfigService.h"
 #include "src/config/AppConfigManager.h"
-#include "src/http/HttpDelegate.h"
-#include "src/http/delegate/NoOpHttpDelegate.h"
-#include "src/http/delegate/NacosAuthHttpDelegate.h"
+#include "src/config/ConfigProxy.h"
+#include "src/config/NacosConfigService.h"
 #include "src/http/HTTPCli.h"
+#include "src/http/HttpDelegate.h"
+#include "src/http/delegate/NacosAuthHttpDelegate.h"
+#include "src/http/delegate/NoOpHttpDelegate.h"
+#include "src/init/Init.h"
+#include "src/naming/NacosNamingMaintainService.h"
+#include "src/naming/NacosNamingService.h"
 #include "src/naming/subscribe/EventDispatcher.h"
+#include "src/naming/subscribe/HostReactor.h"
 #include "src/naming/subscribe/SubscriptionPoller.h"
 #include "src/naming/subscribe/UdpNamingServiceListener.h"
-#include "src/naming/subscribe/HostReactor.h"
 #include "src/security/SecurityManager.h"
-#include "src/utils/ConfigParserUtils.h"
-#include "src/utils/SequenceProvider.h"
-#include "src/config/ConfigProxy.h"
 #include "src/utils/DirUtils.h"
+#include "src/utils/SequenceProvider.h"
 
 //Unlike Java, in cpp, there's no container, no spring to do the ORM job, so I have to handle it myself
 namespace nacos{
@@ -60,20 +59,20 @@ AppConfigManager *NacosServiceFactory::buildConfigManager(ObjectConfigData *obje
     return appConfigManager;
 }
 
-void NacosServiceFactory::initializeRuntimeLogSettings(AppConfigManager *_appConfigManager) {
+void NacosServiceFactory::initializeRuntimeLogSettings(const AppConfigManager *appConfigManager) {
     if (logSystemInitialized) {
         return;
     }
 
     {
-        LockGuard __lockLogSystem(logSysInitLock);
+        LockGuard lockLogSystem(logSysInitLock);
 
         if (logSystemInitialized) {
             return;
         }
 
         logSystemInitialized = true;
-        Properties copiedProps = _appConfigManager->getAllConfig();
+        Properties copiedProps = appConfigManager->getAllConfig();
         Logger::applyLogSettings(copiedProps);
     }
 }
@@ -172,7 +171,7 @@ NamingMaintainService *NacosServiceFactory::CreateNamingMaintainService() NACOS_
     objectConfigData->name = "config";
     objectConfigData->encoding = "UTF-8";
 
-    AppConfigManager *appConfigManager = buildConfigManager(objectConfigData);
+    const AppConfigManager *appConfigManager = buildConfigManager(objectConfigData);
     initializeRuntimeLogSettings(appConfigManager);
 
     //Create http client
@@ -195,11 +194,9 @@ NamingMaintainService *NacosServiceFactory::CreateNamingMaintainService() NACOS_
     return instance;
 }
 
-NacosServiceFactory::~NacosServiceFactory() {
+NacosServiceFactory::~NacosServiceFactory() = default;
 
-}
-
-void NacosServiceFactory::checkConfig() NACOS_THROW(InvalidFactoryConfigException) {
+void NacosServiceFactory::checkConfig() const NACOS_THROW(InvalidFactoryConfigException) {
     if (!configIsSet && !propsIsSet) {
         throw InvalidFactoryConfigException();
     }
@@ -219,19 +216,19 @@ NacosServiceFactory::NacosServiceFactory() {
     configIsSet = false;
     propsIsSet = false;
 
-    setConfig(DirUtils::getCwd() + "/" + ConfigConstant::DEFAULT_CONFIG_FILE);
+    NacosServiceFactory::setConfig(DirUtils::getCwd() + "/" + ConfigConstant::DEFAULT_CONFIG_FILE);
 }
 
 NacosServiceFactory::NacosServiceFactory(const NacosString &_configFile) {
     configIsSet = false;
     propsIsSet = false;
-    setConfig(_configFile);
+    NacosServiceFactory::setConfig(_configFile);
 }
 
 NacosServiceFactory::NacosServiceFactory(Properties &_props) {
     configIsSet = false;
     propsIsSet = false;
-    setProps(_props);
+    NacosServiceFactory::setProps(_props);
 }
 
 }//namespace nacos

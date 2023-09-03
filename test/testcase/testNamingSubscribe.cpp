@@ -1,9 +1,6 @@
 #include <iostream>
 #include <stdlib.h>
-#include <stdio.h>
 #if defined(_MSC_VER) || defined(__WIN32__) || defined(WIN32)
-#include <io.h>
-#include <process.h>
 #else
 #include <unistd.h>
 #endif
@@ -21,11 +18,12 @@ class MyServiceListener : public EventListener {
 private:
     int num;
 public:
-    MyServiceListener(int num) {
+    explicit MyServiceListener(const int num) {
         this->num = num;
     }
 
-    void receiveNamingInfo(const ServiceInfo &serviceInfo){
+    void receiveNamingInfo(const ServiceInfo &serviceInfo) override
+    {
         cout << "===================================" << endl;
         cout << "Watcher: " << num << endl;
         cout << "Watched service UPDATED: " << serviceInfo.toInstanceString() << endl;

@@ -110,9 +110,9 @@ void AppConfigManager::initDefaults() {
 }
 
 void AppConfigManager::applyConfig(Properties &rhs) {
-    for (map<NacosString, NacosString>::iterator it = rhs.begin();
-         it != rhs.end(); it++) {
-        set(it->first, it->second);
+    for (auto& [fst, snd] : rhs)
+    {
+        set(fst, snd);
     }
 }
 

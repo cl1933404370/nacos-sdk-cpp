@@ -3,36 +3,36 @@
 #if defined(__linux__) || defined(__APPLE__)
 #include <unistd.h>
 #elif defined(_WIN32) || defined(_WIN64) || defined(__WIN32__) || defined(__TOS_WIN__) || defined(__WINDOWS__) || defined(_MSC_VER)
-#include <io.h>
-#include <process.h>
 #include <fstream>
+#include <io.h>
 #include <iostream>
 #endif
 
-#include <sys/types.h>
-#include <stdlib.h>
 #include "Logger.h"
-#include "src/utils/TimeUtils.h"
+
+#include <ctime>
+#include <stdlib.h>
+#include <src/thread/PthreadWaraper.h>
+#include <sys/stat.h>
+
 #include "NacosExceptions.h"
-#include "src/utils/ConfigParserUtils.h"
 #include "Properties.h"
-#include "src/utils/DirUtils.h"
-#include "src/utils/ParamUtils.h"
-#include "src/config/IOUtils.h"
 #include "constant/ConfigConstant.h"
 #include "constant/PropertyKeyConst.h"
-#include <ctime>
-#include <sys/stat.h>
-#include <src/thread/PthreadWaraper.h>
+#include "src/config/IOUtils.h"
+#include "src/utils/ConfigParserUtils.h"
+#include "src/utils/DirUtils.h"
+#include "src/utils/ParamUtils.h"
+#include "src/utils/TimeUtils.h"
+
 namespace nacos
 {
-
     LOG_LEVEL Logger::_CUR_SYS_LOG_LEVEL = ERROR;
     NacosString Logger::_log_base_dir = "";
     NacosString Logger::_log_file = "";
     int64_t Logger::_rotate_size;
     int64_t Logger::_last_rotate_time;
-    FILE *Logger::_output_file;
+    FILE* Logger::_output_file;
     Mutex Logger::setFileLock;
 
     // rotate time (in Ms)
@@ -41,19 +41,26 @@ namespace nacos
         _rotate_size = rotateSize;
     }
 
-    void Logger::setBaseDir(const NacosString &baseDir)
+    void Logger::setBaseDir(const NacosString& baseDir)
     {
         LockGuard _setFile(setFileLock);
         _log_base_dir = baseDir;
         if (_output_file != nullptr)
         {
-            fclose(_output_file);
+            if (const auto error = fclose(_output_file); error != 0)
+            {
+                perror("fclose");
+            }
             _output_file = nullptr;
         }
 
         _log_file = _log_base_dir + ConfigConstant::FILE_SEPARATOR + "nacos-sdk-cpp.log";
         IOUtils::recursivelyCreate(_log_base_dir);
-        _output_file = fopen(_log_file.c_str(), "a");
+        if (const errno_t err = fopen_s(&_output_file, _log_file.c_str(), "a"); err != 0)
+        {
+            throw NacosException(NacosException::UNABLE_TO_OPEN_FILE, _log_file);
+        }
+
         if (_output_file == nullptr)
         {
             NacosString errMsg = "Unable to open file ";
@@ -72,7 +79,7 @@ namespace nacos
         return _rotate_size;
     }
 
-    const NacosString &Logger::getBaseDir()
+    const NacosString& Logger::getBaseDir()
     {
         return _log_base_dir;
     }
@@ -82,7 +89,7 @@ namespace nacos
         return _CUR_SYS_LOG_LEVEL;
     }
 
-    int Logger::debug_helper(LOG_LEVEL level, const char *format, va_list args)
+    int Logger::debug_helper(LOG_LEVEL level, char const* const format, const va_list args)
     {
         // Since the current system debug level is greater than this message
         // Suppress it
@@ -93,7 +100,7 @@ namespace nacos
         // va_list argList;
 
         // va_start(argList, format);
-        int64_t now = TimeUtils::getCurrentTimeInMs();
+        const int64_t now = TimeUtils::getCurrentTimeInMs();
 
         struct stat stat_buf;
         stat(_log_file.c_str(), &stat_buf);
@@ -105,7 +112,11 @@ namespace nacos
             if (!_output_file)
             {
                 std::ofstream file1(_log_file.c_str());
-                _output_file = fopen(_log_file.c_str(), "w");
+
+                if (const errno_t err = fopen_s(&_output_file, _log_file.c_str(), "w"); err != 0)
+                {
+                    throw NacosException(NacosException::UNABLE_TO_OPEN_FILE, _log_file);
+                }
                 if (_output_file)
                 {
                     _chsize_s(_fileno(_output_file), 0);
@@ -115,7 +126,7 @@ namespace nacos
             _last_rotate_time = now;
         }
 
-        const char *log_level;
+        const char* log_level;
         switch (level)
         {
         case DEBUG:
@@ -138,67 +149,73 @@ namespace nacos
             break;
         }
 
-        time_t t = time(nullptr);
-        struct tm current_time;
-        localtime_r(&t, &current_time);
+        const time_t t = time(nullptr);
+        struct tm currentTime;
+        localtime_r(&t, &currentTime);
         // length of [9999-12-31 99:99:99] = 19
-        char time_buf[22];
-        strftime(time_buf, sizeof(time_buf), "[%Y-%m-%d %H:%M:%S]", &current_time);
+        char timeBuf[22];
+        if (const auto error = strftime(timeBuf, sizeof(timeBuf), "[%Y-%m-%d %H:%M:%S]", &currentTime); error == 0)
+        {
+            perror("strftime");
+        }
 
-        int retval = fprintf(_output_file, "%s%s", time_buf, log_level);
+        int retval = fprintf(_output_file, "%s%s", timeBuf, log_level);
         retval += vfprintf(_output_file, format, args);
-        fflush(_output_file);
+        if (const auto fflushError = fflush(_output_file); fflushError != 0)
+        {
+            perror("fflush");
+        }
         // va_end(argList);
         return retval;
     }
 
     // Output string in self-defined log_level
-    int Logger::debug_print(LOG_LEVEL level, const char *format, ...)
+    int Logger::debug_print(LOG_LEVEL level, const char* format, ...)
     {
         va_list argList;
 
         va_start(argList, format);
-        int retval = debug_helper(level, format, argList);
+        const int retval = debug_helper(level, format, argList);
         va_end(argList);
         return retval;
     }
 
-    int Logger::debug_debug(const char *format, ...)
+    int Logger::debug_debug(const char* format, ...)
     {
         va_list argList;
 
         va_start(argList, format);
-        int retval = debug_helper(DEBUG, format, argList);
+        const int retval = debug_helper(DEBUG, format, argList);
         va_end(argList);
         return retval;
     }
 
-    int Logger::debug_info(const char *format, ...)
+    int Logger::debug_info(const char* format, ...)
     {
         va_list argList;
 
         va_start(argList, format);
-        int retval = debug_helper(INFO, format, argList);
+        const int retval = debug_helper(INFO, format, argList);
         va_end(argList);
         return retval;
     }
 
-    int Logger::debug_warn(const char *format, ...)
+    int Logger::debug_warn(const char* format, ...)
     {
         va_list argList;
 
         va_start(argList, format);
-        int retval = debug_helper(WARN, format, argList);
+        const int retval = debug_helper(WARN, format, argList);
         va_end(argList);
         return retval;
     }
 
-    int Logger::debug_error(const char *format, ...)
+    int Logger::debug_error(const char* format, ...)
     {
         va_list argList;
 
         va_start(argList, format);
-        int retval = debug_helper(ERROR, format, argList);
+        const int retval = debug_helper(ERROR, format, argList);
         va_end(argList);
         return retval;
     }
@@ -207,7 +224,10 @@ namespace nacos
     {
         if (_output_file != nullptr)
         {
-            fclose(_output_file);
+            if (const auto fcloseError =  fclose(_output_file); fcloseError != 0)
+            {
+                perror("fclose");
+            }
             _output_file = nullptr;
         }
     }
@@ -218,9 +238,10 @@ namespace nacos
 
         try
         {
-            props = ConfigParserUtils::parseConfigFile(DirUtils::getCwd() + ConfigConstant::FILE_SEPARATOR + ConfigConstant::DEFAULT_CONFIG_FILE);
+            props = ConfigParserUtils::parseConfigFile(
+                DirUtils::getCwd() + ConfigConstant::FILE_SEPARATOR + ConfigConstant::DEFAULT_CONFIG_FILE);
         }
-        catch (IOException &e)
+        catch (IOException& e)
         {
             // if we failed to read log settings
             // use default settings as backup
@@ -229,12 +250,13 @@ namespace nacos
         applyLogSettings(props);
     }
 
-    void Logger::applyLogSettings(Properties &props)
+    void Logger::applyLogSettings(Properties& props)
     {
         if (!props.contains(PropertyKeyConst::LOG_PATH))
         {
-            NacosString homedir = DirUtils::getHome();
-            Logger::setBaseDir(homedir + ConfigConstant::FILE_SEPARATOR + "nacos" + ConfigConstant::FILE_SEPARATOR + "logs");
+            const NacosString homedir = DirUtils::getHome();
+            Logger::setBaseDir(
+                homedir + ConfigConstant::FILE_SEPARATOR + "nacos" + ConfigConstant::FILE_SEPARATOR + "logs");
         }
         else
         {
@@ -244,7 +266,7 @@ namespace nacos
         if (props.contains(PropertyKeyConst::LOG_LEVEL))
         {
             // default log level is error, if user specifies it within configuration file, update it
-            NacosString &logLevelStr = props[PropertyKeyConst::LOG_LEVEL];
+            const NacosString& logLevelStr = props[PropertyKeyConst::LOG_LEVEL];
 
             if (logLevelStr == "DEBUG")
             {
@@ -268,27 +290,29 @@ namespace nacos
             }
             else
             {
-                throw NacosException(NacosException::INVALID_CONFIG_PARAM, "Invalid option " + logLevelStr + " for " + PropertyKeyConst::LOG_LEVEL);
+                throw NacosException(NacosException::INVALID_CONFIG_PARAM,
+                                     "Invalid option " + logLevelStr + " for " + PropertyKeyConst::LOG_LEVEL);
             }
         }
 
         if (!props.contains(PropertyKeyConst::LOG_ROTATE_SIZE))
         {
-            Logger::setRotateSize(10 * 1024 * 1024); // 10M by default
+            Logger::setRotateSize(static_cast<int64_t>(10 * 1024) * 1024); // 10M by default
         }
         else
         {
-            const NacosString &logRotateSizeStr = props[PropertyKeyConst::LOG_ROTATE_SIZE];
+            const NacosString& logRotateSizeStr = props[PropertyKeyConst::LOG_ROTATE_SIZE];
             if (ParamUtils::isBlank(logRotateSizeStr))
             {
                 throw NacosException(NacosException::INVALID_CONFIG_PARAM,
-                                     "Invalid option '" + logRotateSizeStr + "' for " + PropertyKeyConst::LOG_ROTATE_SIZE);
+                                     "Invalid option '" + logRotateSizeStr + "' for " +
+                                     PropertyKeyConst::LOG_ROTATE_SIZE);
             }
 
-            size_t logrotate_lastch = logRotateSizeStr.length() - 1;
+            const size_t logrotateLastch = logRotateSizeStr.length() - 1;
             int mulplier = 1;
-            unsigned long logRotateSize = 0;
-            switch (logRotateSizeStr[logrotate_lastch])
+            unsigned long logRotateSize;
+            switch (logRotateSizeStr[logrotateLastch])
             {
             case 'g':
             case 'G':
@@ -299,17 +323,20 @@ namespace nacos
             case 'k':
             case 'K':
                 mulplier *= 1024;
-                logRotateSize = atol(logRotateSizeStr.substr(0, logrotate_lastch).c_str()); // logrotate_lastch = exclude the unit
+                logRotateSize = strtol(logRotateSizeStr.substr(0, logrotateLastch).c_str(), nullptr, 10);
+                // logrotate_lastch = exclude the unit
                 logRotateSize *= mulplier;
                 break;
             default:
-                if (!isdigit(logRotateSizeStr[logrotate_lastch]))
+                if (!isdigit(logRotateSizeStr[logrotateLastch]))
                 {
                     throw NacosException(NacosException::INVALID_CONFIG_PARAM,
-                                         "Invalid option '" + logRotateSizeStr + "' for " + PropertyKeyConst::LOG_ROTATE_SIZE + ", the unit of size must be G/g M/m K/k or decimal numbers.");
+                                         "Invalid option '" + logRotateSizeStr + "' for " +
+                                         PropertyKeyConst::LOG_ROTATE_SIZE +
+                                         ", the unit of size must be G/g M/m K/k or decimal numbers.");
                 }
-                mulplier = 1;
-                logRotateSize = atol(logRotateSizeStr.substr(0, logRotateSizeStr.length()).c_str());
+                logRotateSize = strtol(logRotateSizeStr.substr(0, logrotateLastch).c_str(), nullptr, 10);
+                //logRotateSize = atol(logRotateSizeStr.substr(0, logRotateSizeStr.length()).c_str());
                 break;
             }
 
@@ -328,5 +355,4 @@ namespace nacos
     {
         initializeLogSystem();
     }
-
 } // namespace nacos
