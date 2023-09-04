@@ -32,7 +32,7 @@ private:
     	unsigned int bytes_written = 0;
         while (bytes_written < sizeof(T)) {
             #if defined(_MSC_VER) || defined(__WIN32__) || defined(WIN32)
-            bytes_written += _write(fd, &data + bytes_written, sizeof(T) - bytes_written);
+            bytes_written += _write(fd, reinterpret_cast<char*>(&data) + bytes_written, sizeof(T) - bytes_written);
             #else
             bytes_written += write(fd, (char*)&data + bytes_written, sizeof(T) - bytes_written);
             #endif
@@ -41,14 +41,14 @@ private:
     
     T preserve() {
         #if defined(_MSC_VER) || defined(__WIN32__) || defined(WIN32)
-        T current{};
+        T current;
         bool newFile = false;
         if (IOUtils::checkNotExistOrNotFile(_fileName)) {
             newFile = true;
         }
         int fd = -1;
         if (const errno_t err = _sopen_s( &fd, _fileName.c_str(), _O_RDWR|_O_CREAT, _SH_DENYNO,
-                                          _S_IREAD | _S_IWRITE ); err != 0 ) {
+                                          _S_IREAD | _S_IWRITE); err != 0 ) {
             throw NacosException(NacosException::UNABLE_TO_OPEN_FILE, _fileName);
         }
 
@@ -67,7 +67,7 @@ private:
             {
 
 	            perror( std::to_string(sizeof(T)).c_str() );
-                throw std::exception("Problem reading file");
+                //throw std::exception("Problem reading file");
             }
 			bytes_read += bytesReads;
         }
@@ -86,10 +86,9 @@ private:
             newFile = true;
         }
         mode_t mode = S_IRUSR | S_IWUSR | S_IRWXG | S_IWGRP;
-        fd = open(_fileName.c_str(), O_RDWR | O_CREAT, mode);
-        if (fd <= 0) {
             throw new NacosException(NacosException::UNABLE_TO_OPEN_FILE, _fileName);
         }
+        fd = open(_fileName.c_str(), O_RDWR | O_CREAT, mode);
         
         if (newFile) {
             ensureWrite(fd, _initSequence);
