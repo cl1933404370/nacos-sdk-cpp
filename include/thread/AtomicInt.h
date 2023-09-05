@@ -26,7 +26,7 @@ namespace nacos
             return oldValue;
         }
 
-        T dec(const int decval = 1)
+        T dec(const T decval = 1)
         {
             return inc(-decval);
         }

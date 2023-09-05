@@ -35,11 +35,12 @@ namespace nacos
 
         Mutex(const Mutex&) = delete;
         Mutex& operator=(const Mutex&) = delete;
+        Mutex(Mutex&&) = delete;
+        Mutex& operator=(Mutex&&) = delete;
 
         void lock() ACQUIRE() { _mu.lock(); }
         void unlock() RELEASE() {
             _mu.unlock(); }
-
         static void assertHeld() ASSERT_CAPABILITY(this)
         {
             //assert(_mu._Mtx_trylock() == EBUSY);
@@ -54,11 +55,13 @@ namespace nacos
     class Condition
     {
     public:
-        explicit Condition(Mutex& mu) : _mu(_STD addressof(mu)) { assert(_mu != nullptr); }
+        explicit Condition(Mutex& mu) : Mu(_STD addressof(mu)) { assert(Mu != nullptr); }
         ~Condition() = default;
 
         Condition(const Condition&) = delete;
         Condition& operator=(const Condition&) = delete;
+        Condition(Condition&&) = delete;
+        Condition& operator=(Condition&&) = delete;
 
         void wait()
         {
@@ -74,7 +77,7 @@ namespace nacos
         template <typename Predicate>
         void wait(Predicate pred)
         {
-            std::unique_lock<std::mutex> lock(_mu->_mu, std::adopt_lock);
+            std::unique_lock<std::mutex> lock(Mu->_mu, std::adopt_lock);
             _cv.wait(lock, std::move(pred));
             lock.release();
         }
@@ -82,7 +85,7 @@ namespace nacos
         template <typename Predicate>
         void wait(Predicate pred, uint64_t millis)
         {
-            std::unique_lock<std::mutex> lock(_mu->_mu, std::adopt_lock);
+            std::unique_lock<std::mutex> lock(Mu->_mu, std::adopt_lock);
             if (millis == 0)
             {
                 _cv.wait(lock, pred);
@@ -99,24 +102,26 @@ namespace nacos
 
     private:
         std::condition_variable _cv;
-        Mutex* _mu;
+        Mutex* Mu;
     };
 
     class SCOPED_CAPABILITY LockGuard
     {
     public:
-        explicit LockGuard(Mutex& mu) ACQUIRE(mu) : _mu(_STD addressof(mu))
+        explicit LockGuard(Mutex& mu) ACQUIRE(mu) : Mu(_STD addressof(mu))
         {
-            this->_mu->lock();
+            this->Mu->lock();
         }
 
-        ~LockGuard() RELEASE() { this->_mu->unlock(); }
+        ~LockGuard() RELEASE() { this->Mu->unlock(); }
 
         LockGuard(const LockGuard&) = delete;
         LockGuard& operator=(const LockGuard&) = delete;
+        LockGuard(LockGuard&&) = delete;
+        LockGuard& operator=(LockGuard&&) = delete;
 
     private:
-        Mutex* _mu;
+        Mutex* Mu;
     };
 #elif
 

@@ -245,9 +245,9 @@ main()
     if (!failed_list.empty())
     {
         cout << "List of failed cases:" << endl;
-        for (auto it = failed_list.begin(); it != failed_list.end(); it++)
+        for (const auto& it : failed_list)
         {
-            cout << (*it)->testName << endl;
+            cout << it->testName << endl;
         }
         cout << "===========================" << endl;
     }

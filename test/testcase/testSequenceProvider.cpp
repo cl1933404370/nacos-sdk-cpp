@@ -9,18 +9,18 @@ using namespace nacos;
 constexpr auto NR_THREADS = 200;
 constexpr auto GENERATION_PER_THREAD = 1000;
 
-uint64_t sequences[GENERATION_PER_THREAD * NR_THREADS];
+int64_t sequences[GENERATION_PER_THREAD * NR_THREADS];
 int tid[NR_THREADS];
 
-SequenceProvider<uint64_t>* sequenceProvider;
+SequenceProvider<int64_t>* sequenceProvider;
 
 void* SeqThreadFunc(void* param)
 {
     const int* threadNo = static_cast<int*>(param);
     for (int i = 0; i < GENERATION_PER_THREAD; i++)
     {
-        const uint64_t res = sequenceProvider->next(); 
-        sequences[(*threadNo) * GENERATION_PER_THREAD + i] = res;
+        const int64_t res = sequenceProvider->next(); 
+        sequences[*threadNo * GENERATION_PER_THREAD + i] = res;
     }
 
     return nullptr;
@@ -32,7 +32,7 @@ bool testSequenceProvider()
 
     cout << "Generating SEQ..." << endl;
 
-    sequenceProvider = new SequenceProvider<uint64_t>(DirUtils::getCwd() + "/test_seq.dat", 20000, 100);
+    sequenceProvider = new SequenceProvider<int64_t>(DirUtils::getCwd() + "/test_seq.dat", 20000, 100);
 
     Thread* threads[NR_THREADS] = {nullptr};
     for (int i = 0; i < NR_THREADS; i++)

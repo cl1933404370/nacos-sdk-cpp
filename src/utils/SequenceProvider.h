@@ -3,6 +3,10 @@
 #include <fcntl.h>
 #if defined(_MSC_VER) || defined(__WIN32__) || defined(WIN32)
 #include <io.h>
+#include <fstream>
+#include <iostream>
+#include <ostream>
+#include  <istream>
 #else
 #include <unistd.h>
 #endif
@@ -17,68 +21,128 @@
 
 namespace nacos
 {
+	template <typename T>
+	class SequenceProvider
+	{
+	private:
+		NacosString _fileName;
+		AtomicInt<T> _current;
+		Mutex _acquireMutex;
+		T _nrToPreserve;
+		T _initSequence;
+		volatile T _hwm; //high water mark
 
-template<typename T>
-class SequenceProvider {
-private:
-    NacosString _fileName;
-    AtomicInt<T> _current;
-    Mutex _acquireMutex;
-    T _nrToPreserve;
-    T _initSequence;
-    volatile T _hwm;//high water mark
+		void ensureWrite(int fd, T data)
+		{
+			unsigned int bytes_written = 0;
 
-    static void ensureWrite(int fd, T data) {
-    	unsigned int bytes_written = 0;
-        while (bytes_written < sizeof(T)) {
-            #if defined(_MSC_VER) || defined(__WIN32__) || defined(WIN32)
-            bytes_written += _write(fd, reinterpret_cast<char*>(&data) + bytes_written, sizeof(T) - bytes_written);
-            #else
-            bytes_written += write(fd, (char*)&data + bytes_written, sizeof(T) - bytes_written);
-            #endif
-        }
-    }
-    
-    T preserve() {
-        #if defined(_MSC_VER) || defined(__WIN32__) || defined(WIN32)
-        T current;
-        bool newFile = false;
-        if (IOUtils::checkNotExistOrNotFile(_fileName)) {
-            newFile = true;
-        }
-        int fd = -1;
-        if (const errno_t err = _sopen_s( &fd, _fileName.c_str(), _O_RDWR|_O_CREAT, _SH_DENYNO,
-                                          _S_IREAD | _S_IWRITE); err != 0 ) {
-            throw NacosException(NacosException::UNABLE_TO_OPEN_FILE, _fileName);
-        }
+			std::fstream file(_fileName.c_str(), std::ios::in | std::ios::out | std::ios::binary);
+			while (file.is_open())
+			{
+				if (file.write(reinterpret_cast<char*>(&data), sizeof(T))) {
+						file.close();
+				        break;
+				}
+			    if (file.fail() && !file.eof()) {
+			        // handle the write error
+			        file.clear();
+			    }
+			}
+			//while (bytes_written < sizeof(T))
+			//{
+			//	#if defined(_MSC_VER) || defined(__WIN32__) || defined(WIN32)
+			//		const int written_s = _write(fd, reinterpret_cast<char*>(&data) + bytes_written, sizeof(T) - bytes_written);
+			//		if (written_s == -1)
+			//		{
+			//			if (errno == EINTR)
+			//			{
+			//				//retry the write operation
+			//			}
+			//			else
+			//			{
+			//				//perror(TEXT(""));
+			//				//handle the error
+			//			}
+			//		}
+			//		else if (written_s < sizeof(T) - bytes_written)
+			//		{
+			//			bytes_written += written_s;
+			//			//handle incomplete write
+			//		}
+			//		else
+			//		{
+			//			bytes_written += written_s;
+			//		}
+			//	#else
+	  //          bytes_written += write(fd, (char*)&data + bytes_written, sizeof(T) - bytes_written);
+			//	#endif
+			//}
+		}
 
-        if (newFile) {
-            ensureWrite(fd, _initSequence);
-            if(const auto pos = _lseek(fd, 0L, SEEK_SET); pos == -1L )
-                perror( "_lseek to end failed" );
-        }
+		T preserve()
+		{
+#if defined(_MSC_VER) || defined(__WIN32__) || defined(WIN32)
+			T current;
+			bool newFile = false;
+			if (IOUtils::checkNotExistOrNotFile(_fileName))
+			{
+				newFile = true;
+			}
+			int fd = -1;
+			if (const errno_t err = _sopen_s(&fd, _fileName.c_str(), _O_RDWR | _O_CREAT, _SH_DENYNO,
+			                                 _S_IREAD | _S_IWRITE); err != 0)
+			{
+				throw NacosException(NacosException::UNABLE_TO_OPEN_FILE, _fileName);
+			}
 
-        unsigned int bytes_read = 0;
-        //todo dead lock
-        int bytesReads;
-        while (bytes_read < sizeof(T))
-        {
-            if (( bytesReads = _read( fd, reinterpret_cast<char*>(&current) + bytes_read, sizeof(T) - bytes_read )) <= 0 )
-            {
+			if (newFile)
+			{
+				ensureWrite(fd, _initSequence);
+				if (const auto pos = _lseek(fd, 0L, SEEK_SET); pos == -1L)
+					perror("_lseek to end failed");
+			}
 
-	            perror( std::to_string(sizeof(T)).c_str() );
-                //throw std::exception("Problem reading file");
-            }
-			bytes_read += bytesReads;
-        }
+			unsigned int bytes_read = 0;
+			//todo dead lock
+			int bytesReads;
 
-        if(const auto pos = _lseek(fd, 0L, SEEK_SET); pos == -1L )
-            perror( "_lseek to end failed" );
-        ensureWrite(fd, current + _nrToPreserve);
-        _close(fd);
-        _hwm = current + _nrToPreserve;
-        return current;
-        #else
+			std::fstream file(_fileName.c_str(), std::ios::in | std::ios::out | std::ios::binary);
+			while (file.is_open())
+			{
+				;
+				if (file.read(reinterpret_cast<char*>(&current), sizeof(T))) {
+						file.close();
+				        break;
+				}
+			    if (file.fail() && !file.eof()) {
+			        // handle the write error
+			        ensureWrite(fd, _initSequence);
+			    }
+			}
+
+
+			//while (bytes_read < sizeof(T))
+			//{
+			//	if ((bytesReads = _read(fd, reinterpret_cast<char*>(&current) + bytes_read, sizeof(T) - bytes_read)) <=
+			//		0)
+			//	{
+			//		if (bytesReads == 0)
+			//		{
+			//			std::this_thread::yield();
+			//		}
+			//		//perror(std::to_string(sizeof(T)).c_str());
+			//		//throw std::exception("Problem reading file");
+			//	}
+			//	bytes_read += bytesReads;
+			//}
+
+			if (const auto pos = _lseek(fd, 0L, SEEK_SET); pos == -1L)
+				perror("_lseek to end failed");
+			ensureWrite(fd, current + _nrToPreserve);
+			_close(fd);
+			_hwm = current + _nrToPreserve;
+			return current;
+#else
         T current;
         int fd;
         bool newFile = false;
@@ -106,27 +170,31 @@ private:
         close(fd);
         _hwm = current + _nr_to_preserve;
         return current;
-        #endif
-    }
-public:
-    SequenceProvider(const NacosString &fileName, T initSequence, T nr_to_preserve) {
-        _fileName = fileName;
-        _initSequence = initSequence;
-        _nrToPreserve = nr_to_preserve;
-        _current.set(preserve());
-    }
+#endif
+		}
 
-    T next(int step = 1) {
-        T res = _current.getAndInc(step);
-        while (res >= _hwm) {
-            _acquireMutex.lock();
-            if (res >= _hwm) {
-                preserve();
-            }
-            _acquireMutex.unlock();
-        }
-        return res;
-    }
-};
+	public:
+		SequenceProvider(const NacosString& fileName, T initSequence, T nr_to_preserve)
+		{
+			_fileName = fileName;
+			_initSequence = initSequence;
+			_nrToPreserve = nr_to_preserve;
+			_current.set(preserve());
+		}
 
+		T next(int step = 1)
+		{
+			T res = _current.getAndInc(step);
+			while (res >= _hwm)
+			{
+				_acquireMutex.lock();
+				if (res >= _hwm)
+				{
+					preserve();
+				}
+				_acquireMutex.unlock();
+			}
+			return res;
+		}
+	};
 } // namespace nacos
